@@ -9,6 +9,9 @@ class TopicCreate(BaseModel):
     user_id: int
     name: str
     description: str | None = None
+class TopicUpdate(BaseModel):
+    name: str
+    description: str | None = None
 
 @app.get("/")
 def read_root():
@@ -56,3 +59,28 @@ def get_topic(topic_id: int):
             return {"error": "Topic not found"}
 
         return dict(topic)
+
+@app.put("/topics/{topic_id}")
+def update_topic(topic_id: int, topic: TopicUpdate):
+    with engine.begin() as connection:
+        result = connection.execute(
+            text("""
+                UPDATE topics
+                SET name = :name,
+                    description = :description
+                WHERE id = :id
+                RETURNING id, user_id, name, description, created_at
+            """),
+            {
+                "id": topic_id,
+                "name": topic.name,
+                "description": topic.description,
+            }
+        )
+
+        updated_topic = result.mappings().first()
+
+        if updated_topic is None:
+            return {"error": "Topic not found"}
+
+        return dict(updated_topic)
