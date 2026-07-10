@@ -84,3 +84,25 @@ def update_topic(topic_id: int, topic: TopicUpdate):
             return {"error": "Topic not found"}
 
         return dict(updated_topic)
+    
+@app.delete("/topics/{topic_id}")
+def delete_topic(topic_id: int):
+    with engine.begin() as connection:
+        result = connection.execute(
+            text("""
+                DELETE FROM topics
+                WHERE id = :id
+                RETURNING id, user_id, name, description, created_at
+            """),
+            {"id": topic_id}
+        )
+
+        deleted_topic = result.mappings().first()
+
+        if deleted_topic is None:
+            return {"error": "Topic not found"}
+
+        return {
+            "message": "Topic deleted successfully",
+            "topic": dict(deleted_topic)
+        }
