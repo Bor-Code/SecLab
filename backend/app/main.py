@@ -41,3 +41,18 @@ def create_topic(topic: TopicCreate):
 
         created_topic = result.mappings().one()
         return dict(created_topic)
+    
+@app.get("/topics/{topic_id}")
+def get_topic(topic_id: int):
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("SELECT id, user_id, name, description, created_at FROM topics WHERE id = :id"),
+            {"id": topic_id}
+        )
+
+        topic = result.mappings().first()
+
+        if topic is None:
+            return {"error": "Topic not found"}
+
+        return dict(topic)
