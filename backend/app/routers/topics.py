@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import text
 from pydantic import BaseModel
 from app.database import engine
@@ -27,7 +27,7 @@ def get_topics():
         topics = result.mappings().all()
         return [dict(topic) for topic in topics]
     
-@router.post("")
+@router.post("", status_code=status.HTTP_201_CREATED)
 def create_topic(topic: TopicCreate):
     with engine.begin() as connection:
         result = connection.execute(
