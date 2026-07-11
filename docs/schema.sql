@@ -140,3 +140,12 @@ ALTER TABLE ONLY public.topics
 
 \unrestrict pXH5y5Yc1X6o4MQ3OfTzcYcVlidzTOrCyVMwlVSKW0NfkgrdasiJmiU9rKY6tiy
 
+CREATE TABLE learning_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    topic_id INTEGER NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
+    title VARCHAR(150) NOT NULL,
+    notes TEXT,
+    study_date DATE DEFAULT CURRENT_DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

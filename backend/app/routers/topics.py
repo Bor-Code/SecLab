@@ -17,7 +17,6 @@ class TopicUpdate(BaseModel):
     name: str
     description: str | None = None
 
-# Slash'ler kaldırıldı ("" kullanıldı)
 @router.get("")
 def get_topics():
     with engine.connect() as connection:
@@ -78,7 +77,6 @@ def update_topic(topic_id: int, topic: TopicUpdate):
         )
         updated_topic = result.mappings().first()
         
-        # Hata mesajı HTTPException'a çevrildi
         if updated_topic is None:
             raise HTTPException(status_code=404, detail="Topic not found")
             
@@ -97,7 +95,6 @@ def delete_topic(topic_id: int):
         )
         deleted_topic = result.mappings().first()
         
-        # Hata mesajı HTTPException'a çevrildi
         if deleted_topic is None:
             raise HTTPException(status_code=404, detail="Topic not found")
             
