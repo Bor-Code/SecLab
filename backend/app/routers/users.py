@@ -75,3 +75,22 @@ def update_user(user_id: int, user: UserUpdate):
         if updated_user is None:
             raise HTTPException(status_code=404, detail="User not found")
         return dict(updated_user)
+
+@router.delete("/{user_id}")
+def delete_user(user_id: int):
+    with engine.begin() as connection:
+        result = connection.execute(
+            text("""
+                DELETE FROM users
+                WHERE id = :user_id
+                RETURNING *
+            """),
+            {"user_id": user_id}
+        )
+        deleted_user = result.mappings().first()
+        if deleted_user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        return {
+            "message": "User deleted successfully",
+            "deleted_user": dict(deleted_user)
+        }
