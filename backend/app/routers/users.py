@@ -12,6 +12,10 @@ class UserCreate(BaseModel):
     username: str
     email: str
 
+class UserUpdate(BaseModel):
+    username: str
+    email: str
+
 @router.get("")
 def get_users():
     with engine.connect() as connection:
@@ -46,8 +50,28 @@ def get_user(user_id: int):
             {"user_id": user_id}
         )
         user = result.mappings().first()
-        
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
-            
         return dict(user)
+
+@router.put("/{user_id}")
+def update_user(user_id: int, user: UserUpdate):
+    with engine.begin() as connection:
+        result = connection.execute(
+            text("""
+                UPDATE users
+                SET username = :username,
+                    email = :email
+                WHERE id = :user_id
+                RETURNING *
+            """),
+            {
+                "user_id": user_id,
+                "username": user.username,
+                "email": user.email,
+            }
+        )
+        updated_user = result.mappings().first()
+        if updated_user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        return dict(updated_user)
