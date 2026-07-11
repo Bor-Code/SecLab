@@ -89,3 +89,22 @@ def update_resource(resource_id: int, resource: ResourceUpdate):
         if updated_resource is None:
             raise HTTPException(status_code=404, detail="Resource not found")
         return dict(updated_resource)
+
+@router.delete("/{resource_id}")
+def delete_resource(resource_id: int):
+    with engine.begin() as connection:
+        result = connection.execute(
+            text("""
+                DELETE FROM resources
+                WHERE id = :resource_id
+                RETURNING *
+            """),
+            {"resource_id": resource_id}
+        )
+        deleted_resource = result.mappings().first()
+        if deleted_resource is None:
+            raise HTTPException(status_code=404, detail="Resource not found")
+        return {
+            "message": "Resource deleted successfully",
+            "deleted_resource": dict(deleted_resource)
+        }
