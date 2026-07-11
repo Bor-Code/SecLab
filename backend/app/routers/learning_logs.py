@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, HTTPException
 from sqlalchemy import text
 from pydantic import BaseModel
 from app.database import engine
@@ -41,3 +41,17 @@ def create_learning_log(log: LearningLogCreate):
         )
         created_log = result.mappings().first()
         return dict(created_log)
+
+@router.get("/{log_id}")
+def get_learning_log(log_id: int):
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("SELECT * FROM learning_logs WHERE id = :log_id"),
+            {"log_id": log_id}
+        )
+        
+        log = result.mappings().first()
+        if log is None:
+            raise HTTPException(status_code=404, detail="Learning log not found")
+            
+        return dict(log)
