@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import text
 from app.database import engine
@@ -37,3 +37,17 @@ def create_user(user: UserCreate):
         )
         created_user = result.mappings().first()
         return dict(created_user)
+
+@router.get("/{user_id}")
+def get_user(user_id: int):
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("SELECT * FROM users WHERE id = :user_id"),
+            {"user_id": user_id}
+        )
+        user = result.mappings().first()
+        
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        return dict(user)
