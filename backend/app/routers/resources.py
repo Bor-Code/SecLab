@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import text
 from app.database import engine
@@ -45,3 +45,15 @@ def create_resource(resource: ResourceCreate):
         )
         created_resource = result.mappings().first()
         return dict(created_resource)
+
+@router.get("/{resource_id}")
+def get_resource(resource_id: int):
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("SELECT * FROM resources WHERE id = :resource_id"),
+            {"resource_id": resource_id}
+        )
+        resource = result.mappings().first()
+        if resource is None:
+            raise HTTPException(status_code=404, detail="Resource not found")
+        return dict(resource)
