@@ -14,6 +14,10 @@ class LearningLogCreate(BaseModel):
     title: str
     notes: str | None = None
 
+class LearningLogUpdate(BaseModel):
+    title: str
+    notes: str | None = None
+
 @router.get("")
 def get_learning_logs():
     with engine.connect() as connection:
@@ -49,9 +53,29 @@ def get_learning_log(log_id: int):
             text("SELECT * FROM learning_logs WHERE id = :log_id"),
             {"log_id": log_id}
         )
-        
         log = result.mappings().first()
         if log is None:
             raise HTTPException(status_code=404, detail="Learning log not found")
-            
         return dict(log)
+
+@router.put("/{log_id}")
+def update_learning_log(log_id: int, log: LearningLogUpdate):
+    with engine.begin() as connection:
+        result = connection.execute(
+            text("""
+                UPDATE learning_logs
+                SET title = :title,
+                    notes = :notes
+                WHERE id = :log_id
+                RETURNING *
+            """),
+            {
+                "log_id": log_id,
+                "title": log.title,
+                "notes": log.notes,
+            }
+        )
+        updated_log = result.mappings().first()
+        if updated_log is None:
+            raise HTTPException(status_code=404, detail="Learning log not found")
+        return dict(updated_log)
