@@ -16,6 +16,12 @@ class ResourceCreate(BaseModel):
     resource_type: str
     notes: str | None = None
 
+class ResourceUpdate(BaseModel):
+    title: str
+    url: str
+    resource_type: str
+    notes: str | None = None
+
 @router.get("")
 def get_resources():
     with engine.connect() as connection:
@@ -57,3 +63,29 @@ def get_resource(resource_id: int):
         if resource is None:
             raise HTTPException(status_code=404, detail="Resource not found")
         return dict(resource)
+
+@router.put("/{resource_id}")
+def update_resource(resource_id: int, resource: ResourceUpdate):
+    with engine.begin() as connection:
+        result = connection.execute(
+            text("""
+                UPDATE resources
+                SET title = :title,
+                    url = :url,
+                    resource_type = :resource_type,
+                    notes = :notes
+                WHERE id = :resource_id
+                RETURNING *
+            """),
+            {
+                "resource_id": resource_id,
+                "title": resource.title,
+                "url": resource.url,
+                "resource_type": resource.resource_type,
+                "notes": resource.notes,
+            }
+        )
+        updated_resource = result.mappings().first()
+        if updated_resource is None:
+            raise HTTPException(status_code=404, detail="Resource not found")
+        return dict(updated_resource)
