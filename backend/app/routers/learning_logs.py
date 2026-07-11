@@ -79,3 +79,22 @@ def update_learning_log(log_id: int, log: LearningLogUpdate):
         if updated_log is None:
             raise HTTPException(status_code=404, detail="Learning log not found")
         return dict(updated_log)
+
+@router.delete("/{log_id}")
+def delete_learning_log(log_id: int):
+    with engine.begin() as connection:
+        result = connection.execute(
+            text("""
+                DELETE FROM learning_logs
+                WHERE id = :log_id
+                RETURNING *
+            """),
+            {"log_id": log_id}
+        )
+        deleted_log = result.mappings().first()
+        if deleted_log is None:
+            raise HTTPException(status_code=404, detail="Learning log not found")
+        return {
+            "message": "Learning log deleted successfully",
+            "deleted_log": dict(deleted_log)
+        }
