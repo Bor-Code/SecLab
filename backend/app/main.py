@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 from app.database import engine
 from pydantic import BaseModel
@@ -56,7 +56,7 @@ def get_topic(topic_id: int):
         topic = result.mappings().first()
 
         if topic is None:
-            return {"error": "Topic not found"}
+            raise HTTPException(status_code=404, detail="Topic not found")
 
         return dict(topic)
 
