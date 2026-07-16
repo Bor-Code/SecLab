@@ -378,14 +378,18 @@ function App() {
 
         <form className="data-form topic-form" onSubmit={handleCreateTopic}>
           <label>
-            User ID
-            <input
-              type="number"
-              min="1"
+            User
+            <select
               value={topicUserId}
               onChange={(event) => setTopicUserId(event.target.value)}
               required
-            />
+            >
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.username}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label>
@@ -440,25 +444,33 @@ function App() {
 
         <form className="data-form log-form" onSubmit={handleCreateLearningLog}>
           <label>
-            User ID
-            <input
-              type="number"
-              min="1"
+            User
+            <select
               value={logUserId}
               onChange={(event) => setLogUserId(event.target.value)}
               required
-            />
+            >
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.username}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label>
-            Topic ID
-            <input
-              type="number"
-              min="1"
+            Topic
+            <select
               value={logTopicId}
               onChange={(event) => setLogTopicId(event.target.value)}
               required
-            />
+            >
+              {topics.map((topic) => (
+                <option key={topic.id} value={topic.id}>
+                  {topic.name}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label>
@@ -517,25 +529,33 @@ function App() {
 
         <form className="data-form resource-form" onSubmit={handleCreateResource}>
           <label>
-            User ID
-            <input
-              type="number"
-              min="1"
+            User
+            <select
               value={resourceUserId}
               onChange={(event) => setResourceUserId(event.target.value)}
               required
-            />
+            >
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.username}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label>
-            Topic ID
-            <input
-              type="number"
-              min="1"
+            Topic
+            <select
               value={resourceTopicId}
               onChange={(event) => setResourceTopicId(event.target.value)}
               required
-            />
+            >
+              {topics.map((topic) => (
+                <option key={topic.id} value={topic.id}>
+                  {topic.name}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label>
