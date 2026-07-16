@@ -1,6 +1,7 @@
+from datetime import date, datetime
 from fastapi import APIRouter, status, HTTPException
+from pydantic import BaseModel, Field
 from sqlalchemy import text
-from pydantic import BaseModel
 from app.database import engine
 
 router = APIRouter(
@@ -11,14 +12,26 @@ router = APIRouter(
 class LearningLogCreate(BaseModel):
     user_id: int
     topic_id: int
-    title: str
-    notes: str | None = None
+    title: str = Field(..., min_length=1, max_length=150)
+    notes: str | None = Field(default=None)
 
 class LearningLogUpdate(BaseModel):
-    title: str
-    notes: str | None = None
+    title: str | None = Field(default=None, min_length=1, max_length=150)
+    notes: str | None = Field(default=None)
 
-@router.get("")
+class LearningLogRead(BaseModel):
+    id: int
+    user_id: int
+    topic_id: int
+    title: str
+    notes: str | None
+    study_date: date
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+@router.get("", response_model=list[LearningLogRead])
 def get_learning_logs():
     with engine.connect() as connection:
         result = connection.execute(
@@ -27,7 +40,7 @@ def get_learning_logs():
         logs = result.mappings().all()
         return [dict(log) for log in logs]
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=LearningLogRead, status_code=status.HTTP_201_CREATED)
 def create_learning_log(log: LearningLogCreate):
     with engine.begin() as connection:
         result = connection.execute(
@@ -46,7 +59,7 @@ def create_learning_log(log: LearningLogCreate):
         created_log = result.mappings().first()
         return dict(created_log)
 
-@router.get("/{log_id}")
+@router.get("/{log_id}", response_model=LearningLogRead)
 def get_learning_log(log_id: int):
     with engine.connect() as connection:
         result = connection.execute(
@@ -58,26 +71,31 @@ def get_learning_log(log_id: int):
             raise HTTPException(status_code=404, detail="Learning log not found")
         return dict(log)
 
-@router.put("/{log_id}")
+@router.patch("/{log_id}", response_model=LearningLogRead)
 def update_learning_log(log_id: int, log: LearningLogUpdate):
+    update_data = log.model_dump(exclude_unset=True)
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+        
+    set_clauses = [f"{key} = :{key}" for key in update_data.keys()]
+    set_query = ",\n                ".join(set_clauses)
+    
     with engine.begin() as connection:
         result = connection.execute(
-            text("""
+            text(f"""
                 UPDATE learning_logs
-                SET title = :title,
-                    notes = :notes
+                SET {set_query}
                 WHERE id = :log_id
                 RETURNING *
             """),
-            {
-                "log_id": log_id,
-                "title": log.title,
-                "notes": log.notes,
-            }
+            {**update_data, "log_id": log_id}
         )
         updated_log = result.mappings().first()
+        
         if updated_log is None:
             raise HTTPException(status_code=404, detail="Learning log not found")
+            
         return dict(updated_log)
 
 @router.delete("/{log_id}")

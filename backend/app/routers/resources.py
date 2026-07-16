@@ -1,5 +1,6 @@
+from datetime import datetime
 from fastapi import APIRouter, status, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 from app.database import engine
 
@@ -11,18 +12,31 @@ router = APIRouter(
 class ResourceCreate(BaseModel):
     user_id: int
     topic_id: int
-    title: str
-    url: str
-    resource_type: str
-    notes: str | None = None
+    title: str = Field(..., min_length=1, max_length=150)
+    url: str = Field(..., min_length=1)
+    resource_type: str = Field(..., min_length=1, max_length=50)
+    notes: str | None = Field(default=None)
 
 class ResourceUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=150)
+    url: str | None = Field(default=None, min_length=1)
+    resource_type: str | None = Field(default=None, min_length=1, max_length=50)
+    notes: str | None = Field(default=None)
+
+class ResourceRead(BaseModel):
+    id: int
+    user_id: int
+    topic_id: int
     title: str
     url: str
     resource_type: str
-    notes: str | None = None
+    notes: str | None
+    created_at: datetime
 
-@router.get("")
+    class Config:
+        from_attributes = True
+
+@router.get("", response_model=list[ResourceRead])
 def get_resources():
     with engine.connect() as connection:
         result = connection.execute(
@@ -31,7 +45,7 @@ def get_resources():
         resources = result.mappings().all()
         return [dict(resource) for resource in resources]
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ResourceRead, status_code=status.HTTP_201_CREATED)
 def create_resource(resource: ResourceCreate):
     with engine.begin() as connection:
         result = connection.execute(
@@ -52,7 +66,7 @@ def create_resource(resource: ResourceCreate):
         created_resource = result.mappings().first()
         return dict(created_resource)
 
-@router.get("/{resource_id}")
+@router.get("/{resource_id}", response_model=ResourceRead)
 def get_resource(resource_id: int):
     with engine.connect() as connection:
         result = connection.execute(
@@ -64,30 +78,31 @@ def get_resource(resource_id: int):
             raise HTTPException(status_code=404, detail="Resource not found")
         return dict(resource)
 
-@router.put("/{resource_id}")
+@router.patch("/{resource_id}", response_model=ResourceRead)
 def update_resource(resource_id: int, resource: ResourceUpdate):
+    update_data = resource.model_dump(exclude_unset=True)
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+        
+    set_clauses = [f"{key} = :{key}" for key in update_data.keys()]
+    set_query = ",\n                ".join(set_clauses)
+    
     with engine.begin() as connection:
         result = connection.execute(
-            text("""
+            text(f"""
                 UPDATE resources
-                SET title = :title,
-                    url = :url,
-                    resource_type = :resource_type,
-                    notes = :notes
+                SET {set_query}
                 WHERE id = :resource_id
                 RETURNING *
             """),
-            {
-                "resource_id": resource_id,
-                "title": resource.title,
-                "url": resource.url,
-                "resource_type": resource.resource_type,
-                "notes": resource.notes,
-            }
+            {**update_data, "resource_id": resource_id}
         )
         updated_resource = result.mappings().first()
+        
         if updated_resource is None:
             raise HTTPException(status_code=404, detail="Resource not found")
+            
         return dict(updated_resource)
 
 @router.delete("/{resource_id}")

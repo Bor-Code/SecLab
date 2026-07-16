@@ -1,6 +1,7 @@
+from datetime import datetime
 from fastapi import APIRouter, HTTPException, status
-from sqlalchemy import text
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, Text, delete, insert, select, update
 from app.database import engine
 
 router = APIRouter(
@@ -8,49 +9,71 @@ router = APIRouter(
     tags=["Topics"]
 )
 
+metadata = MetaData()
+topics_table = Table(
+    "topics",
+    metadata,
+    Column("id", Integer),
+    Column("user_id", Integer),
+    Column("name", String(100)),
+    Column("description", Text),
+    Column("created_at", DateTime),
+)
+
 class TopicCreate(BaseModel):
-    user_id: int
-    name: str
-    description: str | None = None
+    user_id: int = Field(...)
+    name: str = Field(..., min_length=1, max_length=100)
+    description: str | None = Field(default=None)
 
 class TopicUpdate(BaseModel):
-    name: str
-    description: str | None = None
+    name: str | None = Field(default=None, min_length=1, max_length=100)
+    description: str | None = Field(default=None)
 
-@router.get("")
+class TopicRead(BaseModel):
+    id: int
+    user_id: int
+    name: str
+    description: str | None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+@router.get("", response_model=list[TopicRead])
 def get_topics():
     with engine.connect() as connection:
-        result = connection.execute(
-            text("SELECT id, user_id, name, description, created_at FROM topics ORDER BY id")
-        )
+        query = select(topics_table).order_by(topics_table.c.id)
+        result = connection.execute(query)
         topics = result.mappings().all()
         return [dict(topic) for topic in topics]
     
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=TopicRead, status_code=status.HTTP_201_CREATED)
 def create_topic(topic: TopicCreate):
     with engine.begin() as connection:
-        result = connection.execute(
-            text("""
-                INSERT INTO topics (user_id, name, description)
-                VALUES (:user_id, :name, :description)
-                RETURNING id, user_id, name, description, created_at
-            """),
-            {
-                "user_id": topic.user_id,
-                "name": topic.name,
-                "description": topic.description,
-            }
+        query = (
+            insert(topics_table)
+            .values(
+                user_id=topic.user_id,
+                name=topic.name,
+                description=topic.description,
+            )
+            .returning(
+                topics_table.c.id,
+                topics_table.c.user_id,
+                topics_table.c.name,
+                topics_table.c.description,
+                topics_table.c.created_at,
+            )
         )
+        result = connection.execute(query)
         created_topic = result.mappings().one()
         return dict(created_topic)
     
-@router.get("/{topic_id}")
+@router.get("/{topic_id}", response_model=TopicRead)
 def get_topic(topic_id: int):
     with engine.connect() as connection:
-        result = connection.execute(
-            text("SELECT id, user_id, name, description, created_at FROM topics WHERE id = :id"),
-            {"id": topic_id}
-        )
+        query = select(topics_table).where(topics_table.c.id == topic_id)
+        result = connection.execute(query)
         topic = result.mappings().first()
         
         if topic is None:
@@ -58,23 +81,28 @@ def get_topic(topic_id: int):
             
         return dict(topic)
 
-@router.put("/{topic_id}")
+@router.patch("/{topic_id}", response_model=TopicRead)
 def update_topic(topic_id: int, topic: TopicUpdate):
-    with engine.begin() as connection:
-        result = connection.execute(
-            text("""
-                UPDATE topics
-                SET name = :name,
-                    description = :description
-                WHERE id = :id
-                RETURNING id, user_id, name, description, created_at
-            """),
-            {
-                "id": topic_id,
-                "name": topic.name,
-                "description": topic.description,
-            }
+    update_data = topic.model_dump(exclude_unset=True)
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+        
+    query = (
+        update(topics_table)
+        .where(topics_table.c.id == topic_id)
+        .values(**update_data)
+        .returning(
+            topics_table.c.id,
+            topics_table.c.user_id,
+            topics_table.c.name,
+            topics_table.c.description,
+            topics_table.c.created_at,
         )
+    )
+    
+    with engine.begin() as connection:
+        result = connection.execute(query)
         updated_topic = result.mappings().first()
         
         if updated_topic is None:
@@ -84,15 +112,20 @@ def update_topic(topic_id: int, topic: TopicUpdate):
     
 @router.delete("/{topic_id}")
 def delete_topic(topic_id: int):
-    with engine.begin() as connection:
-        result = connection.execute(
-            text("""
-                DELETE FROM topics
-                WHERE id = :id
-                RETURNING id, user_id, name, description, created_at
-            """),
-            {"id": topic_id}
+    query = (
+        delete(topics_table)
+        .where(topics_table.c.id == topic_id)
+        .returning(
+            topics_table.c.id,
+            topics_table.c.user_id,
+            topics_table.c.name,
+            topics_table.c.description,
+            topics_table.c.created_at,
         )
+    )
+    
+    with engine.begin() as connection:
+        result = connection.execute(query)
         deleted_topic = result.mappings().first()
         
         if deleted_topic is None:
