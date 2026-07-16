@@ -53,6 +53,10 @@ function App() {
   const [isCreatingTopic, setIsCreatingTopic] = useState(false)
   const [topicFormMessage, setTopicFormMessage] = useState<string | null>(null)
 
+  const [editingTopicId, setEditingTopicId] = useState<number | null>(null)
+  const [editingTopicName, setEditingTopicName] = useState('')
+  const [editingTopicDescription, setEditingTopicDescription] = useState('')
+
   const [learningLogs, setLearningLogs] = useState<LearningLog[]>([])
   const [logUserId, setLogUserId] = useState('1')
   const [logTopicId, setLogTopicId] = useState('1')
@@ -198,6 +202,78 @@ function App() {
       )
     } finally {
       setIsCreatingTopic(false)
+    }
+  }
+
+  function startEditingTopic(topic: Topic) {
+    setEditingTopicId(topic.id)
+    setEditingTopicName(topic.name)
+    setEditingTopicDescription(topic.description ?? '')
+    setTopicFormMessage(null)
+  }
+  
+  function cancelEditingTopic() {
+    setEditingTopicId(null)
+    setEditingTopicName('')
+    setEditingTopicDescription('')
+  }
+  
+  async function handleUpdateTopic(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+  
+    if (editingTopicId === null) {
+      return
+    }
+  
+    try {
+      const response = await fetch(`${API_BASE_URL}/topics/${editingTopicId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: editingTopicName,
+          description: editingTopicDescription || null,
+        }),
+      })
+  
+      if (!response.ok) {
+        throw new Error('Topic could not be updated')
+      }
+  
+      const updatedTopic = (await response.json()) as Topic
+      setTopics((currentTopics) =>
+        currentTopics.map((topic) =>
+          topic.id === updatedTopic.id ? updatedTopic : topic,
+        ),
+      )
+      cancelEditingTopic()
+      setTopicFormMessage('Topic updated successfully.')
+    } catch (error) {
+      setTopicFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
+    }
+  }
+  
+  async function handleDeleteTopic(topicId: number) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/topics/${topicId}`, {
+        method: 'DELETE',
+      })
+  
+      if (!response.ok) {
+        throw new Error('Topic could not be deleted')
+      }
+  
+      setTopics((currentTopics) =>
+        currentTopics.filter((topic) => topic.id !== topicId),
+      )
+      setTopicFormMessage('Topic deleted successfully.')
+    } catch (error) {
+      setTopicFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
     }
   }
 
@@ -425,9 +501,53 @@ function App() {
           <div className="data-list">
             {topics.map((topic) => (
               <article className="data-card" key={topic.id}>
-                <h3>{topic.name}</h3>
-                <p>{topic.description ?? 'No description provided.'}</p>
-                <span>User #{topic.user_id}</span>
+                {editingTopicId === topic.id ? (
+                  <form className="edit-form" onSubmit={handleUpdateTopic}>
+                    <label>
+                      Topic name
+                      <input
+                        type="text"
+                        maxLength={100}
+                        value={editingTopicName}
+                        onChange={(event) => setEditingTopicName(event.target.value)}
+                        required
+                      />
+                    </label>
+
+                    <label>
+                      Description
+                      <textarea
+                        value={editingTopicDescription}
+                        onChange={(event) =>
+                          setEditingTopicDescription(event.target.value)
+                        }
+                        rows={3}
+                      />
+                    </label>
+
+                    <div className="card-actions">
+                      <button type="submit">Save</button>
+                      <button type="button" onClick={cancelEditingTopic}>
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <h3>{topic.name}</h3>
+                    <p>{topic.description ?? 'No description provided.'}</p>
+                    <span>User #{topic.user_id}</span>
+
+                    <div className="card-actions">
+                      <button type="button" onClick={() => startEditingTopic(topic)}>
+                        Edit
+                      </button>
+                      <button type="button" onClick={() => handleDeleteTopic(topic.id)}>
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
               </article>
             ))}
           </div>
