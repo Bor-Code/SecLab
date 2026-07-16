@@ -83,58 +83,70 @@ h1 {
 }
 
 .status-text {
-  margin: 0;
+  margin: 0 0 16px;
   color: #64748b;
 }
 
 .error-text {
-  margin: 0;
+  margin: 0 0 16px;
   color: #b91c1c;
 }
 
-.topic-list {
+.data-list {
   display: grid;
   gap: 12px;
 }
 
-.topic-card {
+.data-card {
   padding: 16px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: #f8fafc;
 }
 
-.topic-card h3 {
+.data-card h3 {
   margin: 0 0 8px;
 }
 
-.topic-card p {
+.data-card p {
   margin: 0 0 12px;
   color: #475569;
 }
 
-.topic-card span {
+.card-meta {
+  display: flex;
+  gap: 16px;
+}
+
+.data-card span {
   font-size: 14px;
   color: #64748b;
 }
 
-.topic-form {
+.data-form {
   display: grid;
-  grid-template-columns: 120px 1fr 1fr auto;
   gap: 12px;
   align-items: end;
   margin-bottom: 20px;
 }
 
-.topic-form label {
+.topic-form {
+  grid-template-columns: 100px 1fr 1fr auto;
+}
+
+.log-form {
+  grid-template-columns: 80px 80px 1fr 1fr auto;
+}
+
+.data-form label {
   display: grid;
   gap: 6px;
   font-size: 14px;
   color: #475569;
 }
 
-.topic-form input,
-.topic-form textarea {
+.data-form input,
+.data-form textarea {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #cbd5e1;
@@ -142,7 +154,7 @@ h1 {
   font: inherit;
 }
 
-.topic-form button {
+.data-form button {
   padding: 11px 16px;
   border: 0;
   border-radius: 6px;
@@ -153,7 +165,7 @@ h1 {
   cursor: pointer;
 }
 
-.topic-form button:disabled {
+.data-form button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -171,7 +183,8 @@ h1 {
     font-size: 34px;
   }
 
-  .topic-form {
+  .topic-form,
+  .log-form {
     grid-template-columns: 1fr;
   }
 }
