@@ -1,5 +1,6 @@
+from datetime import datetime
 from fastapi import APIRouter, status, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 from app.database import engine
 
@@ -9,14 +10,23 @@ router = APIRouter(
 )
 
 class UserCreate(BaseModel):
-    username: str
-    email: str
+    username: str = Field(..., min_length=1, max_length=50)
+    email: str = Field(..., min_length=1, max_length=255)
 
 class UserUpdate(BaseModel):
+    username: str | None = Field(default=None, min_length=1, max_length=50)
+    email: str | None = Field(default=None, min_length=1, max_length=255)
+
+class UserRead(BaseModel):
+    id: int
     username: str
     email: str
+    created_at: datetime
 
-@router.get("")
+    class Config:
+        from_attributes = True
+
+@router.get("", response_model=list[UserRead])
 def get_users():
     with engine.connect() as connection:
         result = connection.execute(
@@ -25,7 +35,7 @@ def get_users():
         users = result.mappings().all()
         return [dict(user) for user in users]
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 def create_user(user: UserCreate):
     with engine.begin() as connection:
         result = connection.execute(
@@ -42,7 +52,7 @@ def create_user(user: UserCreate):
         created_user = result.mappings().first()
         return dict(created_user)
 
-@router.get("/{user_id}")
+@router.get("/{user_id}", response_model=UserRead)
 def get_user(user_id: int):
     with engine.connect() as connection:
         result = connection.execute(
@@ -52,9 +62,10 @@ def get_user(user_id: int):
         user = result.mappings().first()
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
+            
         return dict(user)
 
-@router.put("/{user_id}")
+@router.put("/{user_id}", response_model=UserRead)
 def update_user(user_id: int, user: UserUpdate):
     with engine.begin() as connection:
         result = connection.execute(
