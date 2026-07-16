@@ -19,6 +19,17 @@ type LearningLog = {
   created_at: string
 }
 
+type Resource = {
+  id: number
+  user_id: number
+  topic_id: number
+  title: string
+  url: string
+  resource_type: string
+  notes: string | null
+  created_at: string
+}
+
 const API_BASE_URL = 'http://127.0.0.1:8000'
 
 function App() {
@@ -36,6 +47,16 @@ function App() {
   const [logNotes, setLogNotes] = useState('')
   const [isCreatingLog, setIsCreatingLog] = useState(false)
   const [logFormMessage, setLogFormMessage] = useState<string | null>(null)
+
+  const [resources, setResources] = useState<Resource[]>([])
+  const [resourceUserId, setResourceUserId] = useState('1')
+  const [resourceTopicId, setResourceTopicId] = useState('1')
+  const [resourceTitle, setResourceTitle] = useState('')
+  const [resourceUrl, setResourceUrl] = useState('')
+  const [resourceType, setResourceType] = useState('documentation')
+  const [resourceNotes, setResourceNotes] = useState('')
+  const [isCreatingResource, setIsCreatingResource] = useState(false)
+  const [resourceFormMessage, setResourceFormMessage] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadTopics() {
@@ -64,8 +85,22 @@ function App() {
       }
     }
 
+    async function loadResources() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/resources`)
+        if (!response.ok) {
+          throw new Error('Resources could not be loaded')
+        }
+        const data = (await response.json()) as Resource[]
+        setResources(data)
+      } catch (error) {
+        console.error('Resources could not be loaded:', error)
+      }
+    }
+
     loadTopics()
     loadLearningLogs()
+    loadResources()
   }, [])
 
   async function handleCreateTopic(event: React.FormEvent<HTMLFormElement>) {
@@ -104,9 +139,7 @@ function App() {
     }
   }
 
-  async function handleCreateLearningLog(
-    event: React.FormEvent<HTMLFormElement>,
-  ) {
+  async function handleCreateLearningLog(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsCreatingLog(true)
     setLogFormMessage(null)
@@ -143,6 +176,46 @@ function App() {
     }
   }
 
+  async function handleCreateResource(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setIsCreatingResource(true)
+    setResourceFormMessage(null)
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/resources`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: Number(resourceUserId),
+          topic_id: Number(resourceTopicId),
+          title: resourceTitle,
+          url: resourceUrl,
+          resource_type: resourceType,
+          notes: resourceNotes || null,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Resource could not be created')
+      }
+
+      const createdResource = (await response.json()) as Resource
+      setResources((currentResources) => [...currentResources, createdResource])
+      setResourceTitle('')
+      setResourceUrl('')
+      setResourceNotes('')
+      setResourceFormMessage('Resource created successfully.')
+    } catch (error) {
+      setResourceFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
+    } finally {
+      setIsCreatingResource(false)
+    }
+  }
+
   return (
     <main className="app-shell">
       <section className="hero-section">
@@ -175,7 +248,7 @@ function App() {
 
         <article className="summary-card">
           <span>Resources</span>
-          <strong>Ready</strong>
+          <strong>{resources.length}</strong>
           <p>Store useful links and references.</p>
         </article>
       </section>
@@ -312,6 +385,105 @@ function App() {
                   <span>User #{log.user_id}</span>
                   <span>Topic #{log.topic_id}</span>
                   <span>{log.study_date}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="panel">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Resources</p>
+            <h2>Helpful links</h2>
+          </div>
+        </div>
+
+        <form className="data-form resource-form" onSubmit={handleCreateResource}>
+          <label>
+            User ID
+            <input
+              type="number"
+              min="1"
+              value={resourceUserId}
+              onChange={(event) => setResourceUserId(event.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            Topic ID
+            <input
+              type="number"
+              min="1"
+              value={resourceTopicId}
+              onChange={(event) => setResourceTopicId(event.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            Title
+            <input
+              type="text"
+              maxLength={150}
+              value={resourceTitle}
+              onChange={(event) => setResourceTitle(event.target.value)}
+              required
+            />
+          </label>
+          
+          <label>
+            URL
+            <input
+              type="url"
+              value={resourceUrl}
+              onChange={(event) => setResourceUrl(event.target.value)}
+              required
+            />
+          </label>
+          
+          <label>
+            Type
+            <input
+              type="text"
+              maxLength={50}
+              value={resourceType}
+              onChange={(event) => setResourceType(event.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            Notes
+            <textarea
+              value={resourceNotes}
+              onChange={(event) => setResourceNotes(event.target.value)}
+              rows={3}
+            />
+          </label>
+
+          <button type="submit" disabled={isCreatingResource}>
+            {isCreatingResource ? 'Creating...' : 'Create resource'}
+          </button>
+        </form>
+
+        {resourceFormMessage && <p className="status-text">{resourceFormMessage}</p>}
+
+        {resources.length === 0 ? (
+          <p className="status-text">No resources found.</p>
+        ) : (
+          <div className="data-list">
+            {resources.map((resource) => (
+              <article className="data-card" key={resource.id}>
+                <h3>{resource.title}</h3>
+                <p><a href={resource.url} target="_blank" rel="noreferrer">{resource.url}</a></p>
+                <p>{resource.notes ?? 'No notes provided.'}</p>
+                <div className="card-meta">
+                  <span>Type: {resource.resource_type}</span>
+                  <span>User #{resource.user_id}</span>
+                  <span>Topic #{resource.topic_id}</span>
                 </div>
               </article>
             ))}

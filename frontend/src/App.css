@@ -138,6 +138,10 @@ h1 {
   grid-template-columns: 80px 80px 1fr 1fr auto;
 }
 
+.resource-form {
+  grid-template-columns: 80px 80px 1fr 1fr 140px 1fr auto;
+}
+
 .data-form label {
   display: grid;
   gap: 6px;
@@ -184,7 +188,8 @@ h1 {
   }
 
   .topic-form,
-  .log-form {
+  .log-form,
+  .resource-form {
     grid-template-columns: 1fr;
   }
 }
