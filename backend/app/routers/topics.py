@@ -69,22 +69,25 @@ def get_topic(topic_id: int):
             
         return dict(topic)
 
-@router.put("/{topic_id}", response_model=TopicRead)
+@router.patch("/{topic_id}", response_model=TopicRead)
 def update_topic(topic_id: int, topic: TopicUpdate):
+    update_data = topic.model_dump(exclude_unset=True)
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+        
+    set_clauses = [f"{key} = :{key}" for key in update_data.keys()]
+    set_query = ",\n                ".join(set_clauses)
+    
     with engine.begin() as connection:
         result = connection.execute(
-            text("""
+            text(f"""
                 UPDATE topics
-                SET name = :name,
-                    description = :description
+                SET {set_query}
                 WHERE id = :id
                 RETURNING id, user_id, name, description, created_at
             """),
-            {
-                "id": topic_id,
-                "name": topic.name,
-                "description": topic.description,
-            }
+            {**update_data, "id": topic_id}
         )
         updated_topic = result.mappings().first()
         

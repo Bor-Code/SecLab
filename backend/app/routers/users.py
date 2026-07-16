@@ -65,26 +65,31 @@ def get_user(user_id: int):
             
         return dict(user)
 
-@router.put("/{user_id}", response_model=UserRead)
+@router.patch("/{user_id}", response_model=UserRead)
 def update_user(user_id: int, user: UserUpdate):
+    update_data = user.model_dump(exclude_unset=True)
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+        
+    set_clauses = [f"{key} = :{key}" for key in update_data.keys()]
+    set_query = ",\n                ".join(set_clauses)
+    
     with engine.begin() as connection:
         result = connection.execute(
-            text("""
+            text(f"""
                 UPDATE users
-                SET username = :username,
-                    email = :email
+                SET {set_query}
                 WHERE id = :user_id
                 RETURNING *
             """),
-            {
-                "user_id": user_id,
-                "username": user.username,
-                "email": user.email,
-            }
+            {**update_data, "user_id": user_id}
         )
         updated_user = result.mappings().first()
+        
         if updated_user is None:
             raise HTTPException(status_code=404, detail="User not found")
+            
         return dict(updated_user)
 
 @router.delete("/{user_id}")
@@ -99,8 +104,10 @@ def delete_user(user_id: int):
             {"user_id": user_id}
         )
         deleted_user = result.mappings().first()
+        
         if deleted_user is None:
             raise HTTPException(status_code=404, detail="User not found")
+            
         return {
             "message": "User deleted successfully",
             "deleted_user": dict(deleted_user)

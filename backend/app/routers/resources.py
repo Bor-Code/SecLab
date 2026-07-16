@@ -78,30 +78,31 @@ def get_resource(resource_id: int):
             raise HTTPException(status_code=404, detail="Resource not found")
         return dict(resource)
 
-@router.put("/{resource_id}", response_model=ResourceRead)
+@router.patch("/{resource_id}", response_model=ResourceRead)
 def update_resource(resource_id: int, resource: ResourceUpdate):
+    update_data = resource.model_dump(exclude_unset=True)
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+        
+    set_clauses = [f"{key} = :{key}" for key in update_data.keys()]
+    set_query = ",\n                ".join(set_clauses)
+    
     with engine.begin() as connection:
         result = connection.execute(
-            text("""
+            text(f"""
                 UPDATE resources
-                SET title = :title,
-                    url = :url,
-                    resource_type = :resource_type,
-                    notes = :notes
+                SET {set_query}
                 WHERE id = :resource_id
                 RETURNING *
             """),
-            {
-                "resource_id": resource_id,
-                "title": resource.title,
-                "url": resource.url,
-                "resource_type": resource.resource_type,
-                "notes": resource.notes,
-            }
+            {**update_data, "resource_id": resource_id}
         )
         updated_resource = result.mappings().first()
+        
         if updated_resource is None:
             raise HTTPException(status_code=404, detail="Resource not found")
+            
         return dict(updated_resource)
 
 @router.delete("/{resource_id}")

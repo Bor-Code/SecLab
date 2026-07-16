@@ -71,26 +71,31 @@ def get_learning_log(log_id: int):
             raise HTTPException(status_code=404, detail="Learning log not found")
         return dict(log)
 
-@router.put("/{log_id}", response_model=LearningLogRead)
+@router.patch("/{log_id}", response_model=LearningLogRead)
 def update_learning_log(log_id: int, log: LearningLogUpdate):
+    update_data = log.model_dump(exclude_unset=True)
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+        
+    set_clauses = [f"{key} = :{key}" for key in update_data.keys()]
+    set_query = ",\n                ".join(set_clauses)
+    
     with engine.begin() as connection:
         result = connection.execute(
-            text("""
+            text(f"""
                 UPDATE learning_logs
-                SET title = :title,
-                    notes = :notes
+                SET {set_query}
                 WHERE id = :log_id
                 RETURNING *
             """),
-            {
-                "log_id": log_id,
-                "title": log.title,
-                "notes": log.notes,
-            }
+            {**update_data, "log_id": log_id}
         )
         updated_log = result.mappings().first()
+        
         if updated_log is None:
             raise HTTPException(status_code=404, detail="Learning log not found")
+            
         return dict(updated_log)
 
 @router.delete("/{log_id}")
