@@ -130,6 +130,10 @@ h1 {
   margin-bottom: 20px;
 }
 
+.user-form {
+  grid-template-columns: 1fr 1fr auto;
+}
+
 .topic-form {
   grid-template-columns: 100px 1fr 1fr auto;
 }
@@ -189,7 +193,8 @@ h1 {
 
   .topic-form,
   .log-form,
-  .resource-form {
+  .resource-form,
+  .user-form {
     grid-template-columns: 1fr;
   }
 }

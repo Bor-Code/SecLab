@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 
+type User = {
+  id: number
+  username: string
+  email: string
+  created_at: string
+}
+
 type Topic = {
   id: number
   user_id: number
@@ -33,6 +40,12 @@ type Resource = {
 const API_BASE_URL = 'http://127.0.0.1:8000'
 
 function App() {
+  const [users, setUsers] = useState<User[]>([])
+  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
+  const [isCreatingUser, setIsCreatingUser] = useState(false)
+  const [userFormMessage, setUserFormMessage] = useState<string | null>(null)
+
   const [topics, setTopics] = useState<Topic[]>([])
   const [topicUserId, setTopicUserId] = useState('1')
   const [topicName, setTopicName] = useState('')
@@ -59,6 +72,19 @@ function App() {
   const [resourceFormMessage, setResourceFormMessage] = useState<string | null>(null)
 
   useEffect(() => {
+    async function loadUsers() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/users`)
+        if (!response.ok) {
+          throw new Error('Users could not be loaded')
+        }
+        const data = (await response.json()) as User[]
+        setUsers(data)
+      } catch (error) {
+        console.error('Users could not be loaded:', error)
+      }
+    }
+
     async function loadTopics() {
       try {
         const response = await fetch(`${API_BASE_URL}/topics`)
@@ -98,10 +124,46 @@ function App() {
       }
     }
 
+    loadUsers()
     loadTopics()
     loadLearningLogs()
     loadResources()
   }, [])
+
+  async function handleCreateUser(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setIsCreatingUser(true)
+    setUserFormMessage(null)
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          email,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('User could not be created')
+      }
+
+      const createdUser = (await response.json()) as User
+      setUsers((currentUsers) => [...currentUsers, createdUser])
+      setUsername('')
+      setEmail('')
+      setUserFormMessage('User created successfully.')
+    } catch (error) {
+      setUserFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
+    } finally {
+      setIsCreatingUser(false)
+    }
+  }
 
   async function handleCreateTopic(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -230,7 +292,7 @@ function App() {
       <section className="summary-grid">
         <article className="summary-card">
           <span>Users</span>
-          <strong>Ready</strong>
+          <strong>{users.length}</strong>
           <p>Create and list application users.</p>
         </article>
 
@@ -251,6 +313,59 @@ function App() {
           <strong>{resources.length}</strong>
           <p>Store useful links and references.</p>
         </article>
+      </section>
+
+      <section className="panel">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Users</p>
+            <h2>Application users</h2>
+          </div>
+        </div>
+
+        <form className="data-form user-form" onSubmit={handleCreateUser}>
+          <label>
+            Username
+            <input
+              type="text"
+              maxLength={50}
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            Email
+            <input
+              type="email"
+              maxLength={255}
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+          </label>
+
+          <button type="submit" disabled={isCreatingUser}>
+            {isCreatingUser ? 'Creating...' : 'Create user'}
+          </button>
+        </form>
+
+        {userFormMessage && <p className="status-text">{userFormMessage}</p>}
+
+        {users.length === 0 ? (
+          <p className="status-text">No users found.</p>
+        ) : (
+          <div className="data-list">
+            {users.map((user) => (
+              <article className="data-card" key={user.id}>
+                <h3>{user.username}</h3>
+                <p>{user.email}</p>
+                <span>User #{user.id}</span>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="panel">
