@@ -13,32 +13,58 @@ const API_BASE_URL = 'http://127.0.0.1:8000'
 
 function App() {
   const [topics, setTopics] = useState<Topic[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  
+  const [topicUserId, setTopicUserId] = useState('1')
+  const [topicName, setTopicName] = useState('')
+  const [topicDescription, setTopicDescription] = useState('')
 
   useEffect(() => {
     async function loadTopics() {
       try {
         const response = await fetch(`${API_BASE_URL}/topics`)
-
-        if (!response.ok) {
-          throw new Error('Topics could not be loaded')
-        }
-
-        const data = (await response.json()) as Topic[]
+        const data = await response.json()
         setTopics(data)
       } catch (error) {
-        setErrorMessage(
-          error instanceof Error ? error.message : 'Unexpected error',
-        )
-      } finally {
-        console.log('topics request finished')
-        setIsLoading(false)
+        console.error("Backend'den veriler çekilemedi:", error)
       }
     }
 
     loadTopics()
   }, [])
+
+  async function handleCreateTopic(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/topics`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: Number(topicUserId),
+          name: topicName,
+          description: topicDescription || null,
+        }),
+      })
+
+      if (response.ok) {
+        const createdTopic = await response.json()
+        
+        setTopics([...topics, createdTopic])
+        
+        setTopicName('')
+        setTopicDescription('')
+        alert("Konu başarıyla oluşturuldu!")
+      } else {
+        alert("Konu oluşturulurken backend bir hata döndürdü.")
+      }
+
+    } catch (error) {
+      console.error("İstek atılırken hata oluştu:", error)
+      alert("Beklenmeyen bir hata oluştu.")
+    }
+  }
 
   return (
     <main className="app-shell">
@@ -85,25 +111,50 @@ function App() {
           </div>
         </div>
 
-        {isLoading && <p className="status-text">Loading topics...</p>}
+        <form className="topic-form" onSubmit={handleCreateTopic}>
+          <label>
+            User ID
+            <input
+              type="number"
+              min="1"
+              value={topicUserId}
+              onChange={(event) => setTopicUserId(event.target.value)}
+              required
+            />
+          </label>
 
-        {errorMessage && <p className="error-text">{errorMessage}</p>}
+          <label>
+            Topic name
+            <input
+              type="text"
+              maxLength={100}
+              value={topicName}
+              onChange={(event) => setTopicName(event.target.value)}
+              required
+            />
+          </label>
 
-        {!isLoading && !errorMessage && topics.length === 0 && (
-          <p className="status-text">No topics found.</p>
-        )}
+          <label>
+            Description
+            <textarea
+              value={topicDescription}
+              onChange={(event) => setTopicDescription(event.target.value)}
+              rows={3}
+            />
+          </label>
 
-        {!isLoading && !errorMessage && topics.length > 0 && (
-          <div className="topic-list">
-            {topics.map((topic) => (
-              <article className="topic-card" key={topic.id}>
-                <h3>{topic.name}</h3>
-                <p>{topic.description ?? 'No description provided.'}</p>
-                <span>User #{topic.user_id}</span>
-              </article>
-            ))}
-          </div>
-        )}
+          <button type="submit">Create topic</button>
+        </form>
+
+        <div className="topic-list">
+          {topics.map((topic) => (
+            <article className="topic-card" key={topic.id}>
+              <h3>{topic.name}</h3>
+              <p>{topic.description ?? 'No description provided.'}</p>
+              <span>User #{topic.user_id}</span>
+            </article>
+          ))}
+        </div>
       </section>
     </main>
   )

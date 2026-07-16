@@ -118,6 +118,46 @@ h1 {
   color: #64748b;
 }
 
+.topic-form {
+  display: grid;
+  grid-template-columns: 120px 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 20px;
+}
+
+.topic-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: #475569;
+}
+
+.topic-form input,
+.topic-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.topic-form button {
+  padding: 11px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.topic-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 @media (max-width: 900px) {
   .app-shell {
     padding: 24px;
@@ -129,5 +169,9 @@ h1 {
 
   h1 {
     font-size: 34px;
+  }
+
+  .topic-form {
+    grid-template-columns: 1fr;
   }
 }
