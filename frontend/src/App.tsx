@@ -59,13 +59,24 @@ function App() {
   const [resourceType, setResourceType] = useState('documentation')
   const [resourceNotes, setResourceNotes] = useState('')
   const [isCreatingResource, setIsCreatingResource] = useState(false)
-  const [resourceFormMessage, setResourceFormMessage] = useState<string | null>(null)
+  const [resourceFormMessage, setResourceFormMessage] = useState<string | null>(
+    null,
+  )
 
-  const [editingResourceId, setEditingResourceId] = useState<number | null>(null)
+  const [editingResourceId, setEditingResourceId] = useState<number | null>(
+    null,
+  )
   const [editingResourceTitle, setEditingResourceTitle] = useState('')
   const [editingResourceUrl, setEditingResourceUrl] = useState('')
   const [editingResourceType, setEditingResourceType] = useState('')
   const [editingResourceNotes, setEditingResourceNotes] = useState('')
+
+  const [topicSearch, setTopicSearch] = useState('')
+  const [selectedLogTopicFilter, setSelectedLogTopicFilter] = useState('all')
+  const [selectedResourceTopicFilter, setSelectedResourceTopicFilter] =
+    useState('all')
+  const [selectedResourceTypeFilter, setSelectedResourceTypeFilter] =
+    useState('all')
 
   useEffect(() => {
     async function loadUsers() {
@@ -110,6 +121,84 @@ function App() {
     loadResources()
   }, [])
 
+  useEffect(() => {
+    const firstUserId = users[0]?.id.toString()
+
+    if (!firstUserId) {
+      return
+    }
+
+    if (!users.some((user) => user.id.toString() === topicUserId)) {
+      setTopicUserId(firstUserId)
+    }
+
+    if (!users.some((user) => user.id.toString() === logUserId)) {
+      setLogUserId(firstUserId)
+    }
+
+    if (!users.some((user) => user.id.toString() === resourceUserId)) {
+      setResourceUserId(firstUserId)
+    }
+  }, [users, topicUserId, logUserId, resourceUserId])
+
+  useEffect(() => {
+    const firstTopicId = topics[0]?.id.toString()
+
+    if (!firstTopicId) {
+      return
+    }
+
+    if (!topics.some((topic) => topic.id.toString() === logTopicId)) {
+      setLogTopicId(firstTopicId)
+    }
+
+    if (!topics.some((topic) => topic.id.toString() === resourceTopicId)) {
+      setResourceTopicId(firstTopicId)
+    }
+  }, [topics, logTopicId, resourceTopicId])
+
+  const userNameById = new Map(users.map((user) => [user.id, user.username]))
+  const topicNameById = new Map(topics.map((topic) => [topic.id, topic.name]))
+
+  const hasUsers = users.length > 0
+  const hasTopics = topics.length > 0
+
+  const filteredTopics = topics.filter((topic) =>
+    topic.name.toLowerCase().includes(topicSearch.toLowerCase()),
+  )
+
+  const filteredLearningLogs = learningLogs.filter((log) => {
+    if (selectedLogTopicFilter === 'all') {
+      return true
+    }
+
+    return log.topic_id === Number(selectedLogTopicFilter)
+  })
+
+  const resourceTypes = Array.from(
+    new Set(resources.map((resource) => resource.resource_type)),
+  ).sort()
+
+  const filteredResources = resources.filter((resource) => {
+    const matchesTopic =
+      selectedResourceTopicFilter === 'all' ||
+      resource.topic_id === Number(selectedResourceTopicFilter)
+
+    const matchesType =
+      selectedResourceTypeFilter === 'all' ||
+      resource.resource_type === selectedResourceTypeFilter
+
+    return matchesTopic && matchesType
+  })
+
+  function getUserLabel(userId: number) {
+    return userNameById.get(userId) ?? `User #${userId}`
+  }
+
+  function getTopicLabel(topicId: number) {
+    return topicNameById.get(topicId) ?? `Topic #${topicId}`
+  }
+
   async function handleCreateUser(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsCreatingUser(true)
@@ -126,7 +215,9 @@ function App() {
       setEmail('')
       setUserFormMessage('User created successfully.')
     } catch (error) {
-      setUserFormMessage(error instanceof Error ? error.message : 'Unexpected error')
+      setUserFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
     } finally {
       setIsCreatingUser(false)
     }
@@ -149,7 +240,9 @@ function App() {
       setTopicDescription('')
       setTopicFormMessage('Topic created successfully.')
     } catch (error) {
-      setTopicFormMessage(error instanceof Error ? error.message : 'Unexpected error')
+      setTopicFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
     } finally {
       setIsCreatingTopic(false)
     }
@@ -171,7 +264,9 @@ function App() {
   async function handleUpdateTopic(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (editingTopicId === null) return
+    if (editingTopicId === null) {
+      return
+    }
 
     try {
       const updatedTopic = await updateTopic(editingTopicId, {
@@ -187,11 +282,17 @@ function App() {
       cancelEditingTopic()
       setTopicFormMessage('Topic updated successfully.')
     } catch (error) {
-      setTopicFormMessage(error instanceof Error ? error.message : 'Unexpected error')
+      setTopicFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
     }
   }
 
   async function handleDeleteTopic(topicId: number) {
+    if (!window.confirm('Delete this topic?')) {
+      return
+    }
+
     try {
       await deleteTopic(topicId)
 
@@ -200,7 +301,9 @@ function App() {
       )
       setTopicFormMessage('Topic deleted successfully.')
     } catch (error) {
-      setTopicFormMessage(error instanceof Error ? error.message : 'Unexpected error')
+      setTopicFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
     }
   }
 
@@ -222,7 +325,9 @@ function App() {
       setLogNotes('')
       setLogFormMessage('Learning log created successfully.')
     } catch (error) {
-      setLogFormMessage(error instanceof Error ? error.message : 'Unexpected error')
+      setLogFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
     } finally {
       setIsCreatingLog(false)
     }
@@ -244,7 +349,9 @@ function App() {
   async function handleUpdateLearningLog(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (editingLogId === null) return
+    if (editingLogId === null) {
+      return
+    }
 
     try {
       const updatedLog = await updateLearningLog(editingLogId, {
@@ -258,18 +365,28 @@ function App() {
       cancelEditingLog()
       setLogFormMessage('Learning log updated successfully.')
     } catch (error) {
-      setLogFormMessage(error instanceof Error ? error.message : 'Unexpected error')
+      setLogFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
     }
   }
 
   async function handleDeleteLearningLog(logId: number) {
+    if (!window.confirm('Delete this learning log?')) {
+      return
+    }
+
     try {
       await deleteLearningLog(logId)
 
-      setLearningLogs((currentLogs) => currentLogs.filter((log) => log.id !== logId))
+      setLearningLogs((currentLogs) =>
+        currentLogs.filter((log) => log.id !== logId),
+      )
       setLogFormMessage('Learning log deleted successfully.')
     } catch (error) {
-      setLogFormMessage(error instanceof Error ? error.message : 'Unexpected error')
+      setLogFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
     }
   }
 
@@ -294,7 +411,9 @@ function App() {
       setResourceNotes('')
       setResourceFormMessage('Resource created successfully.')
     } catch (error) {
-      setResourceFormMessage(error instanceof Error ? error.message : 'Unexpected error')
+      setResourceFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
     } finally {
       setIsCreatingResource(false)
     }
@@ -320,7 +439,9 @@ function App() {
   async function handleUpdateResource(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (editingResourceId === null) return
+    if (editingResourceId === null) {
+      return
+    }
 
     try {
       const updatedResource = await updateResource(editingResourceId, {
@@ -338,11 +459,17 @@ function App() {
       cancelEditingResource()
       setResourceFormMessage('Resource updated successfully.')
     } catch (error) {
-      setResourceFormMessage(error instanceof Error ? error.message : 'Unexpected error')
+      setResourceFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
     }
   }
 
   async function handleDeleteResource(resourceId: number) {
+    if (!window.confirm('Delete this resource?')) {
+      return
+    }
+
     try {
       await deleteResource(resourceId)
 
@@ -351,7 +478,9 @@ function App() {
       )
       setResourceFormMessage('Resource deleted successfully.')
     } catch (error) {
-      setResourceFormMessage(error instanceof Error ? error.message : 'Unexpected error')
+      setResourceFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
     }
   }
 
@@ -489,18 +618,32 @@ function App() {
             />
           </label>
 
-          <button type="submit" disabled={isCreatingTopic}>
+          <button type="submit" disabled={isCreatingTopic || !hasUsers}>
             {isCreatingTopic ? 'Creating...' : 'Create topic'}
           </button>
         </form>
 
+        {!hasUsers && (
+          <p className="status-text">Create a user before adding topics.</p>
+        )}
+
+        <label className="filter-control">
+          Search topics
+          <input
+            type="search"
+            value={topicSearch}
+            onChange={(event) => setTopicSearch(event.target.value)}
+            placeholder="Search by topic name"
+          />
+        </label>
+
         {topicFormMessage && <p className="status-text">{topicFormMessage}</p>}
 
-        {topics.length === 0 ? (
+        {filteredTopics.length === 0 ? (
           <p className="status-text">No topics found.</p>
         ) : (
           <div className="data-list">
-            {topics.map((topic) => (
+            {filteredTopics.map((topic) => (
               <article className="data-card" key={topic.id}>
                 {editingTopicId === topic.id ? (
                   <form className="edit-form" onSubmit={handleUpdateTopic}>
@@ -510,7 +653,9 @@ function App() {
                         type="text"
                         maxLength={100}
                         value={editingTopicName}
-                        onChange={(event) => setEditingTopicName(event.target.value)}
+                        onChange={(event) =>
+                          setEditingTopicName(event.target.value)
+                        }
                         required
                       />
                     </label>
@@ -537,13 +682,19 @@ function App() {
                   <>
                     <h3>{topic.name}</h3>
                     <p>{topic.description ?? 'No description provided.'}</p>
-                    <span>User #{topic.user_id}</span>
+                    <span>User: {getUserLabel(topic.user_id)}</span>
 
                     <div className="card-actions">
-                      <button type="button" onClick={() => startEditingTopic(topic)}>
+                      <button
+                        type="button"
+                        onClick={() => startEditingTopic(topic)}
+                      >
                         Edit
                       </button>
-                      <button type="button" onClick={() => handleDeleteTopic(topic.id)}>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTopic(topic.id)}
+                      >
                         Delete
                       </button>
                     </div>
@@ -614,18 +765,42 @@ function App() {
             />
           </label>
 
-          <button type="submit" disabled={isCreatingLog}>
+          <button
+            type="submit"
+            disabled={isCreatingLog || !hasUsers || !hasTopics}
+          >
             {isCreatingLog ? 'Creating...' : 'Create log'}
           </button>
         </form>
 
+        {(!hasUsers || !hasTopics) && (
+          <p className="status-text">
+            Create a user and topic before adding learning logs.
+          </p>
+        )}
+
+        <label className="filter-control">
+          Filter logs by topic
+          <select
+            value={selectedLogTopicFilter}
+            onChange={(event) => setSelectedLogTopicFilter(event.target.value)}
+          >
+            <option value="all">All topics</option>
+            {topics.map((topic) => (
+              <option key={topic.id} value={topic.id}>
+                {topic.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
         {logFormMessage && <p className="status-text">{logFormMessage}</p>}
 
-        {learningLogs.length === 0 ? (
+        {filteredLearningLogs.length === 0 ? (
           <p className="status-text">No learning logs found.</p>
         ) : (
           <div className="data-list">
-            {learningLogs.map((log) => (
+            {filteredLearningLogs.map((log) => (
               <article className="data-card" key={log.id}>
                 {editingLogId === log.id ? (
                   <form className="edit-form" onSubmit={handleUpdateLearningLog}>
@@ -635,7 +810,9 @@ function App() {
                         type="text"
                         maxLength={150}
                         value={editingLogTitle}
-                        onChange={(event) => setEditingLogTitle(event.target.value)}
+                        onChange={(event) =>
+                          setEditingLogTitle(event.target.value)
+                        }
                         required
                       />
                     </label>
@@ -661,8 +838,8 @@ function App() {
                     <h3>{log.title}</h3>
                     <p>{log.notes ?? 'No notes provided.'}</p>
                     <div className="card-meta">
-                      <span>User #{log.user_id}</span>
-                      <span>Topic #{log.topic_id}</span>
+                      <span>User: {getUserLabel(log.user_id)}</span>
+                      <span>Topic: {getTopicLabel(log.topic_id)}</span>
                       <span>{log.study_date}</span>
                     </div>
 
@@ -670,7 +847,10 @@ function App() {
                       <button type="button" onClick={() => startEditingLog(log)}>
                         Edit
                       </button>
-                      <button type="button" onClick={() => handleDeleteLearningLog(log.id)}>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteLearningLog(log.id)}
+                      >
                         Delete
                       </button>
                     </div>
@@ -762,18 +942,65 @@ function App() {
             />
           </label>
 
-          <button type="submit" disabled={isCreatingResource}>
+          <button
+            type="submit"
+            disabled={isCreatingResource || !hasUsers || !hasTopics}
+          >
             {isCreatingResource ? 'Creating...' : 'Create resource'}
           </button>
         </form>
 
-        {resourceFormMessage && <p className="status-text">{resourceFormMessage}</p>}
+        {(!hasUsers || !hasTopics) && (
+          <p className="status-text">
+            Create a user and topic before adding resources.
+          </p>
+        )}
 
-        {resources.length === 0 ? (
+        <div className="filter-row">
+          <label className="filter-control">
+            Filter resources by topic
+            <select
+              value={selectedResourceTopicFilter}
+              onChange={(event) =>
+                setSelectedResourceTopicFilter(event.target.value)
+              }
+            >
+              <option value="all">All topics</option>
+              {topics.map((topic) => (
+                <option key={topic.id} value={topic.id}>
+                  {topic.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="filter-control">
+            Filter resources by type
+            <select
+              value={selectedResourceTypeFilter}
+              onChange={(event) =>
+                setSelectedResourceTypeFilter(event.target.value)
+              }
+            >
+              <option value="all">All types</option>
+              {resourceTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        {resourceFormMessage && (
+          <p className="status-text">{resourceFormMessage}</p>
+        )}
+
+        {filteredResources.length === 0 ? (
           <p className="status-text">No resources found.</p>
         ) : (
           <div className="data-list">
-            {resources.map((resource) => (
+            {filteredResources.map((resource) => (
               <article className="data-card" key={resource.id}>
                 {editingResourceId === resource.id ? (
                   <form className="edit-form" onSubmit={handleUpdateResource}>
@@ -795,7 +1022,9 @@ function App() {
                       <input
                         type="url"
                         value={editingResourceUrl}
-                        onChange={(event) => setEditingResourceUrl(event.target.value)}
+                        onChange={(event) =>
+                          setEditingResourceUrl(event.target.value)
+                        }
                         required
                       />
                     </label>
@@ -806,7 +1035,9 @@ function App() {
                         type="text"
                         maxLength={50}
                         value={editingResourceType}
-                        onChange={(event) => setEditingResourceType(event.target.value)}
+                        onChange={(event) =>
+                          setEditingResourceType(event.target.value)
+                        }
                         required
                       />
                     </label>
@@ -840,8 +1071,8 @@ function App() {
                     <p>{resource.notes ?? 'No notes provided.'}</p>
                     <div className="card-meta">
                       <span>Type: {resource.resource_type}</span>
-                      <span>User #{resource.user_id}</span>
-                      <span>Topic #{resource.topic_id}</span>
+                      <span>User: {getUserLabel(resource.user_id)}</span>
+                      <span>Topic: {getTopicLabel(resource.topic_id)}</span>
                     </div>
 
                     <div className="card-actions">
