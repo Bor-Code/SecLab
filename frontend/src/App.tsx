@@ -29,7 +29,7 @@ function App() {
   const [userFormMessage, setUserFormMessage] = useState<string | null>(null)
 
   const [topics, setTopics] = useState<Topic[]>([])
-  const [topicUserId, setTopicUserId] = useState('1')
+  const [topicUserId, setTopicUserId] = useState('')
   const [topicName, setTopicName] = useState('')
   const [topicDescription, setTopicDescription] = useState('')
   const [isCreatingTopic, setIsCreatingTopic] = useState(false)
@@ -40,8 +40,8 @@ function App() {
   const [editingTopicDescription, setEditingTopicDescription] = useState('')
 
   const [learningLogs, setLearningLogs] = useState<LearningLog[]>([])
-  const [logUserId, setLogUserId] = useState('1')
-  const [logTopicId, setLogTopicId] = useState('1')
+  const [logUserId, setLogUserId] = useState('')
+  const [logTopicId, setLogTopicId] = useState('')
   const [logTitle, setLogTitle] = useState('')
   const [logNotes, setLogNotes] = useState('')
   const [isCreatingLog, setIsCreatingLog] = useState(false)
@@ -52,8 +52,8 @@ function App() {
   const [editingLogNotes, setEditingLogNotes] = useState('')
 
   const [resources, setResources] = useState<Resource[]>([])
-  const [resourceUserId, setResourceUserId] = useState('1')
-  const [resourceTopicId, setResourceTopicId] = useState('1')
+  const [resourceUserId, setResourceUserId] = useState('')
+  const [resourceTopicId, setResourceTopicId] = useState('')
   const [resourceTitle, setResourceTitle] = useState('')
   const [resourceUrl, setResourceUrl] = useState('')
   const [resourceType, setResourceType] = useState('documentation')
@@ -121,47 +121,41 @@ function App() {
     loadResources()
   }, [])
 
-  useEffect(() => {
-    const firstUserId = users[0]?.id.toString()
-
-    if (!firstUserId) {
-      return
-    }
-
-    if (!users.some((user) => user.id.toString() === topicUserId)) {
-      setTopicUserId(firstUserId)
-    }
-
-    if (!users.some((user) => user.id.toString() === logUserId)) {
-      setLogUserId(firstUserId)
-    }
-
-    if (!users.some((user) => user.id.toString() === resourceUserId)) {
-      setResourceUserId(firstUserId)
-    }
-  }, [users, topicUserId, logUserId, resourceUserId])
-
-  useEffect(() => {
-    const firstTopicId = topics[0]?.id.toString()
-
-    if (!firstTopicId) {
-      return
-    }
-
-    if (!topics.some((topic) => topic.id.toString() === logTopicId)) {
-      setLogTopicId(firstTopicId)
-    }
-
-    if (!topics.some((topic) => topic.id.toString() === resourceTopicId)) {
-      setResourceTopicId(firstTopicId)
-    }
-  }, [topics, logTopicId, resourceTopicId])
-
   const userNameById = new Map(users.map((user) => [user.id, user.username]))
   const topicNameById = new Map(topics.map((topic) => [topic.id, topic.name]))
 
   const hasUsers = users.length > 0
   const hasTopics = topics.length > 0
+
+  const selectedTopicUserId = users.some(
+    (user) => user.id.toString() === topicUserId,
+  )
+    ? topicUserId
+    : (users[0]?.id.toString() ?? '')
+
+  const selectedLogUserId = users.some(
+    (user) => user.id.toString() === logUserId,
+  )
+    ? logUserId
+    : (users[0]?.id.toString() ?? '')
+
+  const selectedLogTopicId = topics.some(
+    (topic) => topic.id.toString() === logTopicId,
+  )
+    ? logTopicId
+    : (topics[0]?.id.toString() ?? '')
+
+  const selectedResourceUserId = users.some(
+    (user) => user.id.toString() === resourceUserId,
+  )
+    ? resourceUserId
+    : (users[0]?.id.toString() ?? '')
+
+  const selectedResourceTopicId = topics.some(
+    (topic) => topic.id.toString() === resourceTopicId,
+  )
+    ? resourceTopicId
+    : (topics[0]?.id.toString() ?? '')
 
   const filteredTopics = topics.filter((topic) =>
     topic.name.toLowerCase().includes(topicSearch.toLowerCase()),
@@ -230,7 +224,7 @@ function App() {
 
     try {
       const createdTopic = await createTopic({
-        user_id: Number(topicUserId),
+        user_id: Number(selectedTopicUserId),
         name: topicName,
         description: topicDescription || null,
       })
@@ -314,8 +308,8 @@ function App() {
 
     try {
       const createdLog = await createLearningLog({
-        user_id: Number(logUserId),
-        topic_id: Number(logTopicId),
+        user_id: Number(selectedLogUserId),
+        topic_id: Number(selectedLogTopicId),
         title: logTitle,
         notes: logNotes || null,
       })
@@ -397,8 +391,8 @@ function App() {
 
     try {
       const createdResource = await createResource({
-        user_id: Number(resourceUserId),
-        topic_id: Number(resourceTopicId),
+        user_id: Number(selectedResourceUserId),
+        topic_id: Number(selectedResourceTopicId),
         title: resourceTitle,
         url: resourceUrl,
         resource_type: resourceType,
@@ -586,7 +580,7 @@ function App() {
           <label>
             User
             <select
-              value={topicUserId}
+              value={selectedTopicUserId}
               onChange={(event) => setTopicUserId(event.target.value)}
               required
             >
@@ -718,7 +712,7 @@ function App() {
           <label>
             User
             <select
-              value={logUserId}
+              value={selectedLogUserId}
               onChange={(event) => setLogUserId(event.target.value)}
               required
             >
@@ -733,7 +727,7 @@ function App() {
           <label>
             Topic
             <select
-              value={logTopicId}
+              value={selectedLogTopicId}
               onChange={(event) => setLogTopicId(event.target.value)}
               required
             >
@@ -874,7 +868,7 @@ function App() {
           <label>
             User
             <select
-              value={resourceUserId}
+              value={selectedResourceUserId}
               onChange={(event) => setResourceUserId(event.target.value)}
               required
             >
@@ -889,7 +883,7 @@ function App() {
           <label>
             Topic
             <select
-              value={resourceTopicId}
+              value={selectedResourceTopicId}
               onChange={(event) => setResourceTopicId(event.target.value)}
               required
             >
