@@ -1,43 +1,25 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import {
+  createLearningLog,
+  createResource,
+  createTopic,
+  createUser,
+  deleteLearningLog,
+  deleteResource,
+  deleteTopic,
+  fetchLearningLogs,
+  fetchResources,
+  fetchTopics,
+  fetchUsers,
+  updateLearningLog,
+  updateResource,
+  updateTopic,
+  type LearningLog,
+  type Resource,
+  type Topic,
+  type User,
+} from './api'
 import './App.css'
-
-type User = {
-  id: number
-  username: string
-  email: string
-  created_at: string
-}
-
-type Topic = {
-  id: number
-  user_id: number
-  name: string
-  description: string | null
-  created_at: string
-}
-
-type LearningLog = {
-  id: number
-  user_id: number
-  topic_id: number
-  title: string
-  notes: string | null
-  study_date: string
-  created_at: string
-}
-
-type Resource = {
-  id: number
-  user_id: number
-  topic_id: number
-  title: string
-  url: string
-  resource_type: string
-  notes: string | null
-  created_at: string
-}
-
-const API_BASE_URL = 'http://127.0.0.1:8000'
 
 function App() {
   const [users, setUsers] = useState<User[]>([])
@@ -88,9 +70,7 @@ function App() {
   useEffect(() => {
     async function loadUsers() {
       try {
-        const response = await fetch(`${API_BASE_URL}/users`)
-        if (!response.ok) throw new Error('Users could not be loaded')
-        const data = (await response.json()) as User[]
+        const data = await fetchUsers()
         setUsers(data)
       } catch (error) {
         console.error('Users could not be loaded:', error)
@@ -99,9 +79,7 @@ function App() {
 
     async function loadTopics() {
       try {
-        const response = await fetch(`${API_BASE_URL}/topics`)
-        if (!response.ok) throw new Error('Topics could not be loaded')
-        const data = (await response.json()) as Topic[]
+        const data = await fetchTopics()
         setTopics(data)
       } catch (error) {
         console.error('Topics could not be loaded:', error)
@@ -110,9 +88,7 @@ function App() {
 
     async function loadLearningLogs() {
       try {
-        const response = await fetch(`${API_BASE_URL}/learning-logs`)
-        if (!response.ok) throw new Error('Learning logs could not be loaded')
-        const data = (await response.json()) as LearningLog[]
+        const data = await fetchLearningLogs()
         setLearningLogs(data)
       } catch (error) {
         console.error('Learning logs could not be loaded:', error)
@@ -121,9 +97,7 @@ function App() {
 
     async function loadResources() {
       try {
-        const response = await fetch(`${API_BASE_URL}/resources`)
-        if (!response.ok) throw new Error('Resources could not be loaded')
-        const data = (await response.json()) as Resource[]
+        const data = await fetchResources()
         setResources(data)
       } catch (error) {
         console.error('Resources could not be loaded:', error)
@@ -142,15 +116,11 @@ function App() {
     setUserFormMessage(null)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/users`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email }),
+      const createdUser = await createUser({
+        username,
+        email,
       })
 
-      if (!response.ok) throw new Error('User could not be created')
-
-      const createdUser = (await response.json()) as User
       setUsers((currentUsers) => [...currentUsers, createdUser])
       setUsername('')
       setEmail('')
@@ -168,19 +138,12 @@ function App() {
     setTopicFormMessage(null)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/topics`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: Number(topicUserId),
-          name: topicName,
-          description: topicDescription || null,
-        }),
+      const createdTopic = await createTopic({
+        user_id: Number(topicUserId),
+        name: topicName,
+        description: topicDescription || null,
       })
 
-      if (!response.ok) throw new Error('Topic could not be created')
-
-      const createdTopic = (await response.json()) as Topic
       setTopics((currentTopics) => [...currentTopics, createdTopic])
       setTopicName('')
       setTopicDescription('')
@@ -211,18 +174,11 @@ function App() {
     if (editingTopicId === null) return
 
     try {
-      const response = await fetch(`${API_BASE_URL}/topics/${editingTopicId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: editingTopicName,
-          description: editingTopicDescription || null,
-        }),
+      const updatedTopic = await updateTopic(editingTopicId, {
+        name: editingTopicName,
+        description: editingTopicDescription || null,
       })
 
-      if (!response.ok) throw new Error('Topic could not be updated')
-
-      const updatedTopic = (await response.json()) as Topic
       setTopics((currentTopics) =>
         currentTopics.map((topic) =>
           topic.id === updatedTopic.id ? updatedTopic : topic,
@@ -237,11 +193,7 @@ function App() {
 
   async function handleDeleteTopic(topicId: number) {
     try {
-      const response = await fetch(`${API_BASE_URL}/topics/${topicId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) throw new Error('Topic could not be deleted')
+      await deleteTopic(topicId)
 
       setTopics((currentTopics) =>
         currentTopics.filter((topic) => topic.id !== topicId),
@@ -258,20 +210,13 @@ function App() {
     setLogFormMessage(null)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/learning-logs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: Number(logUserId),
-          topic_id: Number(logTopicId),
-          title: logTitle,
-          notes: logNotes || null,
-        }),
+      const createdLog = await createLearningLog({
+        user_id: Number(logUserId),
+        topic_id: Number(logTopicId),
+        title: logTitle,
+        notes: logNotes || null,
       })
 
-      if (!response.ok) throw new Error('Learning log could not be created')
-
-      const createdLog = (await response.json()) as LearningLog
       setLearningLogs((currentLogs) => [...currentLogs, createdLog])
       setLogTitle('')
       setLogNotes('')
@@ -302,18 +247,11 @@ function App() {
     if (editingLogId === null) return
 
     try {
-      const response = await fetch(`${API_BASE_URL}/learning-logs/${editingLogId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: editingLogTitle,
-          notes: editingLogNotes || null,
-        }),
+      const updatedLog = await updateLearningLog(editingLogId, {
+        title: editingLogTitle,
+        notes: editingLogNotes || null,
       })
 
-      if (!response.ok) throw new Error('Learning log could not be updated')
-
-      const updatedLog = (await response.json()) as LearningLog
       setLearningLogs((currentLogs) =>
         currentLogs.map((log) => (log.id === updatedLog.id ? updatedLog : log)),
       )
@@ -326,11 +264,7 @@ function App() {
 
   async function handleDeleteLearningLog(logId: number) {
     try {
-      const response = await fetch(`${API_BASE_URL}/learning-logs/${logId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) throw new Error('Learning log could not be deleted')
+      await deleteLearningLog(logId)
 
       setLearningLogs((currentLogs) => currentLogs.filter((log) => log.id !== logId))
       setLogFormMessage('Learning log deleted successfully.')
@@ -345,22 +279,15 @@ function App() {
     setResourceFormMessage(null)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/resources`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: Number(resourceUserId),
-          topic_id: Number(resourceTopicId),
-          title: resourceTitle,
-          url: resourceUrl,
-          resource_type: resourceType,
-          notes: resourceNotes || null,
-        }),
+      const createdResource = await createResource({
+        user_id: Number(resourceUserId),
+        topic_id: Number(resourceTopicId),
+        title: resourceTitle,
+        url: resourceUrl,
+        resource_type: resourceType,
+        notes: resourceNotes || null,
       })
 
-      if (!response.ok) throw new Error('Resource could not be created')
-
-      const createdResource = (await response.json()) as Resource
       setResources((currentResources) => [...currentResources, createdResource])
       setResourceTitle('')
       setResourceUrl('')
@@ -396,20 +323,13 @@ function App() {
     if (editingResourceId === null) return
 
     try {
-      const response = await fetch(`${API_BASE_URL}/resources/${editingResourceId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: editingResourceTitle,
-          url: editingResourceUrl,
-          resource_type: editingResourceType,
-          notes: editingResourceNotes || null,
-        }),
+      const updatedResource = await updateResource(editingResourceId, {
+        title: editingResourceTitle,
+        url: editingResourceUrl,
+        resource_type: editingResourceType,
+        notes: editingResourceNotes || null,
       })
 
-      if (!response.ok) throw new Error('Resource could not be updated')
-
-      const updatedResource = (await response.json()) as Resource
       setResources((currentResources) =>
         currentResources.map((resource) =>
           resource.id === updatedResource.id ? updatedResource : resource,
@@ -424,11 +344,7 @@ function App() {
 
   async function handleDeleteResource(resourceId: number) {
     try {
-      const response = await fetch(`${API_BASE_URL}/resources/${resourceId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) throw new Error('Resource could not be deleted')
+      await deleteResource(resourceId)
 
       setResources((currentResources) =>
         currentResources.filter((resource) => resource.id !== resourceId),
