@@ -1,12 +1,25 @@
 from datetime import date, datetime
 from fastapi import APIRouter, status, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import text
+from sqlalchemy import Column, Date, DateTime, Integer, MetaData, String, Table, Text, delete, insert, select, update
 from app.database import engine
 
 router = APIRouter(
     prefix="/learning-logs",
     tags=["Learning Logs"]
+)
+
+metadata = MetaData()
+learning_logs_table = Table(
+    "learning_logs",
+    metadata,
+    Column("id", Integer),
+    Column("user_id", Integer),
+    Column("topic_id", Integer),
+    Column("title", String(150)),
+    Column("notes", Text),
+    Column("study_date", Date),
+    Column("created_at", DateTime),
 )
 
 class LearningLogCreate(BaseModel):
@@ -34,41 +47,46 @@ class LearningLogRead(BaseModel):
 @router.get("", response_model=list[LearningLogRead])
 def get_learning_logs():
     with engine.connect() as connection:
-        result = connection.execute(
-            text("SELECT * FROM learning_logs ORDER BY id")
-        )
+        query = select(learning_logs_table).order_by(learning_logs_table.c.id)
+        result = connection.execute(query)
         logs = result.mappings().all()
         return [dict(log) for log in logs]
 
 @router.post("", response_model=LearningLogRead, status_code=status.HTTP_201_CREATED)
 def create_learning_log(log: LearningLogCreate):
     with engine.begin() as connection:
-        result = connection.execute(
-            text("""
-                INSERT INTO learning_logs (user_id, topic_id, title, notes)
-                VALUES (:user_id, :topic_id, :title, :notes)
-                RETURNING *
-            """),
-            {
-                "user_id": log.user_id,
-                "topic_id": log.topic_id,
-                "title": log.title,
-                "notes": log.notes,
-            }
+        query = (
+            insert(learning_logs_table)
+            .values(
+                user_id=log.user_id,
+                topic_id=log.topic_id,
+                title=log.title,
+                notes=log.notes,
+            )
+            .returning(
+                learning_logs_table.c.id,
+                learning_logs_table.c.user_id,
+                learning_logs_table.c.topic_id,
+                learning_logs_table.c.title,
+                learning_logs_table.c.notes,
+                learning_logs_table.c.study_date,
+                learning_logs_table.c.created_at,
+            )
         )
-        created_log = result.mappings().first()
+        result = connection.execute(query)
+        created_log = result.mappings().one()
         return dict(created_log)
 
 @router.get("/{log_id}", response_model=LearningLogRead)
 def get_learning_log(log_id: int):
     with engine.connect() as connection:
-        result = connection.execute(
-            text("SELECT * FROM learning_logs WHERE id = :log_id"),
-            {"log_id": log_id}
-        )
+        query = select(learning_logs_table).where(learning_logs_table.c.id == log_id)
+        result = connection.execute(query)
         log = result.mappings().first()
+        
         if log is None:
             raise HTTPException(status_code=404, detail="Learning log not found")
+            
         return dict(log)
 
 @router.patch("/{log_id}", response_model=LearningLogRead)
@@ -78,19 +96,23 @@ def update_learning_log(log_id: int, log: LearningLogUpdate):
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
         
-    set_clauses = [f"{key} = :{key}" for key in update_data.keys()]
-    set_query = ",\n                ".join(set_clauses)
+    query = (
+        update(learning_logs_table)
+        .where(learning_logs_table.c.id == log_id)
+        .values(**update_data)
+        .returning(
+            learning_logs_table.c.id,
+            learning_logs_table.c.user_id,
+            learning_logs_table.c.topic_id,
+            learning_logs_table.c.title,
+            learning_logs_table.c.notes,
+            learning_logs_table.c.study_date,
+            learning_logs_table.c.created_at,
+        )
+    )
     
     with engine.begin() as connection:
-        result = connection.execute(
-            text(f"""
-                UPDATE learning_logs
-                SET {set_query}
-                WHERE id = :log_id
-                RETURNING *
-            """),
-            {**update_data, "log_id": log_id}
-        )
+        result = connection.execute(query)
         updated_log = result.mappings().first()
         
         if updated_log is None:
@@ -100,18 +122,27 @@ def update_learning_log(log_id: int, log: LearningLogUpdate):
 
 @router.delete("/{log_id}")
 def delete_learning_log(log_id: int):
-    with engine.begin() as connection:
-        result = connection.execute(
-            text("""
-                DELETE FROM learning_logs
-                WHERE id = :log_id
-                RETURNING *
-            """),
-            {"log_id": log_id}
+    query = (
+        delete(learning_logs_table)
+        .where(learning_logs_table.c.id == log_id)
+        .returning(
+            learning_logs_table.c.id,
+            learning_logs_table.c.user_id,
+            learning_logs_table.c.topic_id,
+            learning_logs_table.c.title,
+            learning_logs_table.c.notes,
+            learning_logs_table.c.study_date,
+            learning_logs_table.c.created_at,
         )
+    )
+    
+    with engine.begin() as connection:
+        result = connection.execute(query)
         deleted_log = result.mappings().first()
+        
         if deleted_log is None:
             raise HTTPException(status_code=404, detail="Learning log not found")
+            
         return {
             "message": "Learning log deleted successfully",
             "deleted_log": dict(deleted_log)
