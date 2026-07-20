@@ -26,8 +26,8 @@ On the backend, a CRUD infrastructure has been set up for Users, Topics, Learnin
 On the frontend:
 - Listing and creating users
 - Listing, creating, editing, and deleting topics
-- Listing and creating learning logs
-- Listing and creating resources
+- Listing, creating, editing, and deleting learning logs
+- Listing, creating, editing, and deleting resources
 - Using dropdowns for user and topic selection
 
 ## API Endpoints
