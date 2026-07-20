@@ -44,6 +44,10 @@ class LearningLogRead(BaseModel):
     class Config:
         from_attributes = True
 
+class LearningLogDeleteResponse(BaseModel):
+    message: str
+    deleted_log: LearningLogRead
+
 @router.get("", response_model=list[LearningLogRead])
 def get_learning_logs():
     with engine.connect() as connection:
@@ -120,7 +124,7 @@ def update_learning_log(log_id: int, log: LearningLogUpdate):
             
         return dict(updated_log)
 
-@router.delete("/{log_id}")
+@router.delete("/{log_id}", response_model=LearningLogDeleteResponse)
 def delete_learning_log(log_id: int):
     query = (
         delete(learning_logs_table)

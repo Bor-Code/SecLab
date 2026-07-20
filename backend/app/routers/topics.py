@@ -39,6 +39,10 @@ class TopicRead(BaseModel):
     class Config:
         from_attributes = True
 
+class TopicDeleteResponse(BaseModel):
+    message: str
+    topic: TopicRead
+
 @router.get("", response_model=list[TopicRead])
 def get_topics():
     with engine.connect() as connection:
@@ -110,7 +114,7 @@ def update_topic(topic_id: int, topic: TopicUpdate):
             
         return dict(updated_topic)
     
-@router.delete("/{topic_id}")
+@router.delete("/{topic_id}", response_model=TopicDeleteResponse)
 def delete_topic(topic_id: int):
     query = (
         delete(topics_table)
