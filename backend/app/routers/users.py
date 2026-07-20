@@ -36,6 +36,10 @@ class UserRead(BaseModel):
     class Config:
         from_attributes = True
 
+class UserDeleteResponse(BaseModel):
+    message: str
+    deleted_user: UserRead
+
 @router.get("", response_model=list[UserRead])
 def get_users():
     with engine.connect() as connection:
@@ -104,7 +108,7 @@ def update_user(user_id: int, user: UserUpdate):
             
         return dict(updated_user)
 
-@router.delete("/{user_id}")
+@router.delete("/{user_id}", response_model=UserDeleteResponse)
 def delete_user(user_id: int):
     query = (
         delete(users_table)

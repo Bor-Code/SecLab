@@ -50,6 +50,10 @@ class ResourceRead(BaseModel):
     class Config:
         from_attributes = True
 
+class ResourceDeleteResponse(BaseModel):
+    message: str
+    deleted_resource: ResourceRead
+
 @router.get("", response_model=list[ResourceRead])
 def get_resources():
     with engine.connect() as connection:
@@ -130,7 +134,7 @@ def update_resource(resource_id: int, resource: ResourceUpdate):
             
         return dict(updated_resource)
 
-@router.delete("/{resource_id}")
+@router.delete("/{resource_id}", response_model=ResourceDeleteResponse)
 def delete_resource(resource_id: int):
     query = (
         delete(resources_table)
