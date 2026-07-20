@@ -1,12 +1,26 @@
 from datetime import datetime
 from fastapi import APIRouter, status, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import text
+from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, Text, delete, insert, select, update
 from app.database import engine
 
 router = APIRouter(
     prefix="/resources",
     tags=["Resources"]
+)
+
+metadata = MetaData()
+resources_table = Table(
+    "resources",
+    metadata,
+    Column("id", Integer),
+    Column("user_id", Integer),
+    Column("topic_id", Integer),
+    Column("title", String(150)),
+    Column("url", Text),
+    Column("resource_type", String(50)),
+    Column("notes", Text),
+    Column("created_at", DateTime),
 )
 
 class ResourceCreate(BaseModel):
@@ -39,43 +53,49 @@ class ResourceRead(BaseModel):
 @router.get("", response_model=list[ResourceRead])
 def get_resources():
     with engine.connect() as connection:
-        result = connection.execute(
-            text("SELECT * FROM resources ORDER BY id")
-        )
+        query = select(resources_table).order_by(resources_table.c.id)
+        result = connection.execute(query)
         resources = result.mappings().all()
         return [dict(resource) for resource in resources]
 
 @router.post("", response_model=ResourceRead, status_code=status.HTTP_201_CREATED)
 def create_resource(resource: ResourceCreate):
     with engine.begin() as connection:
-        result = connection.execute(
-            text("""
-                INSERT INTO resources (user_id, topic_id, title, url, resource_type, notes)
-                VALUES (:user_id, :topic_id, :title, :url, :resource_type, :notes)
-                RETURNING *
-            """),
-            {
-                "user_id": resource.user_id,
-                "topic_id": resource.topic_id,
-                "title": resource.title,
-                "url": resource.url,
-                "resource_type": resource.resource_type,
-                "notes": resource.notes,
-            }
+        query = (
+            insert(resources_table)
+            .values(
+                user_id=resource.user_id,
+                topic_id=resource.topic_id,
+                title=resource.title,
+                url=resource.url,
+                resource_type=resource.resource_type,
+                notes=resource.notes,
+            )
+            .returning(
+                resources_table.c.id,
+                resources_table.c.user_id,
+                resources_table.c.topic_id,
+                resources_table.c.title,
+                resources_table.c.url,
+                resources_table.c.resource_type,
+                resources_table.c.notes,
+                resources_table.c.created_at,
+            )
         )
-        created_resource = result.mappings().first()
+        result = connection.execute(query)
+        created_resource = result.mappings().one()
         return dict(created_resource)
 
 @router.get("/{resource_id}", response_model=ResourceRead)
 def get_resource(resource_id: int):
     with engine.connect() as connection:
-        result = connection.execute(
-            text("SELECT * FROM resources WHERE id = :resource_id"),
-            {"resource_id": resource_id}
-        )
+        query = select(resources_table).where(resources_table.c.id == resource_id)
+        result = connection.execute(query)
         resource = result.mappings().first()
+        
         if resource is None:
             raise HTTPException(status_code=404, detail="Resource not found")
+            
         return dict(resource)
 
 @router.patch("/{resource_id}", response_model=ResourceRead)
@@ -85,19 +105,24 @@ def update_resource(resource_id: int, resource: ResourceUpdate):
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
         
-    set_clauses = [f"{key} = :{key}" for key in update_data.keys()]
-    set_query = ",\n                ".join(set_clauses)
+    query = (
+        update(resources_table)
+        .where(resources_table.c.id == resource_id)
+        .values(**update_data)
+        .returning(
+            resources_table.c.id,
+            resources_table.c.user_id,
+            resources_table.c.topic_id,
+            resources_table.c.title,
+            resources_table.c.url,
+            resources_table.c.resource_type,
+            resources_table.c.notes,
+            resources_table.c.created_at,
+        )
+    )
     
     with engine.begin() as connection:
-        result = connection.execute(
-            text(f"""
-                UPDATE resources
-                SET {set_query}
-                WHERE id = :resource_id
-                RETURNING *
-            """),
-            {**update_data, "resource_id": resource_id}
-        )
+        result = connection.execute(query)
         updated_resource = result.mappings().first()
         
         if updated_resource is None:
@@ -107,18 +132,28 @@ def update_resource(resource_id: int, resource: ResourceUpdate):
 
 @router.delete("/{resource_id}")
 def delete_resource(resource_id: int):
-    with engine.begin() as connection:
-        result = connection.execute(
-            text("""
-                DELETE FROM resources
-                WHERE id = :resource_id
-                RETURNING *
-            """),
-            {"resource_id": resource_id}
+    query = (
+        delete(resources_table)
+        .where(resources_table.c.id == resource_id)
+        .returning(
+            resources_table.c.id,
+            resources_table.c.user_id,
+            resources_table.c.topic_id,
+            resources_table.c.title,
+            resources_table.c.url,
+            resources_table.c.resource_type,
+            resources_table.c.notes,
+            resources_table.c.created_at,
         )
+    )
+    
+    with engine.begin() as connection:
+        result = connection.execute(query)
         deleted_resource = result.mappings().first()
+        
         if deleted_resource is None:
             raise HTTPException(status_code=404, detail="Resource not found")
+            
         return {
             "message": "Resource deleted successfully",
             "deleted_resource": dict(deleted_resource)
