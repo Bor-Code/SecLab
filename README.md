@@ -1,14 +1,11 @@
 # SecLab
 
-## Proje Amacı
+## Project Objective
+SecLab is a learning tracking system developed for the engineering component of the internship.
+The goal is to enable users to track their learning topics, work logs, and useful resources through a single web application.
 
-SecLab, stajın Engineering tarafı için geliştirilen bir öğrenme kayıt sistemidir.
-
-Amaç; kullanıcıları, öğrenme konularını, çalışma kayıtlarını ve faydalı kaynakları tek bir web uygulaması üzerinden takip edebilmektir.
-
-## Teknolojiler
-
-Backend:
+## Technologies
+**Backend:**
 - Python
 - FastAPI
 - SQLAlchemy Core
@@ -16,62 +13,65 @@ Backend:
 - Pydantic
 - Swagger/OpenAPI
 
-Frontend:
+**Frontend:**
 - React
 - TypeScript
 - Vite
 - ESLint
 - CSS
 
-## Mevcut Durum
+## Current Status
+On the backend, a CRUD infrastructure has been set up for Users, Topics, Learning Logs, and Resources.
 
-Backend tarafında Users, Topics, Learning Logs ve Resources için CRUD altyapısı kuruldu.
+On the frontend:
+- Listing and creating users
+- Listing, creating, editing, and deleting topics
+- Listing and creating learning logs
+- Listing and creating resources
+- Using dropdowns for user and topic selection
 
-Frontend tarafında:
-- Kullanıcı listeleme ve oluşturma
-- Topic listeleme, oluşturma, düzenleme ve silme
-- Learning log listeleme ve oluşturma
-- Resource listeleme ve oluşturma
-- User ve topic seçimleri için dropdown kullanımı
-
-## API Endpointleri
-
-Users:
+## API Endpoints
+**Users:**
 - `GET /users`
 - `POST /users`
 - `GET /users/{user_id}`
 - `PATCH /users/{user_id}`
 - `DELETE /users/{user_id}`
 
-Topics:
+**Topics:**
 - `GET /topics`
 - `POST /topics`
 - `GET /topics/{topic_id}`
 - `PATCH /topics/{topic_id}`
 - `DELETE /topics/{topic_id}`
 
-Learning Logs:
+**Learning Logs:**
 - `GET /learning-logs`
 - `POST /learning-logs`
 - `GET /learning-logs/{log_id}`
 - `PATCH /learning-logs/{log_id}`
 - `DELETE /learning-logs/{log_id}`
 
-Resources:
+**Resources:**
 - `GET /resources`
 - `POST /resources`
 - `GET /resources/{resource_id}`
 - `PATCH /resources/{resource_id}`
 - `DELETE /resources/{resource_id}`
 
-## Lokal Çalıştırma
-
-PostgreSQL başlat:
+## Local Execution
+Start PostgreSQL:
 
 ```powershell
 $pgBin = "C:\Program Files\PostgreSQL\18\bin"
 $pgData = "$env:USERPROFILE\postgres-data\seclab"
 $pgLog = "$pgData\postgres-$(Get-Date -Format 'yyyyMMdd-HHmmss').log"
-
 & "$pgBin\pg_ctl.exe" -D $pgData -l $pgLog start
 & "$pgBin\pg_isready.exe" -h localhost -p 5432 -U postgres
+```
+
+## Backend Validation
+
+Backend router or API changes can be checked with the commands documented in:
+
+- [Backend Validation](docs/backend-validation.md)
