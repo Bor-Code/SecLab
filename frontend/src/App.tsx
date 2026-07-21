@@ -370,6 +370,19 @@ function App() {
       setTopics((currentTopics) =>
         currentTopics.filter((topic) => topic.id !== topicId),
       )
+      
+      setLearningLogs((currentLogs) =>
+        currentLogs.filter((log) => log.topic_id !== topicId),
+      )
+      
+      setResources((currentResources) =>
+        currentResources.filter((resource) => resource.topic_id !== topicId),
+      )
+      
+      cancelEditingTopic()
+      cancelEditingLog()
+      cancelEditingResource()
+
       setTopicFormMessage('Topic deleted successfully.')
     } catch (error) {
       setTopicFormMessage(
@@ -570,7 +583,7 @@ function App() {
         <article className="summary-card">
           <span>Users</span>
           <strong>{users.length}</strong>
-          <p>Create and list application users.</p>
+          <p>Create, search, edit, and delete application users.</p>
         </article>
 
         <article className="summary-card">
