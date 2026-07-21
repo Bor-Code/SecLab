@@ -378,6 +378,19 @@ function App() {
       setResources((currentResources) =>
         currentResources.filter((resource) => resource.topic_id !== topicId),
       )
+
+      setSelectedLogTopicFilter((currentFilter) =>
+        currentFilter === topicId.toString() ? 'all' : currentFilter,
+      )
+      setSelectedResourceTopicFilter((currentFilter) =>
+        currentFilter === topicId.toString() ? 'all' : currentFilter,
+      )
+      setLogTopicId((currentTopicId) =>
+        currentTopicId === topicId.toString() ? '' : currentTopicId,
+      )
+      setResourceTopicId((currentTopicId) =>
+        currentTopicId === topicId.toString() ? '' : currentTopicId,
+      )
       
       cancelEditingTopic()
       cancelEditingLog()
