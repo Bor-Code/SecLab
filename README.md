@@ -24,7 +24,7 @@ The goal is to enable users to track their learning topics, work logs, and usefu
 On the backend, a CRUD infrastructure has been set up for Users, Topics, Learning Logs, and Resources.
 
 On the frontend:
-- Listing and creating users
+- Listing, creating, editing, and deleting users
 - Listing, creating, editing, and deleting topics
 - Listing, creating, editing, and deleting learning logs
 - Listing, creating, editing, and deleting resources
