@@ -7,6 +7,7 @@ import {
   deleteLearningLog,
   deleteResource,
   deleteTopic,
+  deleteUser,
   fetchLearningLogs,
   fetchResources,
   fetchTopics,
@@ -14,6 +15,7 @@ import {
   updateLearningLog,
   updateResource,
   updateTopic,
+  updateUser,
   type LearningLog,
   type Resource,
   type Topic,
@@ -27,6 +29,10 @@ function App() {
   const [email, setEmail] = useState('')
   const [isCreatingUser, setIsCreatingUser] = useState(false)
   const [userFormMessage, setUserFormMessage] = useState<string | null>(null)
+
+  const [editingUserId, setEditingUserId] = useState<number | null>(null)
+  const [editingUsername, setEditingUsername] = useState('')
+  const [editingEmail, setEditingEmail] = useState('')
 
   const [topics, setTopics] = useState<Topic[]>([])
   const [topicUserId, setTopicUserId] = useState('')
@@ -214,6 +220,65 @@ function App() {
       )
     } finally {
       setIsCreatingUser(false)
+    }
+  }
+
+  function startEditingUser(user: User) {
+    setEditingUserId(user.id)
+    setEditingUsername(user.username)
+    setEditingEmail(user.email)
+    setUserFormMessage(null)
+  }
+
+  function cancelEditingUser() {
+    setEditingUserId(null)
+    setEditingUsername('')
+    setEditingEmail('')
+  }
+
+  async function handleUpdateUser(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (editingUserId === null) {
+      return
+    }
+
+    try {
+      const updatedUser = await updateUser(editingUserId, {
+        username: editingUsername,
+        email: editingEmail,
+      })
+
+      setUsers((currentUsers) =>
+        currentUsers.map((user) =>
+          user.id === updatedUser.id ? updatedUser : user,
+        ),
+      )
+      cancelEditingUser()
+      setUserFormMessage('User updated successfully.')
+    } catch (error) {
+      setUserFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
+    }
+  }
+
+  async function handleDeleteUser(userId: number) {
+    if (!window.confirm('Delete this user?')) {
+      return
+    }
+
+    try {
+      await deleteUser(userId)
+
+      setUsers((currentUsers) =>
+        currentUsers.filter((user) => user.id !== userId),
+      )
+      setUserFormMessage('User deleted successfully.')
+    } catch (error) {
+      setUserFormMessage(
+        error instanceof Error ? error.message : 'Unexpected error',
+      )
     }
   }
 
@@ -559,9 +624,53 @@ function App() {
           <div className="data-list">
             {users.map((user) => (
               <article className="data-card" key={user.id}>
-                <h3>{user.username}</h3>
-                <p>{user.email}</p>
-                <span>User #{user.id}</span>
+                {editingUserId === user.id ? (
+                  <form className="edit-form" onSubmit={handleUpdateUser}>
+                    <label>
+                      Username
+                      <input
+                        type="text"
+                        maxLength={50}
+                        value={editingUsername}
+                        onChange={(event) => setEditingUsername(event.target.value)}
+                        required
+                      />
+                    </label>
+
+                    <label>
+                      Email
+                      <input
+                        type="email"
+                        maxLength={255}
+                        value={editingEmail}
+                        onChange={(event) => setEditingEmail(event.target.value)}
+                        required
+                      />
+                    </label>
+
+                    <div className="card-actions">
+                      <button type="submit">Save</button>
+                      <button type="button" onClick={cancelEditingUser}>
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <h3>{user.username}</h3>
+                    <p>{user.email}</p>
+                    <span>User #{user.id}</span>
+
+                    <div className="card-actions">
+                      <button type="button" onClick={() => startEditingUser(user)}>
+                        Edit
+                      </button>
+                      <button type="button" onClick={() => handleDeleteUser(user.id)}>
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
               </article>
             ))}
           </div>

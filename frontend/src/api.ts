@@ -41,6 +41,11 @@ export type UserCreate = {
   email: string
 }
 
+export type UserUpdate = {
+  username: string
+  email: string
+}
+
 export type TopicCreate = {
   user_id: number
   name: string
@@ -104,6 +109,19 @@ export function createUser(payload: UserCreate) {
   return request<User>('/users', {
     method: 'POST',
     body: JSON.stringify(payload),
+  })
+}
+
+export function updateUser(userId: number, payload: UserUpdate) {
+  return request<User>(`/users/${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function deleteUser(userId: number) {
+  await request<unknown>(`/users/${userId}`, {
+    method: 'DELETE',
   })
 }
 
