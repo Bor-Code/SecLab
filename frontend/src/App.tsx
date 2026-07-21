@@ -263,7 +263,7 @@ function App() {
     }
   }
 
-  async function handleDeleteUser(userId: number) {
+    async function handleDeleteUser(userId: number) {
     if (!window.confirm('Delete this user?')) {
       return
     }
@@ -274,6 +274,16 @@ function App() {
       setUsers((currentUsers) =>
         currentUsers.filter((user) => user.id !== userId),
       )
+      setTopics((currentTopics) =>
+        currentTopics.filter((topic) => topic.user_id !== userId),
+      )
+      setLearningLogs((currentLogs) =>
+        currentLogs.filter((log) => log.user_id !== userId),
+      )
+      setResources((currentResources) =>
+        currentResources.filter((resource) => resource.user_id !== userId),
+      )
+
       setUserFormMessage('User deleted successfully.')
     } catch (error) {
       setUserFormMessage(
