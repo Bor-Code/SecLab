@@ -33,6 +33,7 @@ function App() {
   const [editingUserId, setEditingUserId] = useState<number | null>(null)
   const [editingUsername, setEditingUsername] = useState('')
   const [editingEmail, setEditingEmail] = useState('')
+  const [userSearch, setUserSearch] = useState('')
 
   const [topics, setTopics] = useState<Topic[]>([])
   const [topicUserId, setTopicUserId] = useState('')
@@ -163,6 +164,11 @@ function App() {
     ? resourceTopicId
     : (topics[0]?.id.toString() ?? '')
 
+  const filteredUsers = users.filter((user) =>
+    user.username.toLowerCase().includes(userSearch.toLowerCase()) ||
+    user.email.toLowerCase().includes(userSearch.toLowerCase()),
+  )
+
   const filteredTopics = topics.filter((topic) =>
     topic.name.toLowerCase().includes(topicSearch.toLowerCase()),
   )
@@ -263,7 +269,7 @@ function App() {
     }
   }
 
-    async function handleDeleteUser(userId: number) {
+  async function handleDeleteUser(userId: number) {
     if (!window.confirm('Delete this user?')) {
       return
     }
@@ -274,16 +280,7 @@ function App() {
       setUsers((currentUsers) =>
         currentUsers.filter((user) => user.id !== userId),
       )
-      setTopics((currentTopics) =>
-        currentTopics.filter((topic) => topic.user_id !== userId),
-      )
-      setLearningLogs((currentLogs) =>
-        currentLogs.filter((log) => log.user_id !== userId),
-      )
-      setResources((currentResources) =>
-        currentResources.filter((resource) => resource.user_id !== userId),
-      )
-
+      
       cancelEditingUser()
       cancelEditingTopic()
       cancelEditingLog()
@@ -633,11 +630,21 @@ function App() {
 
         {userFormMessage && <p className="status-text">{userFormMessage}</p>}
 
-        {users.length === 0 ? (
+        <label className="search-field">
+          Search users
+          <input
+            type="search"
+            value={userSearch}
+            onChange={(event) => setUserSearch(event.target.value)}
+            placeholder="Search by username or email"
+          />
+        </label>
+
+        {filteredUsers.length === 0 ? (
           <p className="status-text">No users found.</p>
         ) : (
           <div className="data-list">
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <article className="data-card" key={user.id}>
                 {editingUserId === user.id ? (
                   <form className="edit-form" onSubmit={handleUpdateUser}>
