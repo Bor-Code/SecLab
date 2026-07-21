@@ -190,10 +190,6 @@ function App() {
     return log.topic_id === Number(selectedLogTopicFilter)
   })
 
-  const resourceTypes = Array.from(
-    new Set(resources.map((resource) => resource.resource_type)),
-  ).sort()
-
   const filteredResources = resources.filter((resource) => {
     const matchesTopic =
       selectedResourceTopicFilter === 'all' ||
@@ -1147,7 +1143,7 @@ function App() {
               }
             >
               <option value="all">All types</option>
-              {resourceTypes.map((type) => (
+              {resourceTypeOptions.map((type) => (
                 <option key={type} value={type}>
                   {type}
                 </option>
