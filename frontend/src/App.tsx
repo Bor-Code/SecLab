@@ -284,6 +284,11 @@ function App() {
         currentResources.filter((resource) => resource.user_id !== userId),
       )
 
+      cancelEditingUser()
+      cancelEditingTopic()
+      cancelEditingLog()
+      cancelEditingResource()
+
       setUserFormMessage('User deleted successfully.')
     } catch (error) {
       setUserFormMessage(
