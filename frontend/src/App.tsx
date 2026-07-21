@@ -143,6 +143,10 @@ function App() {
     'other',
   ]
 
+  function formatResourceTypeLabel(type: string) {
+    return type.charAt(0).toUpperCase() + type.slice(1)
+  }
+
   const selectedTopicUserId = users.some(
     (user) => user.id.toString() === topicUserId,
   )
@@ -1087,7 +1091,7 @@ function App() {
             >
               {resourceTypeOptions.map((type) => (
                 <option key={type} value={type}>
-                  {type}
+                  {formatResourceTypeLabel(type)}
                 </option>
               ))}
             </select>
@@ -1145,7 +1149,7 @@ function App() {
               <option value="all">All types</option>
               {resourceTypeOptions.map((type) => (
                 <option key={type} value={type}>
-                  {type}
+                  {formatResourceTypeLabel(type)}
                 </option>
               ))}
             </select>
@@ -1200,7 +1204,7 @@ function App() {
                       >
                         {resourceTypeOptions.map((type) => (
                           <option key={type} value={type}>
-                            {type}
+                            {formatResourceTypeLabel(type)}
                           </option>
                         ))}
                       </select>
@@ -1234,7 +1238,7 @@ function App() {
                     </p>
                     <p>{resource.notes ?? 'No notes provided.'}</p>
                     <div className="card-meta">
-                      <span>Type: {resource.resource_type}</span>
+                      <span>Type: {formatResourceTypeLabel(resource.resource_type)}</span>
                       <span>User: {getUserLabel(resource.user_id)}</span>
                       <span>Topic: {getTopicLabel(resource.topic_id)}</span>
                     </div>
