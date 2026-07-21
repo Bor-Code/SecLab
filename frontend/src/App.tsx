@@ -134,6 +134,15 @@ function App() {
   const hasUsers = users.length > 0
   const hasTopics = topics.length > 0
 
+  const resourceTypeOptions = [
+    'documentation',
+    'video',
+    'article',
+    'course',
+    'tool',
+    'other',
+  ]
+
   const selectedTopicUserId = users.some(
     (user) => user.id.toString() === topicUserId,
   )
@@ -529,7 +538,7 @@ function App() {
     setEditingResourceId(null)
     setEditingResourceTitle('')
     setEditingResourceUrl('')
-    setEditingResourceType('')
+    setEditingResourceType('documentation')
     setEditingResourceNotes('')
   }
 
@@ -1075,13 +1084,17 @@ function App() {
 
           <label>
             Type
-            <input
-              type="text"
-              maxLength={50}
+            <select
               value={resourceType}
               onChange={(event) => setResourceType(event.target.value)}
               required
-            />
+            >
+              {resourceTypeOptions.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label>
@@ -1182,15 +1195,19 @@ function App() {
 
                     <label>
                       Type
-                      <input
-                        type="text"
-                        maxLength={50}
+                      <select
                         value={editingResourceType}
                         onChange={(event) =>
                           setEditingResourceType(event.target.value)
                         }
                         required
-                      />
+                      >
+                        {resourceTypeOptions.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
                     </label>
 
                     <label>
