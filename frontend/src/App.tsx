@@ -134,6 +134,19 @@ function App() {
   const hasUsers = users.length > 0
   const hasTopics = topics.length > 0
 
+  const resourceTypeOptions = [
+    'documentation',
+    'video',
+    'article',
+    'course',
+    'tool',
+    'other',
+  ]
+
+  function formatResourceTypeLabel(type: string) {
+    return type.charAt(0).toUpperCase() + type.slice(1)
+  }
+
   const selectedTopicUserId = users.some(
     (user) => user.id.toString() === topicUserId,
   )
@@ -180,10 +193,6 @@ function App() {
 
     return log.topic_id === Number(selectedLogTopicFilter)
   })
-
-  const resourceTypes = Array.from(
-    new Set(resources.map((resource) => resource.resource_type)),
-  ).sort()
 
   const filteredResources = resources.filter((resource) => {
     const matchesTopic =
@@ -529,7 +538,7 @@ function App() {
     setEditingResourceId(null)
     setEditingResourceTitle('')
     setEditingResourceUrl('')
-    setEditingResourceType('')
+    setEditingResourceType('documentation')
     setEditingResourceNotes('')
   }
 
@@ -1075,13 +1084,17 @@ function App() {
 
           <label>
             Type
-            <input
-              type="text"
-              maxLength={50}
+            <select
               value={resourceType}
               onChange={(event) => setResourceType(event.target.value)}
               required
-            />
+            >
+              {resourceTypeOptions.map((type) => (
+                <option key={type} value={type}>
+                  {formatResourceTypeLabel(type)}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label>
@@ -1134,9 +1147,9 @@ function App() {
               }
             >
               <option value="all">All types</option>
-              {resourceTypes.map((type) => (
+              {resourceTypeOptions.map((type) => (
                 <option key={type} value={type}>
-                  {type}
+                  {formatResourceTypeLabel(type)}
                 </option>
               ))}
             </select>
@@ -1182,15 +1195,19 @@ function App() {
 
                     <label>
                       Type
-                      <input
-                        type="text"
-                        maxLength={50}
+                      <select
                         value={editingResourceType}
                         onChange={(event) =>
                           setEditingResourceType(event.target.value)
                         }
                         required
-                      />
+                      >
+                        {resourceTypeOptions.map((type) => (
+                          <option key={type} value={type}>
+                            {formatResourceTypeLabel(type)}
+                          </option>
+                        ))}
+                      </select>
                     </label>
 
                     <label>
@@ -1221,7 +1238,7 @@ function App() {
                     </p>
                     <p>{resource.notes ?? 'No notes provided.'}</p>
                     <div className="card-meta">
-                      <span>Type: {resource.resource_type}</span>
+                      <span>Type: {formatResourceTypeLabel(resource.resource_type)}</span>
                       <span>User: {getUserLabel(resource.user_id)}</span>
                       <span>Topic: {getTopicLabel(resource.topic_id)}</span>
                     </div>
