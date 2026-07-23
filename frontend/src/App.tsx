@@ -97,7 +97,7 @@ function App() {
 
     async function loadTopics() {
       try {
-        const data = await fetchTopics()
+        const data = await fetchTopics({ search: topicSearch })
         setTopics(data)
       } catch (error) {
         console.error('Topics could not be loaded:', error)
@@ -126,7 +126,7 @@ function App() {
     loadTopics()
     loadLearningLogs()
     loadResources()
-  }, [])
+  }, [topicSearch])
 
   const userNameById = new Map(users.map((user) => [user.id, user.username]))
   const topicNameById = new Map(topics.map((topic) => [topic.id, topic.name]))
@@ -182,9 +182,7 @@ function App() {
     user.email.toLowerCase().includes(userSearch.toLowerCase()),
   )
 
-  const filteredTopics = topics.filter((topic) =>
-    topic.name.toLowerCase().includes(topicSearch.toLowerCase()),
-  )
+  const filteredTopics = topics
 
   const filteredLearningLogs = learningLogs.filter((log) => {
     if (selectedLogTopicFilter === 'all') {
