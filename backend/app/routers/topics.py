@@ -1,7 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
-from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, Text, delete, insert, select, update
+from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, Text, delete, insert, or_, select, update
 from app.database import engine
 
 router = APIRouter(
@@ -44,12 +44,24 @@ class TopicDeleteResponse(BaseModel):
     topic: TopicRead
 
 @router.get("", response_model=list[TopicRead])
-def get_topics(user_id: int | None = None):
+def get_topics(
+    user_id: int | None = None,
+    search: str | None = None,
+):
     with engine.connect() as connection:
         query = select(topics_table).order_by(topics_table.c.id)
         
         if user_id is not None:
             query = query.where(topics_table.c.user_id == user_id)
+            
+        if search is not None and search.strip():
+            search_pattern = f"%{search.strip()}%"
+            query = query.where(
+                or_(
+                    topics_table.c.name.ilike(search_pattern),
+                    topics_table.c.description.ilike(search_pattern),
+                )
+            )
             
         result = connection.execute(query)
         topics = result.mappings().all()
