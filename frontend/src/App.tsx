@@ -95,6 +95,10 @@ function App() {
       }
     }
 
+    loadUsers()
+  }, [])
+
+  useEffect(() => {
     async function loadTopics() {
       try {
         const data = await fetchTopics({ search: topicSearch })
@@ -104,6 +108,10 @@ function App() {
       }
     }
 
+    loadTopics()
+  }, [topicSearch])
+
+  useEffect(() => {
     async function loadLearningLogs() {
       try {
         const data = await fetchLearningLogs()
@@ -113,6 +121,10 @@ function App() {
       }
     }
 
+    loadLearningLogs()
+  }, [])
+
+  useEffect(() => {
     async function loadResources() {
       try {
         const data = await fetchResources()
@@ -122,11 +134,8 @@ function App() {
       }
     }
 
-    loadUsers()
-    loadTopics()
-    loadLearningLogs()
     loadResources()
-  }, [topicSearch])
+  }, [])
 
   const userNameById = new Map(users.map((user) => [user.id, user.username]))
   const topicNameById = new Map(topics.map((topic) => [topic.id, topic.name]))
