@@ -100,6 +100,9 @@ export type ResourceFilters = {
   resource_type?: string
 }
 
+type QueryValue = string | number | null | undefined
+type QueryParams = Record<string, QueryValue>
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
@@ -116,7 +119,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return (await response.json()) as T
 }
 
-function buildQueryString(params?: Record<string, string | number | null | undefined>) {
+function buildQueryString(params?: QueryParams) {
   if (!params) {
     return ''
   }
