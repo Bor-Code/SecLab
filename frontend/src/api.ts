@@ -85,6 +85,24 @@ export type ResourceUpdate = {
   notes: string | null
 }
 
+export type TopicFilters = {
+  user_id?: number
+}
+
+export type LearningLogFilters = {
+  user_id?: number
+  topic_id?: number
+}
+
+export type ResourceFilters = {
+  user_id?: number
+  topic_id?: number
+  resource_type?: string
+}
+
+type QueryValue = string | number | null | undefined
+type QueryParams = Record<string, QueryValue>
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
@@ -99,6 +117,23 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   }
 
   return (await response.json()) as T
+}
+
+function buildQueryString(params?: QueryParams) {
+  if (!params) {
+    return ''
+  }
+
+  const searchParams = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, value.toString())
+    }
+  }
+
+  const queryString = searchParams.toString()
+  return queryString ? `?${queryString}` : ''
 }
 
 export function fetchUsers() {
@@ -125,8 +160,9 @@ export async function deleteUser(userId: number) {
   })
 }
 
-export function fetchTopics() {
-  return request<Topic[]>('/topics')
+export function fetchTopics(params?: TopicFilters) {
+  const queryString = buildQueryString(params)
+  return request<Topic[]>(`/topics${queryString}`)
 }
 
 export function createTopic(payload: TopicCreate) {
@@ -149,8 +185,9 @@ export async function deleteTopic(topicId: number) {
   })
 }
 
-export function fetchLearningLogs() {
-  return request<LearningLog[]>('/learning-logs')
+export function fetchLearningLogs(params?: LearningLogFilters) {
+  const queryString = buildQueryString(params)
+  return request<LearningLog[]>(`/learning-logs${queryString}`)
 }
 
 export function createLearningLog(payload: LearningLogCreate) {
@@ -173,8 +210,9 @@ export async function deleteLearningLog(logId: number) {
   })
 }
 
-export function fetchResources() {
-  return request<Resource[]>('/resources')
+export function fetchResources(params?: ResourceFilters) {
+  const queryString = buildQueryString(params)
+  return request<Resource[]>(`/resources${queryString}`)
 }
 
 export function createResource(payload: ResourceCreate) {

@@ -55,9 +55,23 @@ class ResourceDeleteResponse(BaseModel):
     deleted_resource: ResourceRead
 
 @router.get("", response_model=list[ResourceRead])
-def get_resources():
+def get_resources(
+    user_id: int | None = None,
+    topic_id: int | None = None,
+    resource_type: str | None = None,
+):
     with engine.connect() as connection:
         query = select(resources_table).order_by(resources_table.c.id)
+        
+        if user_id is not None:
+            query = query.where(resources_table.c.user_id == user_id)
+            
+        if topic_id is not None:
+            query = query.where(resources_table.c.topic_id == topic_id)
+            
+        if resource_type is not None:
+            query = query.where(resources_table.c.resource_type == resource_type)
+            
         result = connection.execute(query)
         resources = result.mappings().all()
         return [dict(resource) for resource in resources]
