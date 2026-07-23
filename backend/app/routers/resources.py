@@ -1,7 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter, status, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, Text, delete, insert, select, update
+from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, Text, delete, insert, or_, select, update
 from app.database import engine
 
 router = APIRouter(
@@ -59,6 +59,7 @@ def get_resources(
     user_id: int | None = None,
     topic_id: int | None = None,
     resource_type: str | None = None,
+    search: str | None = None,
 ):
     with engine.connect() as connection:
         query = select(resources_table).order_by(resources_table.c.id)
@@ -71,6 +72,17 @@ def get_resources(
             
         if resource_type is not None:
             query = query.where(resources_table.c.resource_type == resource_type)
+            
+        if search is not None and search.strip():
+            search_pattern = f"%{search.strip()}%"
+            query = query.where(
+                or_(
+                    resources_table.c.title.ilike(search_pattern),
+                    resources_table.c.url.ilike(search_pattern),
+                    resources_table.c.resource_type.ilike(search_pattern),
+                    resources_table.c.notes.ilike(search_pattern),
+                )
+            )
             
         result = connection.execute(query)
         resources = result.mappings().all()
