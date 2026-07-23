@@ -49,9 +49,16 @@ class LearningLogDeleteResponse(BaseModel):
     deleted_log: LearningLogRead
 
 @router.get("", response_model=list[LearningLogRead])
-def get_learning_logs():
+def get_learning_logs(user_id: int | None = None, topic_id: int | None = None):
     with engine.connect() as connection:
         query = select(learning_logs_table).order_by(learning_logs_table.c.id)
+        
+        if user_id is not None:
+            query = query.where(learning_logs_table.c.user_id == user_id)
+            
+        if topic_id is not None:
+            query = query.where(learning_logs_table.c.topic_id == topic_id)
+            
         result = connection.execute(query)
         logs = result.mappings().all()
         return [dict(log) for log in logs]

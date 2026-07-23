@@ -44,9 +44,13 @@ class TopicDeleteResponse(BaseModel):
     topic: TopicRead
 
 @router.get("", response_model=list[TopicRead])
-def get_topics():
+def get_topics(user_id: int | None = None):
     with engine.connect() as connection:
         query = select(topics_table).order_by(topics_table.c.id)
+        
+        if user_id is not None:
+            query = query.where(topics_table.c.user_id == user_id)
+            
         result = connection.execute(query)
         topics = result.mappings().all()
         return [dict(topic) for topic in topics]
