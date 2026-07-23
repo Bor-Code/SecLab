@@ -49,7 +49,10 @@ class LearningLogDeleteResponse(BaseModel):
     deleted_log: LearningLogRead
 
 @router.get("", response_model=list[LearningLogRead])
-def get_learning_logs(user_id: int | None = None, topic_id: int | None = None):
+def get_learning_logs(
+    user_id: int | None = None,
+    topic_id: int | None = None,
+):
     with engine.connect() as connection:
         query = select(learning_logs_table).order_by(learning_logs_table.c.id)
         
