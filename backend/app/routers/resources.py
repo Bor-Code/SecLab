@@ -55,7 +55,11 @@ class ResourceDeleteResponse(BaseModel):
     deleted_resource: ResourceRead
 
 @router.get("", response_model=list[ResourceRead])
-def get_resources(user_id: int | None = None, topic_id: int | None = None, resource_type: str | None = None):
+def get_resources(
+    user_id: int | None = None,
+    topic_id: int | None = None,
+    resource_type: str | None = None,
+):
     with engine.connect() as connection:
         query = select(resources_table).order_by(resources_table.c.id)
         
