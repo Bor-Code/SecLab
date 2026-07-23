@@ -85,6 +85,21 @@ export type ResourceUpdate = {
   notes: string | null
 }
 
+export type TopicFilters = {
+  user_id?: number
+}
+
+export type LearningLogFilters = {
+  user_id?: number
+  topic_id?: number
+}
+
+export type ResourceFilters = {
+  user_id?: number
+  topic_id?: number
+  resource_type?: string
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
@@ -142,7 +157,7 @@ export async function deleteUser(userId: number) {
   })
 }
 
-export function fetchTopics(params?: { user_id?: number }) {
+export function fetchTopics(params?: TopicFilters) {
   const queryString = buildQueryString(params)
   return request<Topic[]>(`/topics${queryString}`)
 }
@@ -167,7 +182,7 @@ export async function deleteTopic(topicId: number) {
   })
 }
 
-export function fetchLearningLogs(params?: { user_id?: number; topic_id?: number }) {
+export function fetchLearningLogs(params?: LearningLogFilters) {
   const queryString = buildQueryString(params)
   return request<LearningLog[]>(`/learning-logs${queryString}`)
 }
@@ -192,7 +207,7 @@ export async function deleteLearningLog(logId: number) {
   })
 }
 
-export function fetchResources(params?: { user_id?: number; topic_id?: number; resource_type?: string }) {
+export function fetchResources(params?: ResourceFilters) {
   const queryString = buildQueryString(params)
   return request<Resource[]>(`/resources${queryString}`)
 }
