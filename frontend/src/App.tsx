@@ -95,15 +95,23 @@ function App() {
       }
     }
 
+    loadUsers()
+  }, [])
+
+  useEffect(() => {
     async function loadTopics() {
       try {
-        const data = await fetchTopics()
+        const data = await fetchTopics({ search: topicSearch })
         setTopics(data)
       } catch (error) {
         console.error('Topics could not be loaded:', error)
       }
     }
 
+    loadTopics()
+  }, [topicSearch])
+
+  useEffect(() => {
     async function loadLearningLogs() {
       try {
         const data = await fetchLearningLogs()
@@ -113,6 +121,10 @@ function App() {
       }
     }
 
+    loadLearningLogs()
+  }, [])
+
+  useEffect(() => {
     async function loadResources() {
       try {
         const data = await fetchResources()
@@ -122,9 +134,6 @@ function App() {
       }
     }
 
-    loadUsers()
-    loadTopics()
-    loadLearningLogs()
     loadResources()
   }, [])
 
@@ -182,9 +191,7 @@ function App() {
     user.email.toLowerCase().includes(userSearch.toLowerCase()),
   )
 
-  const filteredTopics = topics.filter((topic) =>
-    topic.name.toLowerCase().includes(topicSearch.toLowerCase()),
-  )
+  const filteredTopics = topics
 
   const filteredLearningLogs = learningLogs.filter((log) => {
     if (selectedLogTopicFilter === 'all') {

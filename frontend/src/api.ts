@@ -87,17 +87,20 @@ export type ResourceUpdate = {
 
 export type TopicFilters = {
   user_id?: number
+  search?: string
 }
 
 export type LearningLogFilters = {
   user_id?: number
   topic_id?: number
+  search?: string
 }
 
 export type ResourceFilters = {
   user_id?: number
   topic_id?: number
   resource_type?: string
+  search?: string
 }
 
 type QueryValue = string | number | null | undefined
