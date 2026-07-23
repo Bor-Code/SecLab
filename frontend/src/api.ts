@@ -101,6 +101,23 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return (await response.json()) as T
 }
 
+function buildQueryString(params?: Record<string, string | number | null | undefined>) {
+  if (!params) {
+    return ''
+  }
+
+  const searchParams = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, value.toString())
+    }
+  }
+
+  const queryString = searchParams.toString()
+  return queryString ? `?${queryString}` : ''
+}
+
 export function fetchUsers() {
   return request<User[]>('/users')
 }
@@ -125,8 +142,9 @@ export async function deleteUser(userId: number) {
   })
 }
 
-export function fetchTopics() {
-  return request<Topic[]>('/topics')
+export function fetchTopics(params?: { user_id?: number }) {
+  const queryString = buildQueryString(params)
+  return request<Topic[]>(`/topics${queryString}`)
 }
 
 export function createTopic(payload: TopicCreate) {
@@ -149,8 +167,9 @@ export async function deleteTopic(topicId: number) {
   })
 }
 
-export function fetchLearningLogs() {
-  return request<LearningLog[]>('/learning-logs')
+export function fetchLearningLogs(params?: { user_id?: number; topic_id?: number }) {
+  const queryString = buildQueryString(params)
+  return request<LearningLog[]>(`/learning-logs${queryString}`)
 }
 
 export function createLearningLog(payload: LearningLogCreate) {
@@ -173,8 +192,9 @@ export async function deleteLearningLog(logId: number) {
   })
 }
 
-export function fetchResources() {
-  return request<Resource[]>('/resources')
+export function fetchResources(params?: { user_id?: number; topic_id?: number; resource_type?: string }) {
+  const queryString = buildQueryString(params)
+  return request<Resource[]>(`/resources${queryString}`)
 }
 
 export function createResource(payload: ResourceCreate) {
