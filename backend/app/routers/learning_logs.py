@@ -64,7 +64,7 @@ def get_learning_logs(
             query = query.where(learning_logs_table.c.topic_id == topic_id)
             
         if search is not None and search.strip():
-            search_pattern = f"%{search}%"
+            search_pattern = f"%{search.strip()}%"
             query = query.where(
                 or_(
                     learning_logs_table.c.title.ilike(search_pattern),
