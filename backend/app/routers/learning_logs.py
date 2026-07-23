@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from fastapi import APIRouter, status, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import Column, Date, DateTime, Integer, MetaData, String, Table, Text, delete, insert, select, update
+from sqlalchemy import Column, Date, DateTime, Integer, MetaData, String, Table, Text, delete, insert, or_, select, update
 from app.database import engine
 
 router = APIRouter(
@@ -52,6 +52,7 @@ class LearningLogDeleteResponse(BaseModel):
 def get_learning_logs(
     user_id: int | None = None,
     topic_id: int | None = None,
+    search: str | None = None,
 ):
     with engine.connect() as connection:
         query = select(learning_logs_table).order_by(learning_logs_table.c.id)
@@ -61,6 +62,15 @@ def get_learning_logs(
             
         if topic_id is not None:
             query = query.where(learning_logs_table.c.topic_id == topic_id)
+            
+        if search is not None and search.strip():
+            search_pattern = f"%{search}%"
+            query = query.where(
+                or_(
+                    learning_logs_table.c.title.ilike(search_pattern),
+                    learning_logs_table.c.notes.ilike(search_pattern),
+                )
+            )
             
         result = connection.execute(query)
         logs = result.mappings().all()
