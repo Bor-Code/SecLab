@@ -646,25 +646,25 @@ function App() {
       <section className="summary-grid">
         <article className="summary-card">
           <span>Users</span>
-          <strong>{dashboardUsersCount}</strong>
+          <strong>{isLoadingDashboardSummary ? '...' : dashboardUsersCount}</strong>
           <p>Create, search, edit, and delete application users.</p>
         </article>
 
         <article className="summary-card">
           <span>Topics</span>
-          <strong>{dashboardTopicsCount}</strong>
+          <strong>{isLoadingDashboardSummary ? '...' : dashboardTopicsCount}</strong>
           <p>Topics loaded from the FastAPI backend.</p>
         </article>
 
         <article className="summary-card">
           <span>Learning Logs</span>
-          <strong>{dashboardLearningLogsCount}</strong>
+          <strong>{isLoadingDashboardSummary ? '...' : dashboardLearningLogsCount}</strong>
           <p>Record study notes for each topic.</p>
         </article>
 
         <article className="summary-card">
           <span>Resources</span>
-          <strong>{dashboardResourcesCount}</strong>
+          <strong>{isLoadingDashboardSummary ? '...' : dashboardResourcesCount}</strong>
           <p>Store useful links and references.</p>
         </article>
       </section>
