@@ -110,6 +110,13 @@ export type DashboardSummary = {
   resources_count: number
 }
 
+export type DashboardActivityItem = {
+  activity_type: string
+  title: string
+  description: string | null
+  created_at: string
+}
+
 type QueryValue = string | number | null | undefined
 type QueryParams = Record<string, QueryValue>
 
@@ -247,4 +254,8 @@ export async function deleteResource(resourceId: number) {
 
 export function fetchDashboardSummary() {
   return request<DashboardSummary>('/dashboard/summary')
+}
+
+export function fetchDashboardRecentActivity() {
+  return request<DashboardActivityItem[]>('/dashboard/recent-activity')
 }
