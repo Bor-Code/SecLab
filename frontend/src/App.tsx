@@ -210,6 +210,14 @@ function App() {
     return type.charAt(0).toUpperCase() + type.slice(1)
   }
 
+  function formatActivityType(type: string) {
+    return type.replace('_', ' ')
+  }
+
+  function formatActivityDate(value: string) {
+    return new Date(value).toLocaleString()
+  }
+
   const selectedTopicUserId = users.some(
     (user) => user.id.toString() === topicUserId,
   )
@@ -259,8 +267,6 @@ function App() {
   const dashboardSummaryStatusText = isLoadingDashboardSummary
     ? 'Loading dashboard summary...'
     : dashboardSummaryMessage
-    
-  const hasDashboardActivity = dashboardActivity.length > 0
 
   function getUserLabel(userId: number) {
     return userNameById.get(userId) ?? `User #${userId}`
@@ -674,7 +680,7 @@ function App() {
       </section>
 
       <p className="dashboard-summary-status">
-        {dashboardSummaryStatusText} {hasDashboardActivity && null}
+        {dashboardSummaryStatusText}
       </p>
 
       <section className="summary-grid">
@@ -701,6 +707,34 @@ function App() {
           <strong>{isLoadingDashboardSummary ? '...' : dashboardResourcesCount}</strong>
           <p>Store useful links and references.</p>
         </article>
+      </section>
+
+      <section className="panel">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Dashboard</p>
+            <h2>Recent activity</h2>
+          </div>
+        </div>
+
+        {dashboardActivity.length === 0 ? (
+          <p className="status-text">No recent activity yet.</p>
+        ) : (
+          <div className="item-list">
+            {dashboardActivity.map((item, index) => (
+              <article className="data-card" key={index}>
+                <h3>{item.title}</h3>
+                {item.description && <p>{item.description}</p>}
+                <div className="card-meta">
+                  <span style={{ textTransform: 'capitalize' }}>
+                    {formatActivityType(item.activity_type)}
+                  </span>
+                  <span>{formatActivityDate(item.created_at)}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="panel">
