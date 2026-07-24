@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlalchemy import func, select
@@ -23,7 +25,7 @@ class DashboardActivityItem(BaseModel):
     activity_type: str
     title: str
     description: str | None
-    created_at: str
+    created_at: datetime
 
 @router.get("/summary", response_model=DashboardSummary)
 def get_dashboard_summary():
@@ -63,7 +65,7 @@ def get_dashboard_recent_activity():
                     activity_type="user",
                     title=row.username,
                     description=row.email,
-                    created_at=str(row.created_at),
+                    created_at=row.created_at,
                 )
             )
 
@@ -74,7 +76,7 @@ def get_dashboard_recent_activity():
                     activity_type="topic",
                     title=row.name,
                     description=row.description,
-                    created_at=str(row.created_at),
+                    created_at=row.created_at,
                 )
             )
 
@@ -85,7 +87,7 @@ def get_dashboard_recent_activity():
                     activity_type="learning_log",
                     title=row.title,
                     description=row.notes,
-                    created_at=str(row.created_at),
+                    created_at=row.created_at,
                 )
             )
 
@@ -96,7 +98,7 @@ def get_dashboard_recent_activity():
                     activity_type="resource",
                     title=row.title,
                     description=row.url,
-                    created_at=str(row.created_at),
+                    created_at=row.created_at,
                 )
             )
 
