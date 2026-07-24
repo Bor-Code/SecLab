@@ -237,6 +237,11 @@ function App() {
 
   const filteredResources = resources
 
+  const dashboardUsersCount = dashboardSummary?.users_count ?? users.length
+  const dashboardTopicsCount = dashboardSummary?.topics_count ?? topics.length
+  const dashboardLearningLogsCount = dashboardSummary?.learning_logs_count ?? learningLogs.length
+  const dashboardResourcesCount = dashboardSummary?.resources_count ?? resources.length
+
   function getUserLabel(userId: number) {
     return userNameById.get(userId) ?? `User #${userId}`
   }
@@ -641,25 +646,25 @@ function App() {
       <section className="summary-grid">
         <article className="summary-card">
           <span>Users</span>
-          <strong>{dashboardSummary?.users_count ?? users.length}</strong>
+          <strong>{dashboardUsersCount}</strong>
           <p>Create, search, edit, and delete application users.</p>
         </article>
 
         <article className="summary-card">
           <span>Topics</span>
-          <strong>{dashboardSummary?.topics_count ?? topics.length}</strong>
+          <strong>{dashboardTopicsCount}</strong>
           <p>Topics loaded from the FastAPI backend.</p>
         </article>
 
         <article className="summary-card">
           <span>Learning Logs</span>
-          <strong>{dashboardSummary?.learning_logs_count ?? learningLogs.length}</strong>
+          <strong>{dashboardLearningLogsCount}</strong>
           <p>Record study notes for each topic.</p>
         </article>
 
         <article className="summary-card">
           <span>Resources</span>
-          <strong>{dashboardSummary?.resources_count ?? resources.length}</strong>
+          <strong>{dashboardResourcesCount}</strong>
           <p>Store useful links and references.</p>
         </article>
       </section>
