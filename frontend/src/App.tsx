@@ -27,6 +27,9 @@ import './App.css'
 
 function App() {
   const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null)
+  const [isLoadingDashboardSummary, setIsLoadingDashboardSummary] = useState(true)
+  const [dashboardSummaryMessage, setDashboardSummaryMessage] = useState<string | null>(null)
+  
   const [users, setUsers] = useState<User[]>([])
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -90,11 +93,18 @@ function App() {
 
   useEffect(() => {
     async function loadDashboardSummary() {
+      setIsLoadingDashboardSummary(true)
+      setDashboardSummaryMessage(null)
+      
       try {
         const data = await fetchDashboardSummary()
         setDashboardSummary(data)
+        setDashboardSummaryMessage('Backend summary loaded.')
       } catch (error) {
         console.error('Dashboard summary could not be loaded:', error)
+        setDashboardSummaryMessage('Using local frontend counts.')
+      } finally {
+        setIsLoadingDashboardSummary(false)
       }
     }
 
@@ -621,6 +631,12 @@ function App() {
           engineering dashboard.
         </p>
       </section>
+
+      <p className="dashboard-summary-status">
+        {isLoadingDashboardSummary
+          ? 'Loading dashboard summary...'
+          : dashboardSummaryMessage}
+      </p>
 
       <section className="summary-grid">
         <article className="summary-card">
