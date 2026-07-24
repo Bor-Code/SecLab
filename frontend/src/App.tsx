@@ -8,6 +8,7 @@ import {
   deleteResource,
   deleteTopic,
   deleteUser,
+  fetchDashboardSummary,
   fetchLearningLogs,
   fetchResources,
   fetchTopics,
@@ -16,6 +17,7 @@ import {
   updateResource,
   updateTopic,
   updateUser,
+  type DashboardSummary,
   type LearningLog,
   type Resource,
   type Topic,
@@ -24,6 +26,7 @@ import {
 import './App.css'
 
 function App() {
+  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null)
   const [users, setUsers] = useState<User[]>([])
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -86,6 +89,19 @@ function App() {
     useState('all')
 
   useEffect(() => {
+    async function loadDashboardSummary() {
+      try {
+        const data = await fetchDashboardSummary()
+        setDashboardSummary(data)
+      } catch (error) {
+        console.error('Dashboard summary could not be loaded:', error)
+      }
+    }
+
+    loadDashboardSummary()
+  }, [])
+
+  useEffect(() => {
     async function loadUsers() {
       try {
         const data = await fetchUsers()
@@ -114,7 +130,12 @@ function App() {
   useEffect(() => {
     async function loadLearningLogs() {
       try {
-        const data = await fetchLearningLogs()
+        const data = await fetchLearningLogs({
+          topic_id:
+            selectedLogTopicFilter === 'all'
+              ? undefined
+              : Number(selectedLogTopicFilter),
+        })
         setLearningLogs(data)
       } catch (error) {
         console.error('Learning logs could not be loaded:', error)
@@ -122,12 +143,21 @@ function App() {
     }
 
     loadLearningLogs()
-  }, [])
+  }, [selectedLogTopicFilter])
 
   useEffect(() => {
     async function loadResources() {
       try {
-        const data = await fetchResources()
+        const data = await fetchResources({
+          topic_id:
+            selectedResourceTopicFilter === 'all'
+              ? undefined
+              : Number(selectedResourceTopicFilter),
+          resource_type:
+            selectedResourceTypeFilter === 'all'
+              ? undefined
+              : selectedResourceTypeFilter,
+        })
         setResources(data)
       } catch (error) {
         console.error('Resources could not be loaded:', error)
@@ -135,7 +165,7 @@ function App() {
     }
 
     loadResources()
-  }, [])
+  }, [selectedResourceTopicFilter, selectedResourceTypeFilter])
 
   const userNameById = new Map(users.map((user) => [user.id, user.username]))
   const topicNameById = new Map(topics.map((topic) => [topic.id, topic.name]))
@@ -193,25 +223,9 @@ function App() {
 
   const filteredTopics = topics
 
-  const filteredLearningLogs = learningLogs.filter((log) => {
-    if (selectedLogTopicFilter === 'all') {
-      return true
-    }
+  const filteredLearningLogs = learningLogs
 
-    return log.topic_id === Number(selectedLogTopicFilter)
-  })
-
-  const filteredResources = resources.filter((resource) => {
-    const matchesTopic =
-      selectedResourceTopicFilter === 'all' ||
-      resource.topic_id === Number(selectedResourceTopicFilter)
-
-    const matchesType =
-      selectedResourceTypeFilter === 'all' ||
-      resource.resource_type === selectedResourceTypeFilter
-
-    return matchesTopic && matchesType
-  })
+  const filteredResources = resources
 
   function getUserLabel(userId: number) {
     return userNameById.get(userId) ?? `User #${userId}`
@@ -611,25 +625,25 @@ function App() {
       <section className="summary-grid">
         <article className="summary-card">
           <span>Users</span>
-          <strong>{users.length}</strong>
+          <strong>{dashboardSummary?.users_count ?? users.length}</strong>
           <p>Create, search, edit, and delete application users.</p>
         </article>
 
         <article className="summary-card">
           <span>Topics</span>
-          <strong>{topics.length}</strong>
+          <strong>{dashboardSummary?.topics_count ?? topics.length}</strong>
           <p>Topics loaded from the FastAPI backend.</p>
         </article>
 
         <article className="summary-card">
           <span>Learning Logs</span>
-          <strong>{learningLogs.length}</strong>
+          <strong>{dashboardSummary?.learning_logs_count ?? learningLogs.length}</strong>
           <p>Record study notes for each topic.</p>
         </article>
 
         <article className="summary-card">
           <span>Resources</span>
-          <strong>{resources.length}</strong>
+          <strong>{dashboardSummary?.resources_count ?? resources.length}</strong>
           <p>Store useful links and references.</p>
         </article>
       </section>

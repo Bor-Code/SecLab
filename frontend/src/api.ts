@@ -103,6 +103,13 @@ export type ResourceFilters = {
   search?: string
 }
 
+export type DashboardSummary = {
+  users_count: number
+  topics_count: number
+  learning_logs_count: number
+  resources_count: number
+}
+
 type QueryValue = string | number | null | undefined
 type QueryParams = Record<string, QueryValue>
 
@@ -236,4 +243,8 @@ export async function deleteResource(resourceId: number) {
   await request<unknown>(`/resources/${resourceId}`, {
     method: 'DELETE',
   })
+}
+
+export function fetchDashboardSummary() {
+  return request<DashboardSummary>('/dashboard/summary')
 }
