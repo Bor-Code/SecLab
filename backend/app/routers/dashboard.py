@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlalchemy import func, select
@@ -18,6 +20,12 @@ class DashboardSummary(BaseModel):
     topics_count: int
     learning_logs_count: int
     resources_count: int
+
+class DashboardActivityItem(BaseModel):
+    activity_type: str
+    title: str
+    description: str | None
+    created_at: datetime
 
 @router.get("/summary", response_model=DashboardSummary)
 def get_dashboard_summary():
@@ -44,3 +52,55 @@ def get_dashboard_summary():
             learning_logs_count=learning_logs_count or 0,
             resources_count=resources_count or 0,
         )
+
+@router.get("/recent-activity", response_model=list[DashboardActivityItem])
+def get_dashboard_recent_activity():
+    items = []
+
+    with engine.connect() as connection:
+        users_query = select(users_table).order_by(users_table.c.created_at.desc()).limit(4)
+        for row in connection.execute(users_query):
+            items.append(
+                DashboardActivityItem(
+                    activity_type="user",
+                    title=row.username,
+                    description=row.email,
+                    created_at=row.created_at,
+                )
+            )
+
+        topics_query = select(topics_table).order_by(topics_table.c.created_at.desc()).limit(4)
+        for row in connection.execute(topics_query):
+            items.append(
+                DashboardActivityItem(
+                    activity_type="topic",
+                    title=row.name,
+                    description=row.description,
+                    created_at=row.created_at,
+                )
+            )
+
+        logs_query = select(learning_logs_table).order_by(learning_logs_table.c.created_at.desc()).limit(4)
+        for row in connection.execute(logs_query):
+            items.append(
+                DashboardActivityItem(
+                    activity_type="learning_log",
+                    title=row.title,
+                    description=row.notes,
+                    created_at=row.created_at,
+                )
+            )
+
+        resources_query = select(resources_table).order_by(resources_table.c.created_at.desc()).limit(4)
+        for row in connection.execute(resources_query):
+            items.append(
+                DashboardActivityItem(
+                    activity_type="resource",
+                    title=row.title,
+                    description=row.url,
+                    created_at=row.created_at,
+                )
+            )
+
+    items.sort(key=lambda item: item.created_at, reverse=True)
+    return items[:8]

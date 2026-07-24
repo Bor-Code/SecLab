@@ -8,6 +8,7 @@ import {
   deleteResource,
   deleteTopic,
   deleteUser,
+  fetchDashboardRecentActivity,
   fetchDashboardSummary,
   fetchLearningLogs,
   fetchResources,
@@ -17,6 +18,7 @@ import {
   updateResource,
   updateTopic,
   updateUser,
+  type DashboardActivityItem,
   type DashboardSummary,
   type LearningLog,
   type Resource,
@@ -30,6 +32,8 @@ function App() {
   const [isLoadingDashboardSummary, setIsLoadingDashboardSummary] = useState(true)
   const [dashboardSummaryMessage, setDashboardSummaryMessage] = useState<string | null>(null)
   
+  const [dashboardActivity, setDashboardActivity] = useState<DashboardActivityItem[]>([])
+
   const [users, setUsers] = useState<User[]>([])
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -107,8 +111,18 @@ function App() {
     }
   }
 
+  async function loadDashboardActivity() {
+    try {
+      const data = await fetchDashboardRecentActivity()
+      setDashboardActivity(data)
+    } catch (error) {
+      console.error('Dashboard activity could not be loaded:', error)
+    }
+  }
+
   useEffect(() => {
     loadDashboardSummary()
+    loadDashboardActivity()
   }, [])
 
   useEffect(() => {
@@ -196,6 +210,14 @@ function App() {
     return type.charAt(0).toUpperCase() + type.slice(1)
   }
 
+  function formatActivityType(type: string) {
+    return type.replace('_', ' ')
+  }
+
+  function formatActivityDate(value: string) {
+    return new Date(value).toLocaleString()
+  }
+
   const selectedTopicUserId = users.some(
     (user) => user.id.toString() === topicUserId,
   )
@@ -270,6 +292,7 @@ function App() {
       setEmail('')
       setUserFormMessage('User created successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setUserFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -338,6 +361,7 @@ function App() {
 
       setUserFormMessage('User deleted successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setUserFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -362,6 +386,7 @@ function App() {
       setTopicDescription('')
       setTopicFormMessage('Topic created successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setTopicFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -450,6 +475,7 @@ function App() {
 
       setTopicFormMessage('Topic deleted successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setTopicFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -475,6 +501,7 @@ function App() {
       setLogNotes('')
       setLogFormMessage('Learning log created successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setLogFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -535,6 +562,7 @@ function App() {
       )
       setLogFormMessage('Learning log deleted successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setLogFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -563,6 +591,7 @@ function App() {
       setResourceNotes('')
       setResourceFormMessage('Resource created successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setResourceFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -631,6 +660,7 @@ function App() {
       )
       setResourceFormMessage('Resource deleted successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setResourceFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -677,6 +707,34 @@ function App() {
           <strong>{isLoadingDashboardSummary ? '...' : dashboardResourcesCount}</strong>
           <p>Store useful links and references.</p>
         </article>
+      </section>
+
+      <section className="panel">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Dashboard</p>
+            <h2>Recent activity</h2>
+          </div>
+        </div>
+
+        {dashboardActivity.length === 0 ? (
+          <p className="status-text">No recent activity yet.</p>
+        ) : (
+          <div className="item-list">
+            {dashboardActivity.map((item, index) => (
+              <article className="data-card" key={index}>
+                <h3>{item.title}</h3>
+                {item.description && <p>{item.description}</p>}
+                <div className="card-meta">
+                  <span style={{ textTransform: 'capitalize' }}>
+                    {formatActivityType(item.activity_type)}
+                  </span>
+                  <span>{formatActivityDate(item.created_at)}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="panel">
