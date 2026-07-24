@@ -8,6 +8,7 @@ import {
   deleteResource,
   deleteTopic,
   deleteUser,
+  fetchDashboardRecentActivity,
   fetchDashboardSummary,
   fetchLearningLogs,
   fetchResources,
@@ -17,6 +18,7 @@ import {
   updateResource,
   updateTopic,
   updateUser,
+  type DashboardActivityItem,
   type DashboardSummary,
   type LearningLog,
   type Resource,
@@ -30,6 +32,8 @@ function App() {
   const [isLoadingDashboardSummary, setIsLoadingDashboardSummary] = useState(true)
   const [dashboardSummaryMessage, setDashboardSummaryMessage] = useState<string | null>(null)
   
+  const [dashboardActivity, setDashboardActivity] = useState<DashboardActivityItem[]>([])
+
   const [users, setUsers] = useState<User[]>([])
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -107,8 +111,18 @@ function App() {
     }
   }
 
+  async function loadDashboardActivity() {
+    try {
+      const data = await fetchDashboardRecentActivity()
+      setDashboardActivity(data)
+    } catch (error) {
+      console.error('Dashboard activity could not be loaded:', error)
+    }
+  }
+
   useEffect(() => {
     loadDashboardSummary()
+    loadDashboardActivity()
   }, [])
 
   useEffect(() => {
@@ -245,6 +259,8 @@ function App() {
   const dashboardSummaryStatusText = isLoadingDashboardSummary
     ? 'Loading dashboard summary...'
     : dashboardSummaryMessage
+    
+  const hasDashboardActivity = dashboardActivity.length > 0
 
   function getUserLabel(userId: number) {
     return userNameById.get(userId) ?? `User #${userId}`
@@ -270,6 +286,7 @@ function App() {
       setEmail('')
       setUserFormMessage('User created successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setUserFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -338,6 +355,7 @@ function App() {
 
       setUserFormMessage('User deleted successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setUserFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -362,6 +380,7 @@ function App() {
       setTopicDescription('')
       setTopicFormMessage('Topic created successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setTopicFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -450,6 +469,7 @@ function App() {
 
       setTopicFormMessage('Topic deleted successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setTopicFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -475,6 +495,7 @@ function App() {
       setLogNotes('')
       setLogFormMessage('Learning log created successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setLogFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -535,6 +556,7 @@ function App() {
       )
       setLogFormMessage('Learning log deleted successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setLogFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -563,6 +585,7 @@ function App() {
       setResourceNotes('')
       setResourceFormMessage('Resource created successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setResourceFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -631,6 +654,7 @@ function App() {
       )
       setResourceFormMessage('Resource deleted successfully.')
       void loadDashboardSummary()
+      void loadDashboardActivity()
     } catch (error) {
       setResourceFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -650,7 +674,7 @@ function App() {
       </section>
 
       <p className="dashboard-summary-status">
-        {dashboardSummaryStatusText}
+        {dashboardSummaryStatusText} {hasDashboardActivity && null}
       </p>
 
       <section className="summary-grid">
