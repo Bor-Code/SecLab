@@ -91,23 +91,23 @@ function App() {
   const [selectedResourceTypeFilter, setSelectedResourceTypeFilter] =
     useState('all')
 
-  useEffect(() => {
-    async function loadDashboardSummary() {
-      setIsLoadingDashboardSummary(true)
-      setDashboardSummaryMessage(null)
-      
-      try {
-        const data = await fetchDashboardSummary()
-        setDashboardSummary(data)
-        setDashboardSummaryMessage('Backend summary loaded.')
-      } catch (error) {
-        console.error('Dashboard summary could not be loaded:', error)
-        setDashboardSummaryMessage('Using local frontend counts.')
-      } finally {
-        setIsLoadingDashboardSummary(false)
-      }
+  async function loadDashboardSummary() {
+    setIsLoadingDashboardSummary(true)
+    setDashboardSummaryMessage(null)
+    
+    try {
+      const data = await fetchDashboardSummary()
+      setDashboardSummary(data)
+      setDashboardSummaryMessage('Backend summary loaded.')
+    } catch (error) {
+      console.error('Dashboard summary could not be loaded:', error)
+      setDashboardSummaryMessage('Using local frontend counts.')
+    } finally {
+      setIsLoadingDashboardSummary(false)
     }
+  }
 
+  useEffect(() => {
     loadDashboardSummary()
   }, [])
 
@@ -265,6 +265,7 @@ function App() {
       setUsername('')
       setEmail('')
       setUserFormMessage('User created successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setUserFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -332,6 +333,7 @@ function App() {
       cancelEditingResource()
 
       setUserFormMessage('User deleted successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setUserFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -355,6 +357,7 @@ function App() {
       setTopicName('')
       setTopicDescription('')
       setTopicFormMessage('Topic created successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setTopicFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -442,6 +445,7 @@ function App() {
       cancelEditingResource()
 
       setTopicFormMessage('Topic deleted successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setTopicFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -466,6 +470,7 @@ function App() {
       setLogTitle('')
       setLogNotes('')
       setLogFormMessage('Learning log created successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setLogFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -525,6 +530,7 @@ function App() {
         currentLogs.filter((log) => log.id !== logId),
       )
       setLogFormMessage('Learning log deleted successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setLogFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -552,6 +558,7 @@ function App() {
       setResourceUrl('')
       setResourceNotes('')
       setResourceFormMessage('Resource created successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setResourceFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -619,6 +626,7 @@ function App() {
         currentResources.filter((resource) => resource.id !== resourceId),
       )
       setResourceFormMessage('Resource deleted successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setResourceFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
