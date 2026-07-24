@@ -242,6 +242,10 @@ function App() {
   const dashboardLearningLogsCount = dashboardSummary?.learning_logs_count ?? learningLogs.length
   const dashboardResourcesCount = dashboardSummary?.resources_count ?? resources.length
 
+  const dashboardSummaryStatusText = isLoadingDashboardSummary
+    ? 'Loading dashboard summary...'
+    : dashboardSummaryMessage
+
   function getUserLabel(userId: number) {
     return userNameById.get(userId) ?? `User #${userId}`
   }
@@ -646,9 +650,7 @@ function App() {
       </section>
 
       <p className="dashboard-summary-status">
-        {isLoadingDashboardSummary
-          ? 'Loading dashboard summary...'
-          : dashboardSummaryMessage}
+        {dashboardSummaryStatusText}
       </p>
 
       <section className="summary-grid">
