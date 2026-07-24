@@ -27,6 +27,9 @@ import './App.css'
 
 function App() {
   const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null)
+  const [isLoadingDashboardSummary, setIsLoadingDashboardSummary] = useState(true)
+  const [dashboardSummaryMessage, setDashboardSummaryMessage] = useState<string | null>(null)
+  
   const [users, setUsers] = useState<User[]>([])
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -88,16 +91,23 @@ function App() {
   const [selectedResourceTypeFilter, setSelectedResourceTypeFilter] =
     useState('all')
 
-  useEffect(() => {
-    async function loadDashboardSummary() {
-      try {
-        const data = await fetchDashboardSummary()
-        setDashboardSummary(data)
-      } catch (error) {
-        console.error('Dashboard summary could not be loaded:', error)
-      }
+  async function loadDashboardSummary() {
+    setIsLoadingDashboardSummary(true)
+    setDashboardSummaryMessage(null)
+    
+    try {
+      const data = await fetchDashboardSummary()
+      setDashboardSummary(data)
+      setDashboardSummaryMessage('Backend summary loaded.')
+    } catch (error) {
+      console.error('Dashboard summary could not be loaded:', error)
+      setDashboardSummaryMessage('Using local frontend counts.')
+    } finally {
+      setIsLoadingDashboardSummary(false)
     }
+  }
 
+  useEffect(() => {
     loadDashboardSummary()
   }, [])
 
@@ -227,6 +237,15 @@ function App() {
 
   const filteredResources = resources
 
+  const dashboardUsersCount = dashboardSummary?.users_count ?? users.length
+  const dashboardTopicsCount = dashboardSummary?.topics_count ?? topics.length
+  const dashboardLearningLogsCount = dashboardSummary?.learning_logs_count ?? learningLogs.length
+  const dashboardResourcesCount = dashboardSummary?.resources_count ?? resources.length
+
+  const dashboardSummaryStatusText = isLoadingDashboardSummary
+    ? 'Loading dashboard summary...'
+    : dashboardSummaryMessage
+
   function getUserLabel(userId: number) {
     return userNameById.get(userId) ?? `User #${userId}`
   }
@@ -250,6 +269,7 @@ function App() {
       setUsername('')
       setEmail('')
       setUserFormMessage('User created successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setUserFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -317,6 +337,7 @@ function App() {
       cancelEditingResource()
 
       setUserFormMessage('User deleted successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setUserFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -340,6 +361,7 @@ function App() {
       setTopicName('')
       setTopicDescription('')
       setTopicFormMessage('Topic created successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setTopicFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -427,6 +449,7 @@ function App() {
       cancelEditingResource()
 
       setTopicFormMessage('Topic deleted successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setTopicFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -451,6 +474,7 @@ function App() {
       setLogTitle('')
       setLogNotes('')
       setLogFormMessage('Learning log created successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setLogFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -510,6 +534,7 @@ function App() {
         currentLogs.filter((log) => log.id !== logId),
       )
       setLogFormMessage('Learning log deleted successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setLogFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -537,6 +562,7 @@ function App() {
       setResourceUrl('')
       setResourceNotes('')
       setResourceFormMessage('Resource created successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setResourceFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -604,6 +630,7 @@ function App() {
         currentResources.filter((resource) => resource.id !== resourceId),
       )
       setResourceFormMessage('Resource deleted successfully.')
+      void loadDashboardSummary()
     } catch (error) {
       setResourceFormMessage(
         error instanceof Error ? error.message : 'Unexpected error',
@@ -622,28 +649,32 @@ function App() {
         </p>
       </section>
 
+      <p className="dashboard-summary-status">
+        {dashboardSummaryStatusText}
+      </p>
+
       <section className="summary-grid">
         <article className="summary-card">
           <span>Users</span>
-          <strong>{dashboardSummary?.users_count ?? users.length}</strong>
+          <strong>{isLoadingDashboardSummary ? '...' : dashboardUsersCount}</strong>
           <p>Create, search, edit, and delete application users.</p>
         </article>
 
         <article className="summary-card">
           <span>Topics</span>
-          <strong>{dashboardSummary?.topics_count ?? topics.length}</strong>
+          <strong>{isLoadingDashboardSummary ? '...' : dashboardTopicsCount}</strong>
           <p>Topics loaded from the FastAPI backend.</p>
         </article>
 
         <article className="summary-card">
           <span>Learning Logs</span>
-          <strong>{dashboardSummary?.learning_logs_count ?? learningLogs.length}</strong>
+          <strong>{isLoadingDashboardSummary ? '...' : dashboardLearningLogsCount}</strong>
           <p>Record study notes for each topic.</p>
         </article>
 
         <article className="summary-card">
           <span>Resources</span>
-          <strong>{dashboardSummary?.resources_count ?? resources.length}</strong>
+          <strong>{isLoadingDashboardSummary ? '...' : dashboardResourcesCount}</strong>
           <p>Store useful links and references.</p>
         </article>
       </section>
