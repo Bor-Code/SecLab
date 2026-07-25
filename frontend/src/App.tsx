@@ -110,7 +110,7 @@ function App() {
       setDashboardSummaryMessage('Backend summary loaded.')
     } catch (error) {
       console.error('Dashboard summary could not be loaded:', error)
-      setDashboardSummaryMessage('Using local frontend counts.')
+      setDashboardSummaryMessage('API disconnected. Using local frontend counts.')
     } finally {
       setIsLoadingDashboardSummary(false)
     }
@@ -761,7 +761,7 @@ function App() {
         </div>
 
         {dashboardActivity.length === 0 ? (
-          <p className="status-text">No recent activity yet.</p>
+          <p className="status-text">No recent activity found. Create your first record below to populate the dashboard.</p>
         ) : (
           <div className="item-list">
             {dashboardActivity.map((item, index) => (
@@ -829,7 +829,7 @@ function App() {
         </label>
 
         {filteredUsers.length === 0 ? (
-          <p className="status-text">No users found.</p>
+          <p className="status-text">No users found. Create a user to get started.</p>
         ) : (
           <div className="data-list">
             {filteredUsers.map((user) => (
@@ -953,7 +953,7 @@ function App() {
         {topicFormMessage && <p className="status-text">{topicFormMessage}</p>}
 
         {filteredTopics.length === 0 ? (
-          <p className="status-text">No topics found.</p>
+          <p className="status-text">No topics found. Create a user first, then add a topic.</p>
         ) : (
           <div className="data-list">
             {filteredTopics.map((topic) => (
@@ -1110,7 +1110,7 @@ function App() {
         {logFormMessage && <p className="status-text">{logFormMessage}</p>}
 
         {filteredLearningLogs.length === 0 ? (
-          <p className="status-text">No learning logs found.</p>
+          <p className="status-text">No learning logs found. Select a user and a topic to record your first log.</p>
         ) : (
           <div className="data-list">
             {filteredLearningLogs.map((log) => (
@@ -1314,7 +1314,7 @@ function App() {
         )}
 
         {filteredResources.length === 0 ? (
-          <p className="status-text">No resources found.</p>
+          <p className="status-text">No resources found. Select a user and a topic to add a helpful link.</p>
         ) : (
           <div className="data-list">
             {filteredResources.map((resource) => (
