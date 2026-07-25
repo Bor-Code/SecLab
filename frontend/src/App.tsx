@@ -818,7 +818,7 @@ function App() {
 
         {userFormMessage && <p className="status-text">{userFormMessage}</p>}
 
-        <label className="search-field">
+        <label className="filter-control">
           Search users
           <input
             type="search"
