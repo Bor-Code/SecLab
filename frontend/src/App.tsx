@@ -10,6 +10,7 @@ import {
   deleteUser,
   fetchDashboardRecentActivity,
   fetchDashboardSummary,
+  fetchHealthStatus,
   fetchLearningLogs,
   fetchResources,
   fetchTopics,
@@ -20,6 +21,7 @@ import {
   updateUser,
   type DashboardActivityItem,
   type DashboardSummary,
+  type HealthStatus,
   type LearningLog,
   type Resource,
   type Topic,
@@ -33,6 +35,9 @@ function App() {
   const [dashboardSummaryMessage, setDashboardSummaryMessage] = useState<string | null>(null)
   
   const [dashboardActivity, setDashboardActivity] = useState<DashboardActivityItem[]>([])
+  
+  const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null)
+  const [healthStatusMessage, setHealthStatusMessage] = useState<string | null>(null)
 
   const [users, setUsers] = useState<User[]>([])
   const [username, setUsername] = useState('')
@@ -120,9 +125,21 @@ function App() {
     }
   }
 
+  async function loadHealthStatus() {
+    try {
+      const data = await fetchHealthStatus()
+      setHealthStatus(data)
+      setHealthStatusMessage('System status loaded.')
+    } catch (error) {
+      console.error('Health status could not be loaded:', error)
+      setHealthStatusMessage('System status unavailable.')
+    }
+  }
+
   useEffect(() => {
     loadDashboardSummary()
     loadDashboardActivity()
+    loadHealthStatus()
   }, [])
 
   useEffect(() => {
@@ -267,6 +284,8 @@ function App() {
   const dashboardSummaryStatusText = isLoadingDashboardSummary
     ? 'Loading dashboard summary...'
     : dashboardSummaryMessage
+    
+  const hasDashboardActivity = dashboardActivity.length > 0
 
   function getUserLabel(userId: number) {
     return userNameById.get(userId) ?? `User #${userId}`
@@ -679,9 +698,33 @@ function App() {
         </p>
       </section>
 
-      <p className="dashboard-summary-status">
-        {dashboardSummaryStatusText}
+      <p className="status-message">
+        {dashboardSummaryStatusText} {hasDashboardActivity && null}
       </p>
+
+      <section className="system-status-panel">
+        <article>
+          <span>API</span>
+          <strong>{healthStatus?.status ?? 'unknown'}</strong>
+        </article>
+        <article>
+          <span>Database</span>
+          <strong>{healthStatus?.database ?? 'unknown'}</strong>
+        </article>
+        <article>
+          <span>Last checked</span>
+          <strong>
+            {healthStatus?.checked_at_utc
+              ? formatActivityDate(healthStatus.checked_at_utc)
+              : '-'}
+          </strong>
+        </article>
+        {healthStatusMessage && (
+          <p className="status-message">
+            <small>{healthStatusMessage}</small>
+          </p>
+        )}
+      </section>
 
       <section className="summary-grid">
         <article className="summary-card">
