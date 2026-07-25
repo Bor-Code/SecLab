@@ -235,6 +235,14 @@ function App() {
     return new Date(value).toLocaleString()
   }
 
+  function getSystemStatusClass(status?: string) {
+    if (!status) return 'status-muted'
+    const normalized = status.toLowerCase()
+    if (normalized === 'ok' || normalized === 'connected') return 'status-good'
+    if (normalized === 'degraded' || normalized === 'disconnected') return 'status-warning'
+    return 'status-muted'
+  }
+
   const selectedTopicUserId = users.some(
     (user) => user.id.toString() === topicUserId,
   )
@@ -705,11 +713,15 @@ function App() {
       <section className="system-status-panel">
         <article>
           <span>API</span>
-          <strong>{healthStatus?.status ?? 'unknown'}</strong>
+          <strong className={getSystemStatusClass(healthStatus?.status)}>
+            {healthStatus?.status ?? 'unknown'}
+          </strong>
         </article>
         <article>
           <span>Database</span>
-          <strong>{healthStatus?.database ?? 'unknown'}</strong>
+          <strong className={getSystemStatusClass(healthStatus?.database)}>
+            {healthStatus?.database ?? 'unknown'}
+          </strong>
         </article>
         <article>
           <span>Last checked</span>
