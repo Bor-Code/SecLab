@@ -117,6 +117,12 @@ export type DashboardActivityItem = {
   created_at: string
 }
 
+export type HealthStatus = {
+  status: string
+  database: string
+  checked_at_utc: string
+}
+
 type QueryValue = string | number | null | undefined
 type QueryParams = Record<string, QueryValue>
 
@@ -258,4 +264,8 @@ export function fetchDashboardSummary() {
 
 export function fetchDashboardRecentActivity() {
   return request<DashboardActivityItem[]>('/dashboard/recent-activity')
+}
+
+export function fetchHealthStatus() {
+  return request<HealthStatus>('/health')
 }
