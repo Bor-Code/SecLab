@@ -249,6 +249,11 @@ function App() {
     return 'status-muted'
   }
 
+  function formatSystemStatus(status?: string) {
+    if (!status) return 'Unknown'
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
+  }
+
   const selectedTopicUserId = users.some(
     (user) => user.id.toString() === topicUserId,
   )
@@ -720,13 +725,13 @@ function App() {
         <article>
           <span>API</span>
           <strong className={getSystemStatusClass(healthStatus?.status)}>
-            {healthStatus?.status ?? 'unknown'}
+            {formatSystemStatus(healthStatus?.status)}
           </strong>
         </article>
         <article>
           <span>Database</span>
           <strong className={getSystemStatusClass(healthStatus?.database)}>
-            {healthStatus?.database ?? 'unknown'}
+            {formatSystemStatus(healthStatus?.database)}
           </strong>
         </article>
         <article>
