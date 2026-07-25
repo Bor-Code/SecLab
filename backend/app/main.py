@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import dashboard, learning_logs, resources, topics, users
+from app.routers import dashboard, health, learning_logs, resources, topics, users
 
 app = FastAPI()
 
@@ -12,6 +12,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(health.router)
 app.include_router(dashboard.router)
 app.include_router(topics.router)
 app.include_router(learning_logs.router)
