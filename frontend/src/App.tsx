@@ -698,17 +698,33 @@ function App() {
         </p>
       </section>
 
-      <p className="dashboard-summary-status">
+      <p className="status-message">
         {dashboardSummaryStatusText} {hasDashboardActivity && null}
       </p>
-      
-      <p className="dashboard-summary-status">
-        API status: {healthStatus?.status ?? 'unknown'} | 
-        Database: {healthStatus?.database ?? 'unknown'} | 
-        Last checked: {healthStatus?.checked_at_utc ?? '-'}
-        <br />
-        <small>{healthStatusMessage}</small>
-      </p>
+
+      <section className="system-status-panel">
+        <article>
+          <span>API</span>
+          <strong>{healthStatus?.status ?? 'unknown'}</strong>
+        </article>
+        <article>
+          <span>Database</span>
+          <strong>{healthStatus?.database ?? 'unknown'}</strong>
+        </article>
+        <article>
+          <span>Last checked</span>
+          <strong>
+            {healthStatus?.checked_at_utc
+              ? formatActivityDate(healthStatus.checked_at_utc)
+              : '-'}
+          </strong>
+        </article>
+        {healthStatusMessage && (
+          <p className="status-message">
+            <small>{healthStatusMessage}</small>
+          </p>
+        )}
+      </section>
 
       <section className="summary-grid">
         <article className="summary-card">
