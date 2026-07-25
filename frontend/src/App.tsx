@@ -110,7 +110,7 @@ function App() {
       setDashboardSummaryMessage('Backend summary loaded.')
     } catch (error) {
       console.error('Dashboard summary could not be loaded:', error)
-      setDashboardSummaryMessage('Using local frontend counts.')
+      setDashboardSummaryMessage('API disconnected. Using local frontend counts.')
     } finally {
       setIsLoadingDashboardSummary(false)
     }
@@ -232,7 +232,26 @@ function App() {
   }
 
   function formatActivityDate(value: string) {
-    return new Date(value).toLocaleString()
+    return new Date(value).toLocaleString('tr-TR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
+  function getSystemStatusClass(status?: string) {
+    if (!status) return 'status-muted'
+    const normalized = status.toLowerCase()
+    if (normalized === 'ok' || normalized === 'connected') return 'status-good'
+    if (normalized === 'degraded' || normalized === 'disconnected') return 'status-warning'
+    return 'status-muted'
+  }
+
+  function formatSystemStatus(status?: string) {
+    if (!status) return 'Unknown'
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
   }
 
   const selectedTopicUserId = users.some(
@@ -705,11 +724,15 @@ function App() {
       <section className="system-status-panel">
         <article>
           <span>API</span>
-          <strong>{healthStatus?.status ?? 'unknown'}</strong>
+          <strong className={getSystemStatusClass(healthStatus?.status)}>
+            {formatSystemStatus(healthStatus?.status)}
+          </strong>
         </article>
         <article>
           <span>Database</span>
-          <strong>{healthStatus?.database ?? 'unknown'}</strong>
+          <strong className={getSystemStatusClass(healthStatus?.database)}>
+            {formatSystemStatus(healthStatus?.database)}
+          </strong>
         </article>
         <article>
           <span>Last checked</span>
@@ -761,7 +784,7 @@ function App() {
         </div>
 
         {dashboardActivity.length === 0 ? (
-          <p className="status-text">No recent activity yet.</p>
+          <p className="status-text">No recent activity found. Create your first record below to populate the dashboard.</p>
         ) : (
           <div className="item-list">
             {dashboardActivity.map((item, index) => (
@@ -818,7 +841,7 @@ function App() {
 
         {userFormMessage && <p className="status-text">{userFormMessage}</p>}
 
-        <label className="search-field">
+        <label className="filter-control">
           Search users
           <input
             type="search"
@@ -829,7 +852,7 @@ function App() {
         </label>
 
         {filteredUsers.length === 0 ? (
-          <p className="status-text">No users found.</p>
+          <p className="status-text">No users found. Create a user to get started.</p>
         ) : (
           <div className="data-list">
             {filteredUsers.map((user) => (
@@ -953,7 +976,7 @@ function App() {
         {topicFormMessage && <p className="status-text">{topicFormMessage}</p>}
 
         {filteredTopics.length === 0 ? (
-          <p className="status-text">No topics found.</p>
+          <p className="status-text">No topics found. Create a user first, then add a topic.</p>
         ) : (
           <div className="data-list">
             {filteredTopics.map((topic) => (
@@ -1110,7 +1133,7 @@ function App() {
         {logFormMessage && <p className="status-text">{logFormMessage}</p>}
 
         {filteredLearningLogs.length === 0 ? (
-          <p className="status-text">No learning logs found.</p>
+          <p className="status-text">No learning logs found. Select a user and a topic to record your first log.</p>
         ) : (
           <div className="data-list">
             {filteredLearningLogs.map((log) => (
@@ -1314,7 +1337,7 @@ function App() {
         )}
 
         {filteredResources.length === 0 ? (
-          <p className="status-text">No resources found.</p>
+          <p className="status-text">No resources found. Select a user and a topic to add a helpful link.</p>
         ) : (
           <div className="data-list">
             {filteredResources.map((resource) => (
