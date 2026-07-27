@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+﻿import PropTypes from 'prop-types';
 import { useRef, useState } from 'react';
 
 // material-ui
@@ -66,6 +66,8 @@ export default function Profile() {
   const handleLogout = () => {
     localStorage.removeItem('seclab-admin-auth');
     localStorage.removeItem('seclab-admin-role');
+    localStorage.removeItem('seclab-user-id');
+    localStorage.removeItem('seclab-user-role');
     const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     window.location.href = `${baseUrl}/login`;
   };

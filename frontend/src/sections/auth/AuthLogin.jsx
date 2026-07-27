@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+﻿import PropTypes from 'prop-types';
 import React from 'react';
 
 // material-ui
@@ -46,15 +46,20 @@ export default function AuthLogin({ isDemo = false }) {
         password: values.password
       });
 
-      if (response.role !== 'admin') {
-        setLoginError('Access denied: Admin role required.');
+      localStorage.setItem('seclab-user-id', String(response.id));
+      localStorage.setItem('seclab-user-role', response.role);
+
+      const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
+      if (response.role === 'admin') {
+        localStorage.setItem('seclab-admin-auth', 'true');
+        localStorage.setItem('seclab-admin-role', response.role);
+        window.location.href = `${baseUrl}/admin`;
         return;
       }
 
-      localStorage.setItem('seclab-admin-auth', 'true');
-      localStorage.setItem('seclab-admin-role', response.role);
-      const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
-      window.location.href = `${baseUrl}/admin`;
+      localStorage.removeItem('seclab-admin-auth');
+      localStorage.removeItem('seclab-admin-role');
+      window.location.href = `${baseUrl}/user`;
     } catch (error) {
       console.error('Login failed:', error);
       setLoginError('Invalid email or password.');
@@ -146,7 +151,7 @@ export default function AuthLogin({ isDemo = false }) {
               <Grid size={12}>
                 <AnimateButton>
                   <Button fullWidth size="large" type="submit" variant="contained" color="primary" disabled={isSubmitting}>
-                    {isSubmitting ? 'Authenticating...' : 'SecLab Admin Login'}
+                    {isSubmitting ? 'Authenticating...' : 'SecLab Login'}
                   </Button>
                 </AnimateButton>
               </Grid>
