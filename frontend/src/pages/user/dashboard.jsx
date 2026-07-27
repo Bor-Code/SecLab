@@ -1,13 +1,16 @@
 ﻿import { useCallback, useEffect, useState } from 'react';
+
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
+import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+
 import MainCard from 'components/MainCard';
-import { createTopic, fetchLearningLogs, fetchResources, fetchTopics } from 'api/seclab';
+import { createLearningLog, createResource, createTopic, fetchLearningLogs, fetchResources, fetchTopics } from 'api/seclab';
 
 export default function UserDashboardPage() {
   const userId = Number(localStorage.getItem('seclab-user-id'));
@@ -16,16 +19,26 @@ export default function UserDashboardPage() {
   const [topics, setTopics] = useState([]);
   const [learningLogs, setLearningLogs] = useState([]);
   const [resources, setResources] = useState([]);
+
   const [newTopicName, setNewTopicName] = useState('');
   const [newTopicDescription, setNewTopicDescription] = useState('');
+
+  const [logTopicId, setLogTopicId] = useState('');
+  const [logTitle, setLogTitle] = useState('');
+  const [logNotes, setLogNotes] = useState('');
+
+  const [resourceTopicId, setResourceTopicId] = useState('');
+  const [resourceTitle, setResourceTitle] = useState('');
+  const [resourceUrl, setResourceUrl] = useState('');
+  const [resourceType, setResourceType] = useState('article');
+  const [resourceNotes, setResourceNotes] = useState('');
+
   const [isLoading, setIsLoading] = useState(true);
-  const [isCreatingTopic, setIsCreatingTopic] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
 
   const loadUserData = useCallback(async () => {
-    if (!userId) {
-      return;
-    }
+    if (!userId) return;
 
     try {
       setIsLoading(true);
@@ -55,22 +68,19 @@ export default function UserDashboardPage() {
   const handleCreateTopic = async (event) => {
     event.preventDefault();
 
-    const trimmedName = newTopicName.trim();
-    const trimmedDescription = newTopicDescription.trim();
-
-    if (!trimmedName) {
+    if (!newTopicName.trim()) {
       setError('Topic name is required.');
       return;
     }
 
     try {
-      setIsCreatingTopic(true);
+      setIsSaving(true);
       setError(null);
 
       await createTopic({
         user_id: userId,
-        name: trimmedName,
-        description: trimmedDescription || null
+        name: newTopicName.trim(),
+        description: newTopicDescription.trim() || null
       });
 
       setNewTopicName('');
@@ -80,7 +90,73 @@ export default function UserDashboardPage() {
       console.error('Failed to create topic:', createError);
       setError('Could not create topic.');
     } finally {
-      setIsCreatingTopic(false);
+      setIsSaving(false);
+    }
+  };
+
+  const handleCreateLearningLog = async (event) => {
+    event.preventDefault();
+
+    if (!logTopicId || !logTitle.trim()) {
+      setError('Topic and learning log title are required.');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setError(null);
+
+      await createLearningLog({
+        user_id: userId,
+        topic_id: Number(logTopicId),
+        title: logTitle.trim(),
+        notes: logNotes.trim() || null
+      });
+
+      setLogTopicId('');
+      setLogTitle('');
+      setLogNotes('');
+      await loadUserData();
+    } catch (createError) {
+      console.error('Failed to create learning log:', createError);
+      setError('Could not create learning log.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCreateResource = async (event) => {
+    event.preventDefault();
+
+    if (!resourceTopicId || !resourceTitle.trim() || !resourceUrl.trim()) {
+      setError('Topic, resource title, and URL are required.');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setError(null);
+
+      await createResource({
+        user_id: userId,
+        topic_id: Number(resourceTopicId),
+        title: resourceTitle.trim(),
+        url: resourceUrl.trim(),
+        resource_type: resourceType,
+        notes: resourceNotes.trim() || null
+      });
+
+      setResourceTopicId('');
+      setResourceTitle('');
+      setResourceUrl('');
+      setResourceType('article');
+      setResourceNotes('');
+      await loadUserData();
+    } catch (createError) {
+      console.error('Failed to create resource:', createError);
+      setError('Could not create resource.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -118,27 +194,79 @@ export default function UserDashboardPage() {
         </Grid>
       </Grid>
 
-      <MainCard title="Create Topic">
-        <Stack component="form" spacing={2} onSubmit={handleCreateTopic}>
-          <TextField
-            label="Topic name"
-            value={newTopicName}
-            onChange={(event) => setNewTopicName(event.target.value)}
-            fullWidth
-          />
-          <TextField
-            label="Description"
-            value={newTopicDescription}
-            onChange={(event) => setNewTopicDescription(event.target.value)}
-            fullWidth
-            multiline
-            minRows={2}
-          />
-          <Button type="submit" variant="contained" disabled={isCreatingTopic}>
-            {isCreatingTopic ? 'Creating...' : 'Create Topic'}
-          </Button>
-        </Stack>
-      </MainCard>
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <MainCard title="Create Topic">
+            <Stack component="form" spacing={2} onSubmit={handleCreateTopic}>
+              <TextField label="Topic name" value={newTopicName} onChange={(event) => setNewTopicName(event.target.value)} fullWidth />
+              <TextField
+                label="Description"
+                value={newTopicDescription}
+                onChange={(event) => setNewTopicDescription(event.target.value)}
+                fullWidth
+                multiline
+                minRows={2}
+              />
+              <Button type="submit" variant="contained" disabled={isSaving}>
+                Create Topic
+              </Button>
+            </Stack>
+          </MainCard>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 4 }}>
+          <MainCard title="Create Learning Log">
+            <Stack component="form" spacing={2} onSubmit={handleCreateLearningLog}>
+              <TextField select label="Topic" value={logTopicId} onChange={(event) => setLogTopicId(event.target.value)} fullWidth disabled={!topics.length}>
+                {topics.map((topic) => (
+                  <MenuItem key={topic.id} value={topic.id}>
+                    {topic.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField label="Title" value={logTitle} onChange={(event) => setLogTitle(event.target.value)} fullWidth />
+              <TextField label="Notes" value={logNotes} onChange={(event) => setLogNotes(event.target.value)} fullWidth multiline minRows={2} />
+              <Button type="submit" variant="contained" disabled={isSaving || !topics.length}>
+                Create Learning Log
+              </Button>
+            </Stack>
+          </MainCard>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 4 }}>
+          <MainCard title="Create Resource">
+            <Stack component="form" spacing={2} onSubmit={handleCreateResource}>
+              <TextField
+                select
+                label="Topic"
+                value={resourceTopicId}
+                onChange={(event) => setResourceTopicId(event.target.value)}
+                fullWidth
+                disabled={!topics.length}
+              >
+                {topics.map((topic) => (
+                  <MenuItem key={topic.id} value={topic.id}>
+                    {topic.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField label="Title" value={resourceTitle} onChange={(event) => setResourceTitle(event.target.value)} fullWidth />
+              <TextField label="URL" value={resourceUrl} onChange={(event) => setResourceUrl(event.target.value)} fullWidth />
+              <TextField select label="Type" value={resourceType} onChange={(event) => setResourceType(event.target.value)} fullWidth>
+                <MenuItem value="article">Article</MenuItem>
+                <MenuItem value="video">Video</MenuItem>
+                <MenuItem value="course">Course</MenuItem>
+                <MenuItem value="documentation">Documentation</MenuItem>
+                <MenuItem value="tool">Tool</MenuItem>
+              </TextField>
+              <TextField label="Notes" value={resourceNotes} onChange={(event) => setResourceNotes(event.target.value)} fullWidth multiline minRows={2} />
+              <Button type="submit" variant="contained" disabled={isSaving || !topics.length}>
+                Create Resource
+              </Button>
+            </Stack>
+          </MainCard>
+        </Grid>
+      </Grid>
 
       <MainCard title="My Topics">
         {topics.length === 0 ? (
