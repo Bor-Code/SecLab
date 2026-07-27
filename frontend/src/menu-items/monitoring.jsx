@@ -1,4 +1,4 @@
-// assets
+﻿// assets
 import { HeartOutlined, HistoryOutlined } from '@ant-design/icons';
 
 // icons
@@ -27,6 +27,14 @@ const monitoring = {
       title: 'Recent Activity',
       type: 'item',
       url: '/admin/recent-activity',
+      icon: icons.HistoryOutlined,
+      breadcrumbs: false
+    },
+    {
+      id: 'data-browser',
+      title: 'Data Browser',
+      type: 'item',
+      url: '/admin/data-browser',
       icon: icons.HistoryOutlined,
       breadcrumbs: false
     }
