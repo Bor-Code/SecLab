@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // material-ui
 import Avatar from '@mui/material/Avatar';
 import AvatarGroup from '@mui/material/AvatarGroup';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
@@ -15,16 +16,16 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
 
 // project imports
 import MainCard from 'components/MainCard';
 import AnalyticEcommerce from 'components/cards/statistics/AnalyticEcommerce';
 import MonthlyBarChart from 'sections/dashboard/default/MonthlyBarChart';
-import ReportAreaChart from 'sections/dashboard/default/ReportAreaChart';
-import UniqueVisitorCard from 'sections/dashboard/default/UniqueVisitorCard';
-import SaleReportCard from 'sections/dashboard/default/SaleReportCard';
 import OrdersTable from 'sections/dashboard/default/OrdersTable';
+import ReportAreaChart from 'sections/dashboard/default/ReportAreaChart';
+import SaleReportCard from 'sections/dashboard/default/SaleReportCard';
+import UniqueVisitorCard from 'sections/dashboard/default/UniqueVisitorCard';
+import { fetchDashboardSummary } from 'api/seclab';
 
 // assets
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined';
@@ -60,6 +61,28 @@ export default function DashboardDefault() {
   const [orderMenuAnchor, setOrderMenuAnchor] = useState(null);
   const [analyticsMenuAnchor, setAnalyticsMenuAnchor] = useState(null);
 
+  const [dashboardSummary, setDashboardSummary] = useState(null);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(true);
+  const [summaryMessage, setSummaryMessage] = useState(null);
+
+  useEffect(() => {
+    async function loadSummary() {
+      setIsSummaryLoading(true);
+      setSummaryMessage(null);
+      try {
+        const data = await fetchDashboardSummary();
+        setDashboardSummary(data);
+      } catch (error) {
+        console.error('Summary load error:', error);
+        setSummaryMessage('Backend unavailable');
+      } finally {
+        setIsSummaryLoading(false);
+      }
+    }
+
+    loadSummary();
+  }, []);
+
   const handleOrderMenuClick = (event) => {
     setOrderMenuAnchor(event.currentTarget);
   };
@@ -79,20 +102,39 @@ export default function DashboardDefault() {
       {/* row 1 */}
       <Grid sx={{ mb: -2.25 }} size={12}>
         <Typography variant="h5">Dashboard</Typography>
+        {summaryMessage && (
+          <Typography variant="caption" color="error">
+            {summaryMessage}
+          </Typography>
+        )}
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-        <AnalyticEcommerce title="Total Page Views" count="4,42,236" percentage={59.3} extra="35,000" />
+        <AnalyticEcommerce
+          title="Users"
+          count={isSummaryLoading ? '...' : String(dashboardSummary?.users_count ?? 0)}
+        />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-        <AnalyticEcommerce title="Total Users" count="78,250" percentage={70.5} extra="8,900" />
+        <AnalyticEcommerce
+          title="Topics"
+          count={isSummaryLoading ? '...' : String(dashboardSummary?.topics_count ?? 0)}
+        />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-        <AnalyticEcommerce title="Total Order" count="18,800" percentage={27.4} isLoss color="warning" extra="1,943" />
+        <AnalyticEcommerce
+          title="Learning Logs"
+          count={isSummaryLoading ? '...' : String(dashboardSummary?.learning_logs_count ?? 0)}
+        />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-        <AnalyticEcommerce title="Total Sales" count="35,078" percentage={27.4} isLoss color="warning" extra="20,395" />
+        <AnalyticEcommerce
+          title="Resources"
+          count={isSummaryLoading ? '...' : String(dashboardSummary?.resources_count ?? 0)}
+        />
       </Grid>
+
       <Grid sx={{ display: { sm: 'none', md: 'block', lg: 'none' } }} size={{ md: 8 }} />
+      
       {/* row 2 */}
       <Grid size={{ xs: 12, md: 7, lg: 8 }}>
         <UniqueVisitorCard />
@@ -116,6 +158,7 @@ export default function DashboardDefault() {
           <MonthlyBarChart />
         </MainCard>
       </Grid>
+      
       {/* row 3 */}
       <Grid size={{ xs: 12, md: 7, lg: 8 }}>
         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
@@ -187,6 +230,7 @@ export default function DashboardDefault() {
           <ReportAreaChart />
         </MainCard>
       </Grid>
+      
       {/* row 4 */}
       <Grid size={{ xs: 12, md: 7, lg: 8 }}>
         <SaleReportCard />
