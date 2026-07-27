@@ -1,0 +1,59 @@
+// assets
+import {
+  UserOutlined,
+  BookOutlined,
+  ReadOutlined,
+  LinkOutlined
+} from '@ant-design/icons';
+
+// icons
+const icons = {
+  UserOutlined,
+  BookOutlined,
+  ReadOutlined,
+  LinkOutlined
+};
+
+// ==============================|| MENU ITEMS - RECORDS ||============================== //
+
+const records = {
+  id: 'group-records',
+  title: 'Records',
+  type: 'group',
+  children: [
+    {
+      id: 'users',
+      title: 'Users',
+      type: 'item',
+      url: '/users',
+      icon: icons.UserOutlined,
+      breadcrumbs: false
+    },
+    {
+      id: 'topics',
+      title: 'Topics',
+      type: 'item',
+      url: '/topics',
+      icon: icons.BookOutlined,
+      breadcrumbs: false
+    },
+    {
+      id: 'learning-logs',
+      title: 'Learning Logs',
+      type: 'item',
+      url: '/learning-logs',
+      icon: icons.ReadOutlined,
+      breadcrumbs: false
+    },
+    {
+      id: 'resources',
+      title: 'Resources',
+      type: 'item',
+      url: '/resources',
+      icon: icons.LinkOutlined,
+      breadcrumbs: false
+    }
+  ]
+};
+
+export default records;
