@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-// material-ui
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -14,12 +13,10 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
+import TablePagination from '@mui/material/TablePagination';
 
-// project imports
 import MainCard from 'components/MainCard';
 import { fetchUsers, createUser, updateUser, deleteUser } from 'api/seclab';
-
-// ==============================|| USERS PAGE ||============================== //
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -31,6 +28,9 @@ export default function UsersPage() {
   const [editingEmail, setEditingEmail] = useState('');
 
   const [userSearch, setUserSearch] = useState('');
+  
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -66,6 +66,7 @@ export default function UsersPage() {
       setUsername('');
       setEmail('');
       setUserSearch('');
+      setPage(0);
       setMessage('User created successfully.');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
@@ -119,11 +120,22 @@ export default function UsersPage() {
     }
   }
 
+  function handleChangePage(_event, newPage) {
+  setPage(newPage);
+  }
+
+  function handleChangeRowsPerPage(event) {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  }
+
   const filteredUsers = users.filter(
     (user) =>
       user.username.toLowerCase().includes(userSearch.toLowerCase()) ||
       user.email.toLowerCase().includes(userSearch.toLowerCase())
   );
+
+  const paginatedUsers = filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <MainCard title="Users">
@@ -228,7 +240,10 @@ export default function UsersPage() {
         fullWidth
         label="Search users"
         value={userSearch}
-        onChange={(e) => setUserSearch(e.target.value)}
+        onChange={(e) => {
+          setUserSearch(e.target.value);
+          setPage(0);
+        }}
         placeholder="Search by username or email"
         sx={{ mb: 3 }}
       />
@@ -251,14 +266,14 @@ export default function UsersPage() {
                   Loading users...
                 </TableCell>
               </TableRow>
-            ) : filteredUsers.length === 0 ? (
+            ) : paginatedUsers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} align="center">
                   No users found.
                 </TableCell>
               </TableRow>
             ) : (
-              filteredUsers.map((user) => (
+              paginatedUsers.map((user) => (
                 <TableRow key={user.id} hover>
                   <TableCell>{user.id}</TableCell>
                   <TableCell>{user.username}</TableCell>
@@ -288,6 +303,15 @@ export default function UsersPage() {
             )}
           </TableBody>
         </Table>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 50]}
+          component="div"
+          count={filteredUsers.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </TableContainer>
     </MainCard>
   );
