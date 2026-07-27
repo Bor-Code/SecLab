@@ -15,6 +15,11 @@ import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import Link from '@mui/material/Link';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 import MainCard from 'components/MainCard';
 import {
@@ -45,6 +50,9 @@ export default function ResourcesPage() {
   const [editingUrl, setEditingUrl] = useState('');
   const [editingResourceType, setEditingResourceType] = useState('documentation');
   const [editingNotes, setEditingNotes] = useState('');
+
+  const [deleteTargetResource, setDeleteTargetResource] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [resourceSearch, setResourceSearch] = useState('');
 
@@ -146,15 +154,30 @@ export default function ResourcesPage() {
     }
   }
 
-  async function handleDeleteResource(resourceId) {
-    if (!window.confirm('Delete this resource?')) return;
+  function openDeleteDialog(resource) {
+    setDeleteTargetResource(resource);
+    setMessage(null);
+    setErrorMessage(null);
+  }
 
+  function closeDeleteDialog() {
+    setDeleteTargetResource(null);
+  }
+
+  async function confirmDeleteResource() {
+    if (!deleteTargetResource) return;
+
+    setIsDeleting(true);
     try {
-      await deleteResource(resourceId);
-      setResources((prevResources) => prevResources.filter((res) => res.id !== resourceId));
+      await deleteResource(deleteTargetResource.id);
+      setResources((prevResources) => prevResources.filter((res) => res.id !== deleteTargetResource.id));
       setMessage('Resource deleted successfully.');
+      closeDeleteDialog();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+      closeDeleteDialog();
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -419,7 +442,7 @@ export default function ResourcesPage() {
                       <Button size="small" variant="outlined" onClick={() => startEditingResource(resource)}>
                         Edit
                       </Button>
-                      <Button size="small" variant="outlined" color="error" onClick={() => handleDeleteResource(resource.id)}>
+                      <Button size="small" variant="outlined" color="error" onClick={() => openDeleteDialog(resource)}>
                         Delete
                       </Button>
                     </Stack>
@@ -430,6 +453,23 @@ export default function ResourcesPage() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Dialog open={deleteTargetResource !== null} onClose={closeDeleteDialog}>
+        <DialogTitle>Delete resource</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this resource? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDeleteDialog} color="primary" disabled={isDeleting}>
+            Cancel
+          </Button>
+          <Button onClick={confirmDeleteResource} color="error" variant="contained" disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </MainCard>
   );
 }
