@@ -1,20 +1,78 @@
-// material-ui
+import { useEffect, useState } from 'react';
+
 import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Alert from '@mui/material/Alert';
 
-// project imports
 import MainCard from 'components/MainCard';
+import { fetchHealthStatus } from 'api/seclab';
 
-// ==============================|| SAMPLE PAGE ||============================== //
+export default function SystemHealthPage() {
+  const [healthStatus, setHealthStatus] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState(null);
 
-export default function SamplePage() {
+  async function loadHealth() {
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      const data = await fetchHealthStatus();
+      setHealthStatus(data);
+    } catch (error) {
+      console.error('Failed to load health status:', error);
+      setErrorMessage('Backend unavailable or health check failed.');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadHealth();
+  }, []);
+
   return (
-    <MainCard title="Sample Card">
-      <Typography variant="body2">
-        Lorem ipsum dolor sit amen, consenter nipissing eli, sed do elusion tempos incident ut laborers et doolie magna alissa. Ut enif ad
-        minim venice, quin nostrum exercitation illampu laborings nisi ut liquid ex ea commons construal. Duos aube grue dolor in
-        reprehended in voltage veil esse colum doolie eu fujian bulla parian. Exceptive sin ocean cuspidate non president, sunk in culpa qui
-        officiate descent molls anim id est labours.
+    <MainCard title="System Health">
+      <Typography variant="body2" sx={{ mb: 3 }}>
+        Monitor the current operational status of the SecLab API and Database.
       </Typography>
+
+      {errorMessage && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {errorMessage}
+        </Alert>
+      )}
+
+      {isLoading ? (
+        <Box sx={{ p: 2 }}>
+          <Typography variant="body2" color="textSecondary">
+            Loading system status...
+          </Typography>
+        </Box>
+      ) : healthStatus ? (
+        <List sx={{ p: 0, '& .MuiListItem-root': { py: 2, px: 0 } }}>
+          <ListItem divider>
+            <ListItemText primary="API Status" />
+            <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
+              {healthStatus.status}
+            </Typography>
+          </ListItem>
+          <ListItem divider>
+            <ListItemText primary="Database Status" />
+            <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
+              {healthStatus.database}
+            </Typography>
+          </ListItem>
+          <ListItem>
+            <ListItemText primary="Last Checked" />
+            <Typography variant="subtitle1">
+              {new Date(healthStatus.checked_at_utc).toLocaleString('tr-TR')}
+            </Typography>
+          </ListItem>
+        </List>
+      ) : null}
     </MainCard>
   );
 }
