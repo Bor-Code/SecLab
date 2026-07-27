@@ -36,7 +36,8 @@ export default function AuthLogin({ isDemo = false }) {
 
   const handleLoginSubmit = () => {
     localStorage.setItem('seclab-admin-auth', 'true');
-    window.location.href = `${import.meta.env.BASE_URL}admin`;
+    const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
+    window.location.href = `${baseUrl}/admin`;
   };
 
   return (
