@@ -41,6 +41,11 @@ export default function AuthLogin({ isDemo = false }) {
     event.preventDefault();
   };
 
+  const handleLoginSubmit = () => {
+    localStorage.setItem('seclab-admin-auth', 'true');
+    window.location.href = `${import.meta.env.BASE_URL}admin`;
+  };
+
   return (
     <>
       <Formik
@@ -56,9 +61,10 @@ export default function AuthLogin({ isDemo = false }) {
             .test('no-leading-trailing-whitespace', 'Password cannot start or end with spaces', (value) => value === value.trim())
             .max(10, 'Password must be less than 10 characters')
         })}
+        onSubmit={handleLoginSubmit}
       >
-        {({ errors, handleBlur, handleChange, touched, values }) => (
-          <form noValidate>
+        {({ errors, handleBlur, handleChange, handleSubmit, touched, values }) => (
+          <form noValidate onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid size={12}>
                 <Stack sx={{ gap: 1 }}>
@@ -136,7 +142,7 @@ export default function AuthLogin({ isDemo = false }) {
               </Grid>
               <Grid size={12}>
                 <AnimateButton>
-                  <Button fullWidth size="large" variant="contained" color="primary">
+                  <Button fullWidth size="large" type="submit" variant="contained" color="primary">
                     Login
                   </Button>
                 </AnimateButton>
