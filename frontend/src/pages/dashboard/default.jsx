@@ -20,11 +20,11 @@ import Typography from '@mui/material/Typography';
 // project imports
 import MainCard from 'components/MainCard';
 import AnalyticEcommerce from 'components/cards/statistics/AnalyticEcommerce';
-import MonthlyBarChart from 'sections/dashboard/default/MonthlyBarChart';
+import OrdersTable from 'sections/dashboard/default/OrdersTable';
 import ReportAreaChart from 'sections/dashboard/default/ReportAreaChart';
 import SaleReportCard from 'sections/dashboard/default/SaleReportCard';
 import UniqueVisitorCard from 'sections/dashboard/default/UniqueVisitorCard';
-import { fetchDashboardRecentActivity, fetchDashboardSummary } from 'api/seclab';
+import { fetchDashboardRecentActivity, fetchDashboardSummary, fetchHealthStatus } from 'api/seclab';
 
 // assets
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined';
@@ -68,6 +68,10 @@ export default function DashboardDefault() {
   const [isActivityLoading, setIsActivityLoading] = useState(true);
   const [activityMessage, setActivityMessage] = useState(null);
 
+  const [healthStatus, setHealthStatus] = useState(null);
+  const [isHealthLoading, setIsHealthLoading] = useState(true);
+  const [healthMessage, setHealthMessage] = useState(null);
+
   useEffect(() => {
     async function loadSummary() {
       setIsSummaryLoading(true);
@@ -97,8 +101,23 @@ export default function DashboardDefault() {
       }
     }
 
+    async function loadHealthStatus() {
+      setIsHealthLoading(true);
+      setHealthMessage(null);
+      try {
+        const data = await fetchHealthStatus();
+        setHealthStatus(data);
+      } catch (error) {
+        console.error('Health status load error:', error);
+        setHealthMessage('Health data unavailable');
+      } finally {
+        setIsHealthLoading(false);
+      }
+    }
+
     loadSummary();
     loadRecentActivity();
+    loadHealthStatus();
   }, []);
 
   const handleOrderMenuClick = (event) => {
@@ -176,20 +195,46 @@ export default function DashboardDefault() {
       <Grid size={{ xs: 12, md: 5, lg: 4 }}>
         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <Grid>
-            <Typography variant="h5">Income Overview</Typography>
+            <Typography variant="h5">System Health</Typography>
           </Grid>
           <Grid />
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
-          <Box sx={{ p: 3, pb: 0 }}>
-            <Stack sx={{ gap: 2 }}>
-              <Typography variant="h6" sx={{ color: 'text.secondary' }}>
-                This Week Statistics
+          {isHealthLoading ? (
+            <Box sx={{ p: 3 }}>
+              <Typography variant="body2" color="textSecondary">
+                Loading system status...
               </Typography>
-              <Typography variant="h3">$7,650</Typography>
-            </Stack>
-          </Box>
-          <MonthlyBarChart />
+            </Box>
+          ) : (
+            <List sx={{ p: 0, '& .MuiListItem-root': { py: 2.5, px: 3 } }}>
+              <ListItem divider>
+                <ListItemText primary="API" />
+                <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
+                  {healthStatus?.status ?? 'unknown'}
+                </Typography>
+              </ListItem>
+              <ListItem divider>
+                <ListItemText primary="Database" />
+                <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
+                  {healthStatus?.database ?? 'unknown'}
+                </Typography>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Last checked" />
+                <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+                  {healthStatus?.checked_at_utc ? formatActivityDate(healthStatus.checked_at_utc) : '-'}
+                </Typography>
+              </ListItem>
+            </List>
+          )}
+          {healthMessage && (
+            <Box sx={{ px: 3, pb: 2 }}>
+              <Typography variant="caption" color="error">
+                {healthMessage}
+              </Typography>
+            </Box>
+          )}
         </MainCard>
       </Grid>
       
