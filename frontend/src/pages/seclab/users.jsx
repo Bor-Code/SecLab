@@ -30,6 +30,8 @@ export default function UsersPage() {
   const [editingUsername, setEditingUsername] = useState('');
   const [editingEmail, setEditingEmail] = useState('');
 
+  const [userSearch, setUserSearch] = useState('');
+
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [message, setMessage] = useState(null);
@@ -63,6 +65,7 @@ export default function UsersPage() {
       setUsers((prevUsers) => [...prevUsers, createdUser]);
       setUsername('');
       setEmail('');
+      setUserSearch('');
       setMessage('User created successfully.');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
@@ -115,6 +118,12 @@ export default function UsersPage() {
       setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
     }
   }
+
+  const filteredUsers = users.filter(
+    (user) =>
+      user.username.toLowerCase().includes(userSearch.toLowerCase()) ||
+      user.email.toLowerCase().includes(userSearch.toLowerCase())
+  );
 
   return (
     <MainCard title="Users">
@@ -215,6 +224,15 @@ export default function UsersPage() {
         </form>
       )}
 
+      <TextField
+        fullWidth
+        label="Search users"
+        value={userSearch}
+        onChange={(e) => setUserSearch(e.target.value)}
+        placeholder="Search by username or email"
+        sx={{ mb: 3 }}
+      />
+
       <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
         <Table>
           <TableHead>
@@ -233,14 +251,14 @@ export default function UsersPage() {
                   Loading users...
                 </TableCell>
               </TableRow>
-            ) : users.length === 0 ? (
+            ) : filteredUsers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} align="center">
                   No users found.
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
+              filteredUsers.map((user) => (
                 <TableRow key={user.id} hover>
                   <TableCell>{user.id}</TableCell>
                   <TableCell>{user.username}</TableCell>
