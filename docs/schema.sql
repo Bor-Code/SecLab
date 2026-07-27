@@ -64,6 +64,7 @@ CREATE TABLE public.users (
     id integer NOT NULL,
     username character varying(50) NOT NULL,
     email character varying(255) NOT NULL,
+    role character varying(20) NOT NULL DEFAULT 'user',
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 

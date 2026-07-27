@@ -14,6 +14,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
 import TablePagination from '@mui/material/TablePagination';
+import MenuItem from '@mui/material/MenuItem';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -27,10 +28,12 @@ export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [role, setRole] = useState('user');
   
   const [editingUserId, setEditingUserId] = useState(null);
   const [editingUsername, setEditingUsername] = useState('');
   const [editingEmail, setEditingEmail] = useState('');
+  const [editingRole, setEditingRole] = useState('user');
 
   const [userSearch, setUserSearch] = useState('');
   
@@ -69,10 +72,11 @@ export default function UsersPage() {
     setErrorMessage(null);
 
     try {
-      const createdUser = await createUser({ username, email });
+      const createdUser = await createUser({ username, email, role });
       setUsers((prevUsers) => [...prevUsers, createdUser]);
       setUsername('');
       setEmail('');
+      setRole('user');
       setUserSearch('');
       setPage(0);
       setMessage('User created successfully.');
@@ -87,6 +91,7 @@ export default function UsersPage() {
     setEditingUserId(user.id);
     setEditingUsername(user.username);
     setEditingEmail(user.email);
+    setEditingRole(user.role || 'user');
     setMessage(null);
     setErrorMessage(null);
   }
@@ -95,6 +100,7 @@ export default function UsersPage() {
     setEditingUserId(null);
     setEditingUsername('');
     setEditingEmail('');
+    setEditingRole('user');
   }
 
   async function handleUpdateUser(event) {
@@ -105,6 +111,7 @@ export default function UsersPage() {
       const updatedUser = await updateUser(editingUserId, {
         username: editingUsername,
         email: editingEmail,
+        role: editingRole,
       });
       setUsers((prevUsers) =>
         prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u))
@@ -155,7 +162,8 @@ export default function UsersPage() {
   const filteredUsers = users.filter(
     (user) =>
       user.username.toLowerCase().includes(userSearch.toLowerCase()) ||
-      user.email.toLowerCase().includes(userSearch.toLowerCase())
+      user.email.toLowerCase().includes(userSearch.toLowerCase()) ||
+      (user.role || '').toLowerCase().includes(userSearch.toLowerCase())
   );
 
   const paginatedUsers = filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -181,7 +189,7 @@ export default function UsersPage() {
       {editingUserId !== null ? (
         <form onSubmit={handleUpdateUser}>
           <Grid container spacing={2} sx={{ mb: 4 }} alignItems="center">
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
                 label="Username"
@@ -190,7 +198,7 @@ export default function UsersPage() {
                 required
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
                 type="email"
@@ -199,6 +207,19 @@ export default function UsersPage() {
                 onChange={(e) => setEditingEmail(e.target.value)}
                 required
               />
+            </Grid>
+            <Grid item xs={12} sm={2}>
+              <TextField
+                select
+                fullWidth
+                label="Role"
+                value={editingRole}
+                onChange={(e) => setEditingRole(e.target.value)}
+                required
+              >
+                <MenuItem value="user">User</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+              </TextField>
             </Grid>
             <Grid item xs={12} sm={4}>
               <Stack direction="row" spacing={1}>
@@ -225,7 +246,7 @@ export default function UsersPage() {
       ) : (
         <form onSubmit={handleCreateUser}>
           <Grid container spacing={2} sx={{ mb: 4 }} alignItems="center">
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
                 label="Username"
@@ -234,7 +255,7 @@ export default function UsersPage() {
                 required
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
                 type="email"
@@ -243,6 +264,19 @@ export default function UsersPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+            </Grid>
+            <Grid item xs={12} sm={2}>
+              <TextField
+                select
+                fullWidth
+                label="Role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                required
+              >
+                <MenuItem value="user">User</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+              </TextField>
             </Grid>
             <Grid item xs={12} sm={4}>
               <Button
@@ -267,7 +301,7 @@ export default function UsersPage() {
           setUserSearch(e.target.value);
           setPage(0);
         }}
-        placeholder="Search by username or email"
+        placeholder="Search by username, email, or role"
         sx={{ mb: 3 }}
       />
 
@@ -278,6 +312,7 @@ export default function UsersPage() {
               <TableCell>ID</TableCell>
               <TableCell>Username</TableCell>
               <TableCell>Email</TableCell>
+              <TableCell>Role</TableCell>
               <TableCell>Created At</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -285,13 +320,13 @@ export default function UsersPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={6} align="center">
                   Loading users...
                 </TableCell>
               </TableRow>
             ) : paginatedUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={6} align="center">
                   No users found.
                 </TableCell>
               </TableRow>
@@ -301,6 +336,7 @@ export default function UsersPage() {
                   <TableCell>{user.id}</TableCell>
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
+                  <TableCell sx={{ textTransform: 'capitalize' }}>{user.role}</TableCell>
                   <TableCell>{new Date(user.created_at).toLocaleString('tr-TR')}</TableCell>
                   <TableCell align="right">
                     <Stack direction="row" spacing={1} justifyContent="flex-end">

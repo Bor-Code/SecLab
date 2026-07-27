@@ -16,21 +16,25 @@ users_table = Table(
     Column("id", Integer),
     Column("username", String(50)),
     Column("email", String(255)),
+    Column("role", String(20)),
     Column("created_at", DateTime),
 )
 
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
     email: str = Field(..., min_length=1, max_length=255)
+    role: str = Field(default="user", pattern="^(admin|user)$")
 
 class UserUpdate(BaseModel):
     username: str | None = Field(default=None, min_length=1, max_length=50)
     email: str | None = Field(default=None, min_length=1, max_length=255)
+    role: str | None = Field(default=None, pattern="^(admin|user)$")
 
 class UserRead(BaseModel):
     id: int
     username: str
     email: str
+    role: str
     created_at: datetime
 
     class Config:
@@ -56,11 +60,13 @@ def create_user(user: UserCreate):
             .values(
                 username=user.username,
                 email=user.email,
+                role=user.role,
             )
             .returning(
                 users_table.c.id,
                 users_table.c.username,
                 users_table.c.email,
+                users_table.c.role,
                 users_table.c.created_at,
             )
         )
@@ -95,6 +101,7 @@ def update_user(user_id: int, user: UserUpdate):
             users_table.c.id,
             users_table.c.username,
             users_table.c.email,
+            users_table.c.role,
             users_table.c.created_at,
         )
     )
@@ -117,6 +124,7 @@ def delete_user(user_id: int):
             users_table.c.id,
             users_table.c.username,
             users_table.c.email,
+            users_table.c.role,
             users_table.c.created_at,
         )
     )
