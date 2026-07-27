@@ -15,6 +15,11 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 // project imports
 import MainCard from 'components/MainCard';
@@ -44,6 +49,10 @@ export default function LearningLogsPage() {
   const [editingLogId, setEditingLogId] = useState(null);
   const [editingTitle, setEditingTitle] = useState('');
   const [editingNotes, setEditingNotes] = useState('');
+
+  // Delete dialog state
+  const [deleteTargetLog, setDeleteTargetLog] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Search state
   const [logSearch, setLogSearch] = useState('');
@@ -135,15 +144,30 @@ export default function LearningLogsPage() {
     }
   }
 
-  async function handleDeleteLog(logId) {
-    if (!window.confirm('Delete this learning log?')) return;
+  function openDeleteDialog(log) {
+    setDeleteTargetLog(log);
+    setMessage(null);
+    setErrorMessage(null);
+  }
 
+  function closeDeleteDialog() {
+    setDeleteTargetLog(null);
+  }
+
+  async function confirmDeleteLog() {
+    if (!deleteTargetLog) return;
+
+    setIsDeleting(true);
     try {
-      await deleteLearningLog(logId);
-      setLogs((prevLogs) => prevLogs.filter((log) => log.id !== logId));
+      await deleteLearningLog(deleteTargetLog.id);
+      setLogs((prevLogs) => prevLogs.filter((log) => log.id !== deleteTargetLog.id));
       setMessage('Learning log deleted successfully.');
+      closeDeleteDialog();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+      closeDeleteDialog();
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -331,13 +355,13 @@ export default function LearningLogsPage() {
                   <TableCell>{getTopicName(log.topic_id)}</TableCell>
                   <TableCell>{log.title}</TableCell>
                   <TableCell>{log.notes || '-'}</TableCell>
-                  <TableCell>{new Date(log.created_at).toLocaleString('tr-TR').toLocaleString('tr-TR')}</TableCell>
+                  <TableCell>{new Date(log.created_at).toLocaleString('tr-TR')}</TableCell>
                   <TableCell align="right">
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
                       <Button size="small" variant="outlined" onClick={() => startEditingLog(log)}>
                         Edit
                       </Button>
-                      <Button size="small" variant="outlined" color="error" onClick={() => handleDeleteLog(log.id)}>
+                      <Button size="small" variant="outlined" color="error" onClick={() => openDeleteDialog(log)}>
                         Delete
                       </Button>
                     </Stack>
@@ -348,6 +372,23 @@ export default function LearningLogsPage() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Dialog open={deleteTargetLog !== null} onClose={closeDeleteDialog}>
+        <DialogTitle>Delete learning log</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this learning log? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDeleteDialog} color="primary" disabled={isDeleting}>
+            Cancel
+          </Button>
+          <Button onClick={confirmDeleteLog} color="error" variant="contained" disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </MainCard>
   );
 }
