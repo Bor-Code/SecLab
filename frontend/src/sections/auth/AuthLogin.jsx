@@ -18,7 +18,7 @@ import { Formik } from 'formik';
 // project imports
 import IconButton from 'components/@extended/IconButton';
 import AnimateButton from 'components/@extended/AnimateButton';
-import { loginAdmin } from 'api/seclab';
+import { loginUser } from 'api/seclab';
 
 // assets
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
@@ -41,16 +41,23 @@ export default function AuthLogin({ isDemo = false }) {
   const handleLoginSubmit = async (values, { setSubmitting }) => {
     setLoginError(null);
     try {
-      await loginAdmin({
+      const response = await loginUser({
         email: values.email,
         password: values.password
       });
+
+      if (response.role !== 'admin') {
+        setLoginError('Access denied: Admin role required.');
+        return;
+      }
+
       localStorage.setItem('seclab-admin-auth', 'true');
+      localStorage.setItem('seclab-admin-role', response.role);
       const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
       window.location.href = `${baseUrl}/admin`;
     } catch (error) {
       console.error('Login failed:', error);
-      setLoginError('Invalid email or password, or unauthorized role.');
+      setLoginError('Invalid email or password.');
     } finally {
       setSubmitting(false);
     }
@@ -66,15 +73,15 @@ export default function AuthLogin({ isDemo = false }) {
       <Formik
         initialValues={{
           email: 'admin@seclab.local',
-          password: '123456',
+          password: 'admin123',
           submit: null
         }}
         validationSchema={Yup.object().shape({
-          email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
+          email: Yup.string().max(255).required('Email is required'),
           password: Yup.string()
             .required('Password is required')
             .test('no-leading-trailing-whitespace', 'Password cannot start or end with spaces', (value) => value === value.trim())
-            .max(10, 'Password must be less than 10 characters')
+            .max(50, 'Password is too long')
         })}
         onSubmit={handleLoginSubmit}
       >

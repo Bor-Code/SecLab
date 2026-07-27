@@ -8,6 +8,14 @@ export type User = {
   created_at: string
 }
 
+export type AuthUser = {
+  id: number
+  username: string
+  email: string
+  role: string
+  created_at: string
+}
+
 export type Topic = {
   id: number
   user_id: number
@@ -88,15 +96,15 @@ export type ResourceUpdate = {
   notes: string | null
 }
 
-export type AdminLoginPayload = {
+export type RegisterPayload = {
+  username: string
   email: string
   password: string
 }
 
-export type AdminLoginResponse = {
-  message: string
+export type LoginPayload = {
   email: string
-  role: string
+  password: string
 }
 
 export type TopicFilters = {
@@ -173,8 +181,15 @@ function buildQueryString(params?: QueryParams) {
   return queryString ? `?${queryString}` : ''
 }
 
-export function loginAdmin(payload: AdminLoginPayload) {
-  return request<AdminLoginResponse>('/auth/login', {
+export function registerUser(payload: RegisterPayload) {
+  return request<AuthUser>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function loginUser(payload: LoginPayload) {
+  return request<AuthUser>('/auth/login', {
     method: 'POST',
     body: JSON.stringify(payload),
   })

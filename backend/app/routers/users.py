@@ -17,6 +17,7 @@ users_table = Table(
     Column("username", String(50)),
     Column("email", String(255)),
     Column("role", String(20)),
+    Column("password_hash", String(255)),
     Column("created_at", DateTime),
 )
 
@@ -47,7 +48,13 @@ class UserDeleteResponse(BaseModel):
 @router.get("", response_model=list[UserRead])
 def get_users():
     with engine.connect() as connection:
-        query = select(users_table).order_by(users_table.c.id)
+        query = select(
+            users_table.c.id,
+            users_table.c.username,
+            users_table.c.email,
+            users_table.c.role,
+            users_table.c.created_at
+        ).order_by(users_table.c.id)
         result = connection.execute(query)
         users = result.mappings().all()
         return [dict(user) for user in users]
@@ -77,7 +84,13 @@ def create_user(user: UserCreate):
 @router.get("/{user_id}", response_model=UserRead)
 def get_user(user_id: int):
     with engine.connect() as connection:
-        query = select(users_table).where(users_table.c.id == user_id)
+        query = select(
+            users_table.c.id,
+            users_table.c.username,
+            users_table.c.email,
+            users_table.c.role,
+            users_table.c.created_at
+        ).where(users_table.c.id == user_id)
         result = connection.execute(query)
         user = result.mappings().first()
         

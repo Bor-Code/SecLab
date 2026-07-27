@@ -65,7 +65,9 @@ export default function Profile() {
 
   const handleLogout = () => {
     localStorage.removeItem('seclab-admin-auth');
-    window.location.href = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/login`;;
+    localStorage.removeItem('seclab-admin-role');
+    const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
+    window.location.href = `${baseUrl}/login`;
   };
 
   const [value, setValue] = useState(0);
