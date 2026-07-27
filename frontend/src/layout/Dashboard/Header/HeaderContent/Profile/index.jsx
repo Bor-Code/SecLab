@@ -63,6 +63,11 @@ export default function Profile() {
     setOpen(false);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('seclab-admin-auth');
+    window.location.href = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/login`;;
+  };
+
   const [value, setValue] = useState(0);
 
   const handleChange = (event, newValue) => {
@@ -122,7 +127,7 @@ export default function Profile() {
                         </Stack>
                       </Stack>
                       <Tooltip title="Logout">
-                        <IconButton size="large" sx={{ color: 'text.primary' }}>
+                        <IconButton size="large" sx={{ color: 'text.primary' }} onClick={handleLogout}>
                           <LogoutOutlined />
                         </IconButton>
                       </Tooltip>
@@ -166,7 +171,7 @@ export default function Profile() {
                     </Tabs>
                   </Box>
                   <TabPanel value={value} index={0} dir={theme.direction}>
-                    <ProfileTab />
+                    <ProfileTab onLogout={handleLogout} />
                   </TabPanel>
                   <TabPanel value={value} index={1} dir={theme.direction}>
                     <SettingTab />

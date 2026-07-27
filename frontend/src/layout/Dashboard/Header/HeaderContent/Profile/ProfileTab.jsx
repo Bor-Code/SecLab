@@ -10,10 +10,11 @@ import ProfileOutlined from '@ant-design/icons/ProfileOutlined';
 import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
 import UserOutlined from '@ant-design/icons/UserOutlined';
 import WalletOutlined from '@ant-design/icons/WalletOutlined';
+import PropTypes from 'prop-types';
 
 // ==============================|| HEADER PROFILE - PROFILE TAB ||============================== //
 
-export default function ProfileTab() {
+export default function ProfileTab({ onLogout }) {
   return (
     <List component="nav" sx={{ p: 0, '& .MuiListItemIcon-root': { minWidth: 32 } }}>
       <ListItemButton>
@@ -41,12 +42,14 @@ export default function ProfileTab() {
         </ListItemIcon>
         <ListItemText primary="Billing" />
       </ListItemButton>
-      <ListItemButton>
-        <ListItemIcon>
-          <LogoutOutlined />
-        </ListItemIcon>
-        <ListItemText primary="Logout" />
-      </ListItemButton>
+        <ListItemButton onClick={onLogout}>
+          <ListItemIcon>
+            <LogoutOutlined />
+            </ListItemIcon>
+            <ListItemText primary="Logout" />
+            </ListItemButton>
     </List>
   );
 }
+
+ProfileTab.propTypes = { onLogout: PropTypes.func };

@@ -2,6 +2,7 @@ import { lazy } from 'react';
 
 import Loadable from 'components/Loadable';
 import DashboardLayout from 'layout/Dashboard';
+import AdminGuard from './AdminGuard';
 
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard/default')));
 
@@ -19,61 +20,66 @@ const SystemHealthPage = Loadable(lazy(() => import('pages/seclab/system-health'
 const RecentActivityPage = Loadable(lazy(() => import('pages/seclab/recent-activity')));
 
 const MainRoutes = {
-  path: '/',
-  element: <DashboardLayout />,
+  path: '/admin',
+  element: <AdminGuard />,
   children: [
     {
-      path: '/',
-      element: <DashboardDefault />
-    },
-    {
-      path: 'dashboard',
+      element: <DashboardLayout />,
       children: [
         {
-          path: 'default',
+          index: true,
           element: <DashboardDefault />
+        },
+        {
+          path: 'dashboard',
+          children: [
+            {
+              path: 'default',
+              element: <DashboardDefault />
+            }
+          ]
+        },
+        {
+          path: 'users',
+          element: <UsersPage />
+        },
+        {
+          path: 'topics',
+          element: <TopicsPage />
+        },
+        {
+          path: 'learning-logs',
+          element: <LearningLogsPage />
+        },
+        {
+          path: 'resources',
+          element: <ResourcesPage />
+        },
+        {
+          path: 'system-health',
+          element: <SystemHealthPage />
+        },
+        {
+          path: 'recent-activity',
+          element: <RecentActivityPage />
+        },
+        {
+          path: 'typography',
+          element: <Typography />
+        },
+        {
+          path: 'color',
+          element: <Color />
+        },
+        {
+          path: 'shadow',
+          element: <Shadow />
+        },
+        {
+          path: 'sample-page',
+          element: <SamplePage />
         }
       ]
-    },
-    {
-      path: 'users',
-      element: <UsersPage />
-    },
-    {
-      path: 'topics',
-      element: <TopicsPage />
-    },
-    {
-      path: 'learning-logs',
-      element: <LearningLogsPage />
-    },
-    {
-      path: 'resources',
-      element: <ResourcesPage />
-    },
-    {
-      path: 'system-health',
-      element: <SystemHealthPage />
-    },
-    {
-      path: 'recent-activity',
-      element: <RecentActivityPage />
-    },
-    {
-      path: 'typography',
-      element: <Typography />
-    },
-    {
-      path: 'color',
-      element: <Color />
-    },
-    {
-      path: 'shadow',
-      element: <Shadow />
-    },
-    {
-      path: 'sample-page',
-      element: <SamplePage />
     }
   ]
 };
