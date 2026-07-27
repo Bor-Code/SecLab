@@ -17,7 +17,7 @@ import Alert from '@mui/material/Alert';
 
 // project imports
 import MainCard from 'components/MainCard';
-import { fetchUsers, createUser } from 'api/seclab';
+import { fetchUsers, createUser, updateUser, deleteUser } from 'api/seclab';
 
 // ==============================|| USERS PAGE ||============================== //
 
@@ -25,6 +25,11 @@ export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  
+  const [editingUserId, setEditingUserId] = useState(null);
+  const [editingUsername, setEditingUsername] = useState('');
+  const [editingEmail, setEditingEmail] = useState('');
+
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [message, setMessage] = useState(null);
@@ -66,6 +71,51 @@ export default function UsersPage() {
     }
   }
 
+  function startEditingUser(user) {
+    setEditingUserId(user.id);
+    setEditingUsername(user.username);
+    setEditingEmail(user.email);
+    setMessage(null);
+    setErrorMessage(null);
+  }
+
+  function cancelEditingUser() {
+    setEditingUserId(null);
+    setEditingUsername('');
+    setEditingEmail('');
+  }
+
+  async function handleUpdateUser(event) {
+    event.preventDefault();
+    if (editingUserId === null) return;
+
+    try {
+      const updatedUser = await updateUser(editingUserId, {
+        username: editingUsername,
+        email: editingEmail,
+      });
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u))
+      );
+      cancelEditingUser();
+      setMessage('User updated successfully.');
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+    }
+  }
+
+  async function handleDeleteUser(userId) {
+    if (!window.confirm('Delete this user?')) return;
+
+    try {
+      await deleteUser(userId);
+      setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userId));
+      setMessage('User deleted successfully.');
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+    }
+  }
+
   return (
     <MainCard title="Users">
       <Typography variant="body2" sx={{ mb: 3 }}>
@@ -84,40 +134,86 @@ export default function UsersPage() {
         </Alert>
       )}
 
-      <form onSubmit={handleCreateUser}>
-        <Grid container spacing={2} sx={{ mb: 4 }} alignItems="center">
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              label="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+      {editingUserId !== null ? (
+        <form onSubmit={handleUpdateUser}>
+          <Grid container spacing={2} sx={{ mb: 4 }} alignItems="center">
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Username"
+                value={editingUsername}
+                onChange={(e) => setEditingUsername(e.target.value)}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                type="email"
+                label="Email"
+                value={editingEmail}
+                onChange={(e) => setEditingEmail(e.target.value)}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Stack direction="row" spacing={1}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  fullWidth
+                  sx={{ height: '41px' }}
+                >
+                  Save changes
+                </Button>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  sx={{ height: '41px' }}
+                  onClick={cancelEditingUser}
+                >
+                  Cancel
+                </Button>
+              </Stack>
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              type="email"
-              label="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+        </form>
+      ) : (
+        <form onSubmit={handleCreateUser}>
+          <Grid container spacing={2} sx={{ mb: 4 }} alignItems="center">
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                type="email"
+                label="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={isCreating}
+                fullWidth
+                sx={{ height: '41px' }}
+              >
+                {isCreating ? 'Creating...' : 'Create user'}
+              </Button>
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={isCreating}
-              fullWidth
-              sx={{ height: '41px' }}
-            >
-              {isCreating ? 'Creating...' : 'Create user'}
-            </Button>
-          </Grid>
-        </Grid>
-      </form>
+        </form>
+      )}
 
       <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
         <Table>
@@ -127,18 +223,19 @@ export default function UsersPage() {
               <TableCell>Username</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Created At</TableCell>
+              <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={4} align="center">
+                <TableCell colSpan={5} align="center">
                   Loading users...
                 </TableCell>
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} align="center">
+                <TableCell colSpan={5} align="center">
                   No users found.
                 </TableCell>
               </TableRow>
@@ -149,6 +246,25 @@ export default function UsersPage() {
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{new Date(user.created_at).toLocaleString('tr-TR')}</TableCell>
+                  <TableCell align="right">
+                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => startEditingUser(user)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        onClick={() => handleDeleteUser(user.id)}
+                      >
+                        Delete
+                      </Button>
+                    </Stack>
+                  </TableCell>
                 </TableRow>
               ))
             )}
