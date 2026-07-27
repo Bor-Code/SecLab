@@ -88,6 +88,17 @@ export type ResourceUpdate = {
   notes: string | null
 }
 
+export type AdminLoginPayload = {
+  email: string
+  password: string
+}
+
+export type AdminLoginResponse = {
+  message: string
+  email: string
+  role: string
+}
+
 export type TopicFilters = {
   user_id?: number
   search?: string
@@ -160,6 +171,13 @@ function buildQueryString(params?: QueryParams) {
 
   const queryString = searchParams.toString()
   return queryString ? `?${queryString}` : ''
+}
+
+export function loginAdmin(payload: AdminLoginPayload) {
+  return request<AdminLoginResponse>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
 }
 
 export function fetchUsers() {

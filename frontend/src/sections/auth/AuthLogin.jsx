@@ -9,6 +9,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
+import Alert from '@mui/material/Alert';
 
 // third-party
 import * as Yup from 'yup';
@@ -17,6 +18,7 @@ import { Formik } from 'formik';
 // project imports
 import IconButton from 'components/@extended/IconButton';
 import AnimateButton from 'components/@extended/AnimateButton';
+import { loginAdmin } from 'api/seclab';
 
 // assets
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
@@ -26,6 +28,8 @@ import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 
 export default function AuthLogin({ isDemo = false }) {
   const [showPassword, setShowPassword] = React.useState(false);
+  const [loginError, setLoginError] = React.useState(null);
+
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -34,14 +38,31 @@ export default function AuthLogin({ isDemo = false }) {
     event.preventDefault();
   };
 
-  const handleLoginSubmit = () => {
-    localStorage.setItem('seclab-admin-auth', 'true');
-    const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
-    window.location.href = `${baseUrl}/admin`;
+  const handleLoginSubmit = async (values, { setSubmitting }) => {
+    setLoginError(null);
+    try {
+      await loginAdmin({
+        email: values.email,
+        password: values.password
+      });
+      localStorage.setItem('seclab-admin-auth', 'true');
+      const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
+      window.location.href = `${baseUrl}/admin`;
+    } catch (error) {
+      console.error('Login failed:', error);
+      setLoginError('Invalid email or password, or unauthorized role.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <>
+      {loginError && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {loginError}
+        </Alert>
+      )}
       <Formik
         initialValues={{
           email: 'admin@seclab.local',
@@ -57,7 +78,7 @@ export default function AuthLogin({ isDemo = false }) {
         })}
         onSubmit={handleLoginSubmit}
       >
-        {({ errors, handleBlur, handleChange, handleSubmit, touched, values }) => (
+        {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
           <form noValidate onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid size={12}>
@@ -117,8 +138,8 @@ export default function AuthLogin({ isDemo = false }) {
               </Grid>
               <Grid size={12}>
                 <AnimateButton>
-                  <Button fullWidth size="large" type="submit" variant="contained" color="primary">
-                    SecLab Admin Login
+                  <Button fullWidth size="large" type="submit" variant="contained" color="primary" disabled={isSubmitting}>
+                    {isSubmitting ? 'Authenticating...' : 'SecLab Admin Login'}
                   </Button>
                 </AnimateButton>
               </Grid>
