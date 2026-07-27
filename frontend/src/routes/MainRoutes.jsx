@@ -1,21 +1,22 @@
 import { lazy } from 'react';
 
-// project imports
 import Loadable from 'components/Loadable';
 import DashboardLayout from 'layout/Dashboard';
 
-// render- Dashboard
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard/default')));
 
-// render - color
 const Color = Loadable(lazy(() => import('pages/component-overview/color')));
 const Typography = Loadable(lazy(() => import('pages/component-overview/typography')));
 const Shadow = Loadable(lazy(() => import('pages/component-overview/shadows')));
 
-// render - sample page
 const SamplePage = Loadable(lazy(() => import('pages/extra-pages/sample-page')));
 
-// ==============================|| MAIN ROUTING ||============================== //
+const UsersPage = Loadable(lazy(() => import('pages/seclab/users')));
+const TopicsPage = Loadable(lazy(() => import('pages/seclab/topics')));
+const LearningLogsPage = Loadable(lazy(() => import('pages/seclab/learning-logs')));
+const ResourcesPage = Loadable(lazy(() => import('pages/seclab/resources')));
+const SystemHealthPage = Loadable(lazy(() => import('pages/seclab/system-health')));
+const RecentActivityPage = Loadable(lazy(() => import('pages/seclab/recent-activity')));
 
 const MainRoutes = {
   path: '/',
@@ -33,6 +34,30 @@ const MainRoutes = {
           element: <DashboardDefault />
         }
       ]
+    },
+    {
+      path: 'users',
+      element: <UsersPage />
+    },
+    {
+      path: 'topics',
+      element: <TopicsPage />
+    },
+    {
+      path: 'learning-logs',
+      element: <LearningLogsPage />
+    },
+    {
+      path: 'resources',
+      element: <ResourcesPage />
+    },
+    {
+      path: 'system-health',
+      element: <SystemHealthPage />
+    },
+    {
+      path: 'recent-activity',
+      element: <RecentActivityPage />
     },
     {
       path: 'typography',
