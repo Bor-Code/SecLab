@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+﻿import { lazy } from 'react';
 
 import Loadable from 'components/Loadable';
 import DashboardLayout from 'layout/Dashboard';
@@ -18,6 +18,7 @@ const LearningLogsPage = Loadable(lazy(() => import('pages/seclab/learning-logs'
 const ResourcesPage = Loadable(lazy(() => import('pages/seclab/resources')));
 const SystemHealthPage = Loadable(lazy(() => import('pages/seclab/system-health')));
 const RecentActivityPage = Loadable(lazy(() => import('pages/seclab/recent-activity')));
+const DataBrowserPage = Loadable(lazy(() => import('pages/seclab/data-browser')));
 
 const MainRoutes = {
   path: '/admin',
@@ -62,6 +63,10 @@ const MainRoutes = {
         {
           path: 'recent-activity',
           element: <RecentActivityPage />
+        },
+        {
+          path: 'data-browser',
+          element: <DataBrowserPage />
         },
         {
           path: 'typography',

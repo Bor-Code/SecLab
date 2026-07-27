@@ -1,11 +1,11 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 
 export default function AdminGuard() {
-  const location = useLocation();
   const isAuthenticated = localStorage.getItem('seclab-admin-auth') === 'true';
+  const role = localStorage.getItem('seclab-admin-role');
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!isAuthenticated || role !== 'admin') {
+    return <Navigate to="/login" replace />;
   }
 
   return <Outlet />;

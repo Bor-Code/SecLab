@@ -8,6 +8,14 @@ export type User = {
   created_at: string
 }
 
+export type AuthUser = {
+  id: number
+  username: string
+  email: string
+  role: string
+  created_at: string
+}
+
 export type Topic = {
   id: number
   user_id: number
@@ -88,6 +96,17 @@ export type ResourceUpdate = {
   notes: string | null
 }
 
+export type RegisterPayload = {
+  username: string
+  email: string
+  password: string
+}
+
+export type LoginPayload = {
+  email: string
+  password: string
+}
+
 export type TopicFilters = {
   user_id?: number
   search?: string
@@ -160,6 +179,20 @@ function buildQueryString(params?: QueryParams) {
 
   const queryString = searchParams.toString()
   return queryString ? `?${queryString}` : ''
+}
+
+export function registerUser(payload: RegisterPayload) {
+  return request<AuthUser>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function loginUser(payload: LoginPayload) {
+  return request<AuthUser>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
 }
 
 export function fetchUsers() {
