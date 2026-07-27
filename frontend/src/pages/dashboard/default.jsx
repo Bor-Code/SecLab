@@ -21,11 +21,10 @@ import Typography from '@mui/material/Typography';
 import MainCard from 'components/MainCard';
 import AnalyticEcommerce from 'components/cards/statistics/AnalyticEcommerce';
 import MonthlyBarChart from 'sections/dashboard/default/MonthlyBarChart';
-import OrdersTable from 'sections/dashboard/default/OrdersTable';
 import ReportAreaChart from 'sections/dashboard/default/ReportAreaChart';
 import SaleReportCard from 'sections/dashboard/default/SaleReportCard';
 import UniqueVisitorCard from 'sections/dashboard/default/UniqueVisitorCard';
-import { fetchDashboardSummary } from 'api/seclab';
+import { fetchDashboardRecentActivity, fetchDashboardSummary } from 'api/seclab';
 
 // assets
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined';
@@ -65,6 +64,10 @@ export default function DashboardDefault() {
   const [isSummaryLoading, setIsSummaryLoading] = useState(true);
   const [summaryMessage, setSummaryMessage] = useState(null);
 
+  const [dashboardActivity, setDashboardActivity] = useState([]);
+  const [isActivityLoading, setIsActivityLoading] = useState(true);
+  const [activityMessage, setActivityMessage] = useState(null);
+
   useEffect(() => {
     async function loadSummary() {
       setIsSummaryLoading(true);
@@ -80,7 +83,22 @@ export default function DashboardDefault() {
       }
     }
 
+    async function loadRecentActivity() {
+      setIsActivityLoading(true);
+      setActivityMessage(null);
+      try {
+        const data = await fetchDashboardRecentActivity();
+        setDashboardActivity(data);
+      } catch (error) {
+        console.error('Activity load error:', error);
+        setActivityMessage('Activity unavailable');
+      } finally {
+        setIsActivityLoading(false);
+      }
+    }
+
     loadSummary();
+    loadRecentActivity();
   }, []);
 
   const handleOrderMenuClick = (event) => {
@@ -96,6 +114,22 @@ export default function DashboardDefault() {
   const handleAnalyticsMenuClose = () => {
     setAnalyticsMenuAnchor(null);
   };
+
+  function formatActivityDate(value) {
+    if (!value) return '';
+    return new Date(value).toLocaleString('tr-TR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function formatActivityType(type) {
+    if (!type) return '';
+    return type.replace('_', ' ');
+  }
 
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
@@ -163,7 +197,7 @@ export default function DashboardDefault() {
       <Grid size={{ xs: 12, md: 7, lg: 8 }}>
         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <Grid>
-            <Typography variant="h5">Recent Orders</Typography>
+            <Typography variant="h5">Recent Activity</Typography>
           </Grid>
           <Grid>
             <IconButton onClick={handleOrderMenuClick}>
@@ -180,12 +214,44 @@ export default function DashboardDefault() {
             >
               <MenuItem onClick={handleOrderMenuClose}>Export as CSV</MenuItem>
               <MenuItem onClick={handleOrderMenuClose}>Export as Excel</MenuItem>
-              <MenuItem onClick={handleOrderMenuClose}>Print Table</MenuItem>
+              <MenuItem onClick={handleOrderMenuClose}>Print List</MenuItem>
             </Menu>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
-          <OrdersTable />
+          {isActivityLoading ? (
+            <Box sx={{ p: 3 }}>
+              <Typography variant="body2" color="textSecondary">
+                Loading activity...
+              </Typography>
+            </Box>
+          ) : dashboardActivity.length === 0 ? (
+            <Box sx={{ p: 3 }}>
+              <Typography variant="body2" color="textSecondary">
+                No recent activity found.
+              </Typography>
+            </Box>
+          ) : (
+            <List sx={{ p: 0, '& .MuiListItemButton-root': { py: 2 } }}>
+              {dashboardActivity.map((item, index) => (
+                <ListItemButton divider={index !== dashboardActivity.length - 1} key={index}>
+                  <ListItemText
+                    primary={item.title}
+                    secondary={item.description}
+                    primaryTypographyProps={{ variant: 'subtitle1' }}
+                  />
+                  <Stack sx={{ alignItems: 'flex-end' }}>
+                    <Typography variant="subtitle2" sx={{ textTransform: 'capitalize' }}>
+                      {formatActivityType(item.activity_type)}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'secondary.main' }} noWrap>
+                      {formatActivityDate(item.created_at)}
+                    </Typography>
+                  </Stack>
+                </ListItemButton>
+              ))}
+            </List>
+          )}
         </MainCard>
       </Grid>
       <Grid size={{ xs: 12, md: 5, lg: 4 }}>
