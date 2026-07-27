@@ -18,7 +18,7 @@ const monitoring = {
       id: 'system-health',
       title: 'System Health',
       type: 'item',
-      url: '/system-health',
+      url: '/admin/system-health',
       icon: icons.HeartOutlined,
       breadcrumbs: false
     },
@@ -26,7 +26,7 @@ const monitoring = {
       id: 'recent-activity',
       title: 'Recent Activity',
       type: 'item',
-      url: '/recent-activity',
+      url: '/admin/recent-activity',
       icon: icons.HistoryOutlined,
       breadcrumbs: false
     }

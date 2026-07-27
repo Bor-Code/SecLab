@@ -19,11 +19,11 @@ const SystemHealthPage = Loadable(lazy(() => import('pages/seclab/system-health'
 const RecentActivityPage = Loadable(lazy(() => import('pages/seclab/recent-activity')));
 
 const MainRoutes = {
-  path: '/',
+  path: '/admin',
   element: <DashboardLayout />,
   children: [
     {
-      path: '/',
+      index: true,
       element: <DashboardDefault />
     },
     {

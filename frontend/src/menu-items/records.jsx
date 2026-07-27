@@ -25,7 +25,7 @@ const records = {
       id: 'users',
       title: 'Users',
       type: 'item',
-      url: '/users',
+      url: '/admin/users',
       icon: icons.UserOutlined,
       breadcrumbs: false
     },
@@ -33,7 +33,7 @@ const records = {
       id: 'topics',
       title: 'Topics',
       type: 'item',
-      url: '/topics',
+      url: '/admin/topics',
       icon: icons.BookOutlined,
       breadcrumbs: false
     },
@@ -41,7 +41,7 @@ const records = {
       id: 'learning-logs',
       title: 'Learning Logs',
       type: 'item',
-      url: '/learning-logs',
+      url: '/admin/learning-logs',
       icon: icons.ReadOutlined,
       breadcrumbs: false
     },
@@ -49,7 +49,7 @@ const records = {
       id: 'resources',
       title: 'Resources',
       type: 'item',
-      url: '/resources',
+      url: '/admin/resources',
       icon: icons.LinkOutlined,
       breadcrumbs: false
     }
