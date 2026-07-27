@@ -14,6 +14,11 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 import MainCard from 'components/MainCard';
 import { createTopic, deleteTopic, fetchTopics, fetchUsers, updateTopic } from 'api/seclab';
@@ -29,6 +34,9 @@ export default function TopicsPage() {
   const [editingTopicId, setEditingTopicId] = useState(null);
   const [editingName, setEditingName] = useState('');
   const [editingDescription, setEditingDescription] = useState('');
+
+  const [deleteTargetTopic, setDeleteTargetTopic] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [topicSearch, setTopicSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -119,15 +127,30 @@ export default function TopicsPage() {
     }
   }
 
-  async function handleDeleteTopic(topicId) {
-    if (!window.confirm('Delete this topic?')) return;
+  function openDeleteDialog(topic) {
+    setDeleteTargetTopic(topic);
+    setMessage(null);
+    setErrorMessage(null);
+  }
 
+  function closeDeleteDialog() {
+    setDeleteTargetTopic(null);
+  }
+
+  async function confirmDeleteTopic() {
+    if (!deleteTargetTopic) return;
+
+    setIsDeleting(true);
     try {
-      await deleteTopic(topicId);
-      setTopics((prevTopics) => prevTopics.filter((topic) => topic.id !== topicId));
+      await deleteTopic(deleteTargetTopic.id);
+      setTopics((prevTopics) => prevTopics.filter((topic) => topic.id !== deleteTargetTopic.id));
       setMessage('Topic deleted successfully.');
+      closeDeleteDialog();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+      closeDeleteDialog();
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -217,7 +240,7 @@ export default function TopicsPage() {
                   <TableCell align="right">
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
                       <Button size="small" variant="outlined" onClick={() => startEditingTopic(topic)}>Edit</Button>
-                      <Button size="small" variant="outlined" color="error" onClick={() => handleDeleteTopic(topic.id)}>Delete</Button>
+                      <Button size="small" variant="outlined" color="error" onClick={() => openDeleteDialog(topic)}>Delete</Button>
                     </Stack>
                   </TableCell>
                 </TableRow>
@@ -226,6 +249,23 @@ export default function TopicsPage() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Dialog open={deleteTargetTopic !== null} onClose={closeDeleteDialog}>
+        <DialogTitle>Delete topic</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this topic? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDeleteDialog} color="primary" disabled={isDeleting}>
+            Cancel
+          </Button>
+          <Button onClick={confirmDeleteTopic} color="error" variant="contained" disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </MainCard>
   );
 }

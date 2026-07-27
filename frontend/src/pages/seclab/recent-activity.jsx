@@ -1,20 +1,111 @@
-// material-ui
+import { useEffect, useState } from 'react';
+
 import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import Alert from '@mui/material/Alert';
 
-// project imports
 import MainCard from 'components/MainCard';
+import { fetchDashboardRecentActivity } from 'api/seclab';
 
-// ==============================|| SAMPLE PAGE ||============================== //
+export default function RecentActivityPage() {
+  const [activities, setActivities] = useState([]);
+  const [search, setSearch] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState(null);
 
-export default function SamplePage() {
+  async function loadActivity() {
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      const data = await fetchDashboardRecentActivity();
+      setActivities(data);
+    } catch (error) {
+      console.error('Failed to load recent activity:', error);
+      setErrorMessage('Failed to load recent activity.');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadActivity();
+  }, []);
+
+  const filteredActivities = activities.filter((item) => {
+    const query = search.toLowerCase();
+    const typeMatch = (item.activity_type || '').toLowerCase().includes(query);
+    const titleMatch = (item.title || '').toLowerCase().includes(query);
+    const descMatch = (item.description || '').toLowerCase().includes(query);
+    
+    return typeMatch || titleMatch || descMatch;
+  });
+
   return (
-    <MainCard title="Sample Card">
-      <Typography variant="body2">
-        Lorem ipsum dolor sit amen, consenter nipissing eli, sed do elusion tempos incident ut laborers et doolie magna alissa. Ut enif ad
-        minim venice, quin nostrum exercitation illampu laborings nisi ut liquid ex ea commons construal. Duos aube grue dolor in
-        reprehended in voltage veil esse colum doolie eu fujian bulla parian. Exceptive sin ocean cuspidate non president, sunk in culpa qui
-        officiate descent molls anim id est labours.
+    <MainCard title="Recent Activity">
+      <Typography variant="body2" sx={{ mb: 3 }}>
+        Review the latest actions and updates across the platform.
       </Typography>
+
+      {errorMessage && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {errorMessage}
+        </Alert>
+      )}
+
+      <TextField
+        fullWidth
+        label="Search activity"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search by type, title, or description"
+        sx={{ mb: 3 }}
+      />
+
+      <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Type</TableCell>
+              <TableCell>Title</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Created At</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  Loading activity...
+                </TableCell>
+              </TableRow>
+            ) : filteredActivities.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  No recent activity found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredActivities.map((item, index) => (
+                <TableRow key={index} hover>
+                  <TableCell sx={{ textTransform: 'capitalize' }}>
+                    {(item.activity_type || '').replace('_', ' ')}
+                  </TableCell>
+                  <TableCell>{item.title}</TableCell>
+                  <TableCell>{item.description || '-'}</TableCell>
+                  <TableCell>{new Date(item.created_at).toLocaleString('tr-TR')}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </MainCard>
   );
 }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-// material-ui
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -14,23 +13,35 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
+import TablePagination from '@mui/material/TablePagination';
+import MenuItem from '@mui/material/MenuItem';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
-// project imports
 import MainCard from 'components/MainCard';
 import { fetchUsers, createUser, updateUser, deleteUser } from 'api/seclab';
-
-// ==============================|| USERS PAGE ||============================== //
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [role, setRole] = useState('user');
   
   const [editingUserId, setEditingUserId] = useState(null);
   const [editingUsername, setEditingUsername] = useState('');
   const [editingEmail, setEditingEmail] = useState('');
+  const [editingRole, setEditingRole] = useState('user');
 
   const [userSearch, setUserSearch] = useState('');
+  
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const [deleteTargetUser, setDeleteTargetUser] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -61,11 +72,13 @@ export default function UsersPage() {
     setErrorMessage(null);
 
     try {
-      const createdUser = await createUser({ username, email });
+      const createdUser = await createUser({ username, email, role });
       setUsers((prevUsers) => [...prevUsers, createdUser]);
       setUsername('');
       setEmail('');
+      setRole('user');
       setUserSearch('');
+      setPage(0);
       setMessage('User created successfully.');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
@@ -78,6 +91,7 @@ export default function UsersPage() {
     setEditingUserId(user.id);
     setEditingUsername(user.username);
     setEditingEmail(user.email);
+    setEditingRole(user.role || 'user');
     setMessage(null);
     setErrorMessage(null);
   }
@@ -86,6 +100,7 @@ export default function UsersPage() {
     setEditingUserId(null);
     setEditingUsername('');
     setEditingEmail('');
+    setEditingRole('user');
   }
 
   async function handleUpdateUser(event) {
@@ -96,6 +111,7 @@ export default function UsersPage() {
       const updatedUser = await updateUser(editingUserId, {
         username: editingUsername,
         email: editingEmail,
+        role: editingRole,
       });
       setUsers((prevUsers) =>
         prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u))
@@ -107,23 +123,50 @@ export default function UsersPage() {
     }
   }
 
-  async function handleDeleteUser(userId) {
-    if (!window.confirm('Delete this user?')) return;
+  function openDeleteDialog(user) {
+    setDeleteTargetUser(user);
+    setMessage(null);
+    setErrorMessage(null);
+  }
 
+  function closeDeleteDialog() {
+    setDeleteTargetUser(null);
+  }
+
+  async function confirmDeleteUser() {
+    if (!deleteTargetUser) return;
+    
+    setIsDeleting(true);
     try {
-      await deleteUser(userId);
-      setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userId));
+      await deleteUser(deleteTargetUser.id);
+      setUsers((prevUsers) => prevUsers.filter((u) => u.id !== deleteTargetUser.id));
       setMessage('User deleted successfully.');
+      closeDeleteDialog();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+      closeDeleteDialog();
+    } finally {
+      setIsDeleting(false);
     }
+  }
+
+  function handleChangePage(_event, newPage) {
+    setPage(newPage);
+  }
+
+  function handleChangeRowsPerPage(event) {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   }
 
   const filteredUsers = users.filter(
     (user) =>
       user.username.toLowerCase().includes(userSearch.toLowerCase()) ||
-      user.email.toLowerCase().includes(userSearch.toLowerCase())
+      user.email.toLowerCase().includes(userSearch.toLowerCase()) ||
+      (user.role || '').toLowerCase().includes(userSearch.toLowerCase())
   );
+
+  const paginatedUsers = filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <MainCard title="Users">
@@ -146,7 +189,7 @@ export default function UsersPage() {
       {editingUserId !== null ? (
         <form onSubmit={handleUpdateUser}>
           <Grid container spacing={2} sx={{ mb: 4 }} alignItems="center">
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
                 label="Username"
@@ -155,7 +198,7 @@ export default function UsersPage() {
                 required
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
                 type="email"
@@ -164,6 +207,19 @@ export default function UsersPage() {
                 onChange={(e) => setEditingEmail(e.target.value)}
                 required
               />
+            </Grid>
+            <Grid item xs={12} sm={2}>
+              <TextField
+                select
+                fullWidth
+                label="Role"
+                value={editingRole}
+                onChange={(e) => setEditingRole(e.target.value)}
+                required
+              >
+                <MenuItem value="user">User</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+              </TextField>
             </Grid>
             <Grid item xs={12} sm={4}>
               <Stack direction="row" spacing={1}>
@@ -190,7 +246,7 @@ export default function UsersPage() {
       ) : (
         <form onSubmit={handleCreateUser}>
           <Grid container spacing={2} sx={{ mb: 4 }} alignItems="center">
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
                 label="Username"
@@ -199,7 +255,7 @@ export default function UsersPage() {
                 required
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
                 type="email"
@@ -208,6 +264,19 @@ export default function UsersPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+            </Grid>
+            <Grid item xs={12} sm={2}>
+              <TextField
+                select
+                fullWidth
+                label="Role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                required
+              >
+                <MenuItem value="user">User</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+              </TextField>
             </Grid>
             <Grid item xs={12} sm={4}>
               <Button
@@ -228,8 +297,11 @@ export default function UsersPage() {
         fullWidth
         label="Search users"
         value={userSearch}
-        onChange={(e) => setUserSearch(e.target.value)}
-        placeholder="Search by username or email"
+        onChange={(e) => {
+          setUserSearch(e.target.value);
+          setPage(0);
+        }}
+        placeholder="Search by username, email, or role"
         sx={{ mb: 3 }}
       />
 
@@ -240,6 +312,7 @@ export default function UsersPage() {
               <TableCell>ID</TableCell>
               <TableCell>Username</TableCell>
               <TableCell>Email</TableCell>
+              <TableCell>Role</TableCell>
               <TableCell>Created At</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -247,22 +320,23 @@ export default function UsersPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={6} align="center">
                   Loading users...
                 </TableCell>
               </TableRow>
-            ) : filteredUsers.length === 0 ? (
+            ) : paginatedUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={6} align="center">
                   No users found.
                 </TableCell>
               </TableRow>
             ) : (
-              filteredUsers.map((user) => (
+              paginatedUsers.map((user) => (
                 <TableRow key={user.id} hover>
                   <TableCell>{user.id}</TableCell>
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
+                  <TableCell sx={{ textTransform: 'capitalize' }}>{user.role}</TableCell>
                   <TableCell>{new Date(user.created_at).toLocaleString('tr-TR')}</TableCell>
                   <TableCell align="right">
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
@@ -277,7 +351,7 @@ export default function UsersPage() {
                         size="small"
                         variant="outlined"
                         color="error"
-                        onClick={() => handleDeleteUser(user.id)}
+                        onClick={() => openDeleteDialog(user)}
                       >
                         Delete
                       </Button>
@@ -288,7 +362,33 @@ export default function UsersPage() {
             )}
           </TableBody>
         </Table>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 50]}
+          component="div"
+          count={filteredUsers.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </TableContainer>
+
+      <Dialog open={deleteTargetUser !== null} onClose={closeDeleteDialog}>
+        <DialogTitle>Delete user</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this user? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDeleteDialog} color="primary" disabled={isDeleting}>
+            Cancel
+          </Button>
+          <Button onClick={confirmDeleteUser} color="error" variant="contained" disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </MainCard>
   );
 }

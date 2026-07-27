@@ -1,32 +1,19 @@
 import { useEffect, useState } from 'react';
 
-// material-ui
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-// project imports
 import MainCard from 'components/MainCard';
 import AnalyticEcommerce from 'components/cards/statistics/AnalyticEcommerce';
-import UniqueVisitorCard from 'sections/dashboard/default/UniqueVisitorCard';
 import { fetchDashboardRecentActivity, fetchDashboardSummary, fetchHealthStatus } from 'api/seclab';
 
-// assets
-import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined';
-
-// ==============================|| DASHBOARD - DEFAULT ||============================== //
-
 export default function DashboardDefault() {
-  const [orderMenuAnchor, setOrderMenuAnchor] = useState(null);
-
   const [dashboardSummary, setDashboardSummary] = useState(null);
   const [isSummaryLoading, setIsSummaryLoading] = useState(true);
   const [summaryMessage, setSummaryMessage] = useState(null);
@@ -87,13 +74,6 @@ export default function DashboardDefault() {
     loadHealthStatus();
   }, []);
 
-  const handleOrderMenuClick = (event) => {
-    setOrderMenuAnchor(event.currentTarget);
-  };
-  const handleOrderMenuClose = () => {
-    setOrderMenuAnchor(null);
-  };
-
   function formatActivityDate(value) {
     if (!value) return '';
     return new Date(value).toLocaleString('tr-TR', {
@@ -112,7 +92,6 @@ export default function DashboardDefault() {
 
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
-      {/* row 1 */}
       <Grid sx={{ mb: -2.25 }} size={12}>
         <Typography variant="h5">Dashboard</Typography>
         {summaryMessage && (
@@ -148,9 +127,40 @@ export default function DashboardDefault() {
 
       <Grid sx={{ display: { sm: 'none', md: 'block', lg: 'none' } }} size={{ md: 8 }} />
       
-      {/* row 2 */}
       <Grid size={{ xs: 12, md: 7, lg: 8 }}>
-        <UniqueVisitorCard />
+        <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+          <Grid>
+            <Typography variant="h5">Records Overview</Typography>
+          </Grid>
+        </Grid>
+        <MainCard sx={{ mt: 2 }} content={false}>
+          <List sx={{ p: 0, '& .MuiListItem-root': { py: 2, px: 3 } }}>
+            <ListItem divider>
+              <ListItemText 
+                primary={<Typography variant="subtitle1">Users</Typography>} 
+                secondary="Manage system access, create new accounts, and review user activity." 
+              />
+            </ListItem>
+            <ListItem divider>
+              <ListItemText 
+                primary={<Typography variant="subtitle1">Topics</Typography>} 
+                secondary="Organize learning domains and categorize core focus areas." 
+              />
+            </ListItem>
+            <ListItem divider>
+              <ListItemText 
+                primary={<Typography variant="subtitle1">Learning Logs</Typography>} 
+                secondary="Track daily progress and record detailed study notes." 
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText 
+                primary={<Typography variant="subtitle1">Resources</Typography>} 
+                secondary="Maintain a centralized library of external links, documentation, and tools." 
+              />
+            </ListItem>
+          </List>
+        </MainCard>
       </Grid>
       <Grid size={{ xs: 12, md: 5, lg: 4 }}>
         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
@@ -198,29 +208,10 @@ export default function DashboardDefault() {
         </MainCard>
       </Grid>
       
-      {/* row 3 */}
       <Grid size={{ xs: 12, md: 7, lg: 8 }}>
         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <Grid>
             <Typography variant="h5">Recent Activity</Typography>
-          </Grid>
-          <Grid>
-            <IconButton onClick={handleOrderMenuClick}>
-              <EllipsisOutlined style={{ fontSize: '1.25rem' }} />
-            </IconButton>
-            <Menu
-              id="fade-menu"
-              slotProps={{ list: { 'aria-labelledby': 'fade-button' } }}
-              anchorEl={orderMenuAnchor}
-              onClose={handleOrderMenuClose}
-              open={Boolean(orderMenuAnchor)}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-            >
-              <MenuItem onClick={handleOrderMenuClose}>Export as CSV</MenuItem>
-              <MenuItem onClick={handleOrderMenuClose}>Export as Excel</MenuItem>
-              <MenuItem onClick={handleOrderMenuClose}>Print List</MenuItem>
-            </Menu>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
@@ -260,26 +251,25 @@ export default function DashboardDefault() {
         </MainCard>
       </Grid>
 
-      {/* Next Focus Panel */}
       <Grid size={{ xs: 12, md: 5, lg: 4 }}>
         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <Grid>
-            <Typography variant="h5">Next Focus</Typography>
+            <Typography variant="h5">Admin Workflow</Typography>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
           <List sx={{ p: 0, '& .MuiListItem-root': { py: 2, px: 3 } }}>
             <ListItem divider>
-              <ListItemText primary="User management" />
+              <ListItemText primary="Review users" />
             </ListItem>
             <ListItem divider>
-              <ListItemText primary="Topic tracking" />
+              <ListItemText primary="Organize topics" />
             </ListItem>
             <ListItem divider>
-              <ListItemText primary="Learning log review" />
+              <ListItemText primary="Track learning logs" />
             </ListItem>
             <ListItem>
-              <ListItemText primary="Resource library" />
+              <ListItemText primary="Curate resources" />
             </ListItem>
           </List>
         </MainCard>

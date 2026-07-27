@@ -4,6 +4,7 @@ export type User = {
   id: number
   username: string
   email: string
+  role: string
   created_at: string
 }
 
@@ -39,11 +40,13 @@ export type Resource = {
 export type UserCreate = {
   username: string
   email: string
+  role: string
 }
 
 export type UserUpdate = {
-  username: string
-  email: string
+  username?: string
+  email?: string
+  role?: string
 }
 
 export type TopicCreate = {
