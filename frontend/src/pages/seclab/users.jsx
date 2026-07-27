@@ -14,6 +14,11 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
 import TablePagination from '@mui/material/TablePagination';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 import MainCard from 'components/MainCard';
 import { fetchUsers, createUser, updateUser, deleteUser } from 'api/seclab';
@@ -31,6 +36,9 @@ export default function UsersPage() {
   
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const [deleteTargetUser, setDeleteTargetUser] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -108,20 +116,35 @@ export default function UsersPage() {
     }
   }
 
-  async function handleDeleteUser(userId) {
-    if (!window.confirm('Delete this user?')) return;
+  function openDeleteDialog(user) {
+    setDeleteTargetUser(user);
+    setMessage(null);
+    setErrorMessage(null);
+  }
 
+  function closeDeleteDialog() {
+    setDeleteTargetUser(null);
+  }
+
+  async function confirmDeleteUser() {
+    if (!deleteTargetUser) return;
+    
+    setIsDeleting(true);
     try {
-      await deleteUser(userId);
-      setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userId));
+      await deleteUser(deleteTargetUser.id);
+      setUsers((prevUsers) => prevUsers.filter((u) => u.id !== deleteTargetUser.id));
       setMessage('User deleted successfully.');
+      closeDeleteDialog();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+      closeDeleteDialog();
+    } finally {
+      setIsDeleting(false);
     }
   }
 
   function handleChangePage(_event, newPage) {
-  setPage(newPage);
+    setPage(newPage);
   }
 
   function handleChangeRowsPerPage(event) {
@@ -292,7 +315,7 @@ export default function UsersPage() {
                         size="small"
                         variant="outlined"
                         color="error"
-                        onClick={() => handleDeleteUser(user.id)}
+                        onClick={() => openDeleteDialog(user)}
                       >
                         Delete
                       </Button>
@@ -313,6 +336,23 @@ export default function UsersPage() {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </TableContainer>
+
+      <Dialog open={deleteTargetUser !== null} onClose={closeDeleteDialog}>
+        <DialogTitle>Delete user</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this user? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDeleteDialog} color="primary" disabled={isDeleting}>
+            Cancel
+          </Button>
+          <Button onClick={confirmDeleteUser} color="error" variant="contained" disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </MainCard>
   );
 }
