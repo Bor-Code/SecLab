@@ -79,7 +79,7 @@ def create_topic(payload: TopicCreate, current_user: dict = Depends(require_sign
         print(f"Database error in create_topic: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
 
-@router.put("/{topic_id}", response_model=TopicRead)
+@router.patch("/{topic_id}", response_model=TopicRead)
 def update_topic(topic_id: int, payload: TopicUpdate, current_user: dict = Depends(require_signed_in_user)):
     try:
         with engine.begin() as connection:
@@ -134,5 +134,6 @@ def delete_topic(topic_id: int, current_user: dict = Depends(require_signed_in_u
     except SQLAlchemyError as e:
         print(f"Database error in delete_topic: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+
 
 

@@ -49,6 +49,9 @@ export default function Profile() {
 
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
+  const username = localStorage.getItem('seclab-username') || 'SecLab User';
+  const email = localStorage.getItem('seclab-user-email') || 'Signed in';
+  const role = localStorage.getItem('seclab-user-role') || 'user';
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
@@ -118,9 +121,9 @@ export default function Profile() {
                       <Stack direction="row" sx={{ gap: 1.25, alignItems: 'center' }}>
                         <Avatar alt="profile user" src={avatar1} sx={{ width: 32, height: 32 }} />
                         <Stack>
-                          <Typography variant="h6">John Doe</Typography>
+                          <Typography variant="h6">{username}</Typography>
                           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            UI/UX Designer
+                            {email} · {role}
                           </Typography>
                         </Stack>
                       </Stack>
@@ -185,3 +188,4 @@ export default function Profile() {
 }
 
 TabPanel.propTypes = { children: PropTypes.node, value: PropTypes.number, index: PropTypes.number, other: PropTypes.any };
+

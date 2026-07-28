@@ -110,3 +110,4 @@ def delete_resource(resource_id: int, current_user: dict = Depends(require_signe
         print(f"Database error in delete_resource: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
 
+

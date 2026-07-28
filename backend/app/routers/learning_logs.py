@@ -111,3 +111,4 @@ def delete_learning_log(log_id: int, current_user: dict = Depends(require_signed
         print(f"Database error in delete_learning_log: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
 
+

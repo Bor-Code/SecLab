@@ -1,5 +1,5 @@
 ﻿from datetime import datetime
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, Header, HTTPException, status, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy import Table, Column, Integer, String, DateTime, MetaData, insert, select, update, delete
 from sqlalchemy.exc import SQLAlchemyError
@@ -43,8 +43,16 @@ class UserUpdate(BaseModel):
     email: str | None = Field(None, min_length=1, max_length=255)
     role: str | None = Field(None, min_length=1, max_length=20)
 
+def require_admin_user(authorization: str = Header(None)) -> dict:
+    from app.routers.auth import get_current_user
+
+    current_user = get_current_user(authorization)
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return current_user
+
 @router.get("", response_model=list[UserRead])
-def get_users(admin: dict = Depends(lambda: None)):
+def get_users(admin: dict = Depends(require_admin_user)):
     try:
         with engine.begin() as connection:
             query = select(
@@ -82,7 +90,7 @@ def get_user(user_id: int):
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
 
 @router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def create_user(payload: UserCreate):
+def create_user(payload: UserCreate, admin: dict = Depends(require_admin_user)):
     try:
         norm_email = payload.email.strip().lower()
         norm_username = payload.username.strip()
@@ -109,8 +117,8 @@ def create_user(payload: UserCreate):
         print(f"Database error in create_user: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
 
-@router.put("/{user_id}", response_model=UserRead)
-def update_user(user_id: int, payload: UserUpdate):
+@router.patch("/{user_id}", response_model=UserRead)
+def update_user(user_id: int, payload: UserUpdate, admin: dict = Depends(require_admin_user)):
     try:
         update_data = {}
         if payload.username is not None:
@@ -147,7 +155,7 @@ def update_user(user_id: int, payload: UserUpdate):
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(user_id: int):
+def delete_user(user_id: int, admin: dict = Depends(require_admin_user)):
     try:
         with engine.begin() as connection:
             delete_query = delete(users_table).where(users_table.c.id == user_id).returning(users_table.c.id)
@@ -160,3 +168,5 @@ def delete_user(user_id: int):
     except SQLAlchemyError as e:
         print(f"Database error in delete_user: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+
+
