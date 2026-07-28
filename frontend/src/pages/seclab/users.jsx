@@ -25,6 +25,7 @@ import MainCard from 'components/MainCard';
 import { fetchUsers, createUser, updateUser, deleteUser } from 'api/seclab';
 
 export default function UsersPage() {
+  const currentUserId = Number(localStorage.getItem('seclab-user-id') || 0);
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -131,6 +132,7 @@ export default function UsersPage() {
 
   function closeDeleteDialog() {
     setDeleteTargetUser(null);
+      setEditingUserId(null);
   }
 
   async function confirmDeleteUser() {
