@@ -48,6 +48,20 @@ class ChangePasswordRequest(BaseModel):
     current_password: str = Field(..., min_length=1, max_length=255)
     new_password: str = Field(..., min_length=8, max_length=255)
 
+class UpdateProfileRequest(BaseModel):
+    username: str | None = Field(None, min_length=1, max_length=50)
+    email: str | None = Field(None, min_length=1, max_length=255)
+
+class ProfileResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    role: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 class AuthUserResponse(BaseModel):
     id: int
     username: str
@@ -184,6 +198,67 @@ def register_user(payload: RegisterRequest):
         raise
     except SQLAlchemyError as e:
         print(f"Database error during register: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service unavailable"
+        )
+
+
+@router.get("/me", response_model=ProfileResponse)
+def get_my_profile(current_user: dict = Depends(require_signed_in_user)):
+    return current_user
+
+
+@router.patch("/me", response_model=ProfileResponse)
+def update_my_profile(payload: UpdateProfileRequest, current_user: dict = Depends(require_signed_in_user)):
+    update_data = {}
+
+    if payload.username is not None:
+        username = payload.username.strip()
+        if not username:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username cannot be empty")
+        update_data["username"] = username
+
+    if payload.email is not None:
+        email = payload.email.strip().lower()
+        if not is_valid_email(email):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format")
+        update_data["email"] = email
+
+    if not update_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields provided for update")
+
+    try:
+        with engine.begin() as connection:
+            if "email" in update_data:
+                existing_query = select(users_table).where(users_table.c.email == update_data["email"])
+                existing = connection.execute(existing_query).mappings().first()
+
+                if existing and existing["id"] != current_user["id"]:
+                    raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+
+            update_query = (
+                update(users_table)
+                .where(users_table.c.id == current_user["id"])
+                .values(**update_data)
+                .returning(
+                    users_table.c.id,
+                    users_table.c.username,
+                    users_table.c.email,
+                    users_table.c.role,
+                    users_table.c.created_at
+                )
+            )
+            updated = connection.execute(update_query).mappings().first()
+
+            if not updated:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+            return dict(updated)
+    except HTTPException:
+        raise
+    except SQLAlchemyError as e:
+        print(f"Database error during profile update: {e}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Authentication service unavailable"

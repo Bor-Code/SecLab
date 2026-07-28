@@ -115,6 +115,11 @@ export type ChangePasswordPayload = {
   new_password: string;
 };
 
+export type ProfileUpdatePayload = {
+  username?: string;
+  email?: string;
+};
+
 export type TopicFilters = {
   user_id?: number;
   search?: string;
@@ -227,6 +232,17 @@ export function loginUser(payload: LoginPayload) {
 
 export function changePassword(payload: ChangePasswordPayload) {
   return request<{ message: string }>('/auth/password', {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function fetchMyProfile() {
+  return request<User>('/auth/me');
+}
+
+export function updateMyProfile(payload: ProfileUpdatePayload) {
+  return request<User>('/auth/me', {
     method: 'PATCH',
     body: JSON.stringify(payload),
   });

@@ -9,19 +9,66 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import MainCard from 'components/MainCard';
-import { changePassword } from 'api/seclab';
+import { changePassword, updateMyProfile } from 'api/seclab';
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function UserProfilePage() {
-  const username = localStorage.getItem('seclab-username') || 'SecLab User';
-  const email = localStorage.getItem('seclab-user-email') || 'Signed in';
+  const storedUsername = localStorage.getItem('seclab-username') || 'SecLab User';
+  const storedEmail = localStorage.getItem('seclab-user-email') || 'Signed in';
   const role = localStorage.getItem('seclab-user-role') || 'user';
+
+  const [username, setUsername] = useState(storedUsername);
+  const [email, setEmail] = useState(storedEmail);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isProfileSaving, setIsProfileSaving] = useState(false);
+  const [isPasswordSaving, setIsPasswordSaving] = useState(false);
+
+  async function handleProfileSubmit(event) {
+    event.preventDefault();
+    setMessage(null);
+    setError(null);
+
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+
+    if (!trimmedUsername) {
+      setError('Username is required.');
+      return;
+    }
+
+    if (!emailPattern.test(trimmedEmail)) {
+      setError('Enter a valid email address.');
+      return;
+    }
+
+    try {
+      setIsProfileSaving(true);
+
+      const updatedUser = await updateMyProfile({
+        username: trimmedUsername,
+        email: trimmedEmail
+      });
+
+      localStorage.setItem('seclab-username', updatedUser.username);
+      localStorage.setItem('seclab-user-email', updatedUser.email);
+
+      setUsername(updatedUser.username);
+      setEmail(updatedUser.email);
+      setMessage('Profile updated successfully.');
+    } catch (profileError) {
+      console.error('Profile update failed:', profileError);
+      setError(profileError.message || 'Profile update failed.');
+    } finally {
+      setIsProfileSaving(false);
+    }
+  }
 
   async function handlePasswordSubmit(event) {
     event.preventDefault();
@@ -44,7 +91,7 @@ export default function UserProfilePage() {
     }
 
     try {
-      setIsSaving(true);
+      setIsPasswordSaving(true);
       await changePassword({
         current_password: currentPassword,
         new_password: newPassword
@@ -58,7 +105,7 @@ export default function UserProfilePage() {
       console.error('Password update failed:', changeError);
       setError('Password update failed. Check your current password.');
     } finally {
-      setIsSaving(false);
+      setIsPasswordSaving(false);
     }
   }
 
@@ -77,16 +124,45 @@ export default function UserProfilePage() {
         </Stack>
       </MainCard>
 
-      <MainCard title="Password Reset">
-        <Stack component="form" spacing={2} onSubmit={handlePasswordSubmit}>
+      {message && <Alert severity="success" onClose={() => setMessage(null)}>{message}</Alert>}
+      {error && <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>}
+
+      <MainCard title="Account Information">
+        <Stack component="form" spacing={2} onSubmit={handleProfileSubmit}>
           <Typography variant="body1" color="text.secondary">
-            Update your account password without leaving the workspace.
+            Update your display name and email address.
           </Typography>
 
           <Divider />
 
-          {message && <Alert severity="success" onClose={() => setMessage(null)}>{message}</Alert>}
-          {error && <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>}
+          <TextField
+            label="Username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            fullWidth
+          />
+
+          <TextField
+            label="Email Address"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            fullWidth
+          />
+
+          <Button type="submit" variant="contained" disabled={isProfileSaving} sx={{ py: 1.25 }}>
+            {isProfileSaving ? 'Saving...' : 'Save Profile'}
+          </Button>
+        </Stack>
+      </MainCard>
+
+      <MainCard title="Password Reset">
+        <Stack component="form" spacing={2} onSubmit={handlePasswordSubmit}>
+          <Typography variant="body1" color="text.secondary">
+            Update your account password when you know your current password.
+          </Typography>
+
+          <Divider />
 
           <TextField
             label="Current password"
@@ -112,8 +188,8 @@ export default function UserProfilePage() {
             fullWidth
           />
 
-          <Button type="submit" variant="contained" disabled={isSaving} sx={{ py: 1.25 }}>
-            {isSaving ? 'Saving...' : 'Reset Password'}
+          <Button type="submit" variant="contained" disabled={isPasswordSaving} sx={{ py: 1.25 }}>
+            {isPasswordSaving ? 'Saving...' : 'Reset Password'}
           </Button>
         </Stack>
       </MainCard>
