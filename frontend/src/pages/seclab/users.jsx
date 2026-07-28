@@ -353,7 +353,7 @@ export default function UsersPage() {
                         size="small"
                         variant="outlined"
                         color="error"
-                        onClick={() => openDeleteDialog(user)}
+                        disabled={user.role === "admin"} onClick={() => openDeleteDialog(user)}
                       >
                         Delete
                       </Button>
