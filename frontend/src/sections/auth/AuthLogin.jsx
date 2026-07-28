@@ -95,8 +95,8 @@ export default function AuthLogin({ isDemo = false }) {
       )}
       <Formik
         initialValues={{
-          email: 'admin@seclab.local',
-          password: 'admin123',
+          email: '',
+          password: '',
           submit: null
         }}
         validationSchema={Yup.object().shape({
@@ -121,7 +121,7 @@ export default function AuthLogin({ isDemo = false }) {
                     name="email"
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    placeholder="Enter email address"
+                    placeholder="example@gmail.com"
                     fullWidth
                     error={Boolean(touched.email && errors.email)}
                   />
@@ -157,7 +157,7 @@ export default function AuthLogin({ isDemo = false }) {
                         </IconButton>
                       </InputAdornment>
                     }
-                    placeholder="Enter password"
+                    placeholder="Password"
                   />
                 </Stack>
                 {touched.password && errors.password && (

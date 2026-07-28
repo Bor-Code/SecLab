@@ -10,17 +10,22 @@ import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
 import UserOutlined from '@ant-design/icons/UserOutlined';
 
 export default function ProfileTab({ onLogout }) {
-  const username = localStorage.getItem('seclab-username') || localStorage.getItem('seclab-user-username') || 'SecLab User';
+  const username =
+    localStorage.getItem('seclab-username') ||
+    localStorage.getItem('seclab-user-username') ||
+    'SecLab User';
+
   const email = localStorage.getItem('seclab-user-email') || 'Signed in';
   const role = localStorage.getItem('seclab-user-role') || 'user';
+  const roleLabel = role === 'admin' ? 'Admin' : 'User';
 
   return (
-    <List component="nav" sx={{ p: 0, '& .MuiListItemIcon-root': { minWidth: 36 } }}>
+    <List component="nav" sx={{ p: 0, '& .MuiListItemIcon-root': { minWidth: 32 } }}>
       <ListItemButton>
         <ListItemIcon>
           <UserOutlined />
         </ListItemIcon>
-        <ListItemText primary={username} secondary={`${email} ? ${role}`} />
+        <ListItemText primary={username} secondary={`${email} · ${roleLabel}`} />
       </ListItemButton>
 
       <ListItemButton>
