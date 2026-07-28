@@ -18,11 +18,11 @@ router = APIRouter(
 class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
     email: str = Field(..., min_length=1, max_length=255)
-    password: str = Field(..., min_length=1)
+    password: str = Field(..., min_length=1, max_length=255)
 
 class LoginRequest(BaseModel):
     email: str = Field(..., min_length=1, max_length=255)
-    password: str
+    password: str = Field(..., min_length=1, max_length=255)
 
 class AuthUserResponse(BaseModel):
     id: int
@@ -56,9 +56,15 @@ def verify_password(password: str, stored_hash: str | None) -> bool:
 @router.post("/register", response_model=AuthUserResponse, status_code=status.HTTP_201_CREATED)
 def register_user(payload: RegisterRequest):
     try:
+        norm_email = payload.email.strip().lower()
+        norm_username = payload.username.strip()
+
+        if not norm_username:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username cannot be empty")
+
         with engine.begin() as connection:
-            # Check if email already exists
-            check_query = select(users_table).where(users_table.c.email == payload.email)
+            # Check if email already exists using normalized email
+            check_query = select(users_table).where(users_table.c.email == norm_email)
             existing = connection.execute(check_query).first()
             if existing:
                 raise HTTPException(
@@ -70,8 +76,8 @@ def register_user(payload: RegisterRequest):
             insert_query = (
                 insert(users_table)
                 .values(
-                    username=payload.username,
-                    email=payload.email,
+                    username=norm_username,
+                    email=norm_email,
                     role="user",
                     password_hash=hashed
                 )
@@ -98,8 +104,10 @@ def register_user(payload: RegisterRequest):
 @router.post("/login", response_model=AuthUserResponse)
 def login_user(payload: LoginRequest):
     try:
+        norm_email = payload.email.strip().lower()
+
         with engine.begin() as connection:
-            query = select(users_table).where(users_table.c.email == payload.email)
+            query = select(users_table).where(users_table.c.email == norm_email)
             result = connection.execute(query)
             user = result.mappings().first()
 
