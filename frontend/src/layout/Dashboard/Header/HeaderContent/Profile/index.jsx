@@ -1,4 +1,4 @@
-﻿import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { useRef, useState } from 'react';
 
 // material-ui
@@ -49,9 +49,10 @@ export default function Profile() {
 
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const username = localStorage.getItem('seclab-username') || 'SecLab User';
+  const username = localStorage.getItem('seclab-username') || localStorage.getItem('seclab-user-username') || 'SecLab User';
   const email = localStorage.getItem('seclab-user-email') || 'Signed in';
   const role = localStorage.getItem('seclab-user-role') || 'user';
+  const roleLabel = role === 'admin' ? 'Admin' : 'User';
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
@@ -123,7 +124,7 @@ export default function Profile() {
                         <Stack>
                           <Typography variant="h6">{username}</Typography>
                           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            {email} · {role}
+                            {email} Â· {roleLabel}
                           </Typography>
                         </Stack>
                       </Stack>
@@ -166,7 +167,7 @@ export default function Profile() {
                           }
                         }}
                         icon={<SettingOutlined />}
-                        label="Setting"
+                        label="Workspace"
                         {...a11yProps(1)}
                       />
                     </Tabs>

@@ -1,7 +1,12 @@
 import dashboard from './dashboard';
 import records from './records';
 import monitoring from './monitoring';
-import { DashboardOutlined, BookOutlined, ReadOutlined, LinkOutlined } from '@ant-design/icons';
+
+import DashboardOutlined from '@ant-design/icons/DashboardOutlined';
+import UserOutlined from '@ant-design/icons/UserOutlined';
+import BookOutlined from '@ant-design/icons/BookOutlined';
+import ReadOutlined from '@ant-design/icons/ReadOutlined';
+import LinkOutlined from '@ant-design/icons/LinkOutlined';
 
 const userWorkspace = {
   id: 'group-user-workspace',
@@ -14,6 +19,14 @@ const userWorkspace = {
       type: 'item',
       url: '/user',
       icon: DashboardOutlined,
+      breadcrumbs: false
+    },
+    {
+      id: 'user-profile',
+      title: 'Profilim',
+      type: 'item',
+      url: '/user/profile',
+      icon: UserOutlined,
       breadcrumbs: false
     },
     {

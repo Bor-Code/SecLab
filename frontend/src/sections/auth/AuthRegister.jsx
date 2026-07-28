@@ -1,205 +1,166 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
-// material-ui
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
-import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import InputLabel from '@mui/material/InputLabel';
-import OutlinedInput from '@mui/material/OutlinedInput';
+import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Alert from '@mui/material/Alert';
 
-// third-party
-import * as Yup from 'yup';
-import { Formik } from 'formik';
+import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
+import EyeOutlined from '@ant-design/icons/EyeOutlined';
 
-// project imports
-import IconButton from 'components/@extended/IconButton';
-import AnimateButton from 'components/@extended/AnimateButton';
-import { strengthColor, strengthIndicator } from 'utils/password-strength';
 import { registerUser } from 'api/seclab';
 
-// assets
-import EyeOutlined from '@ant-design/icons/EyeOutlined';
-import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
-
-// ============================|| JWT - REGISTER ||============================ //
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function AuthRegister() {
   const navigate = useNavigate();
-  const [level, setLevel] = useState();
-  const [showPassword, setShowPassword] = useState(false);
+
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [registerError, setRegisterError] = useState(null);
+  const [fieldError, setFieldError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
+  function validateForm() {
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim().toLowerCase();
 
-  const handleMouseDownPassword = (event) => {
+    if (!trimmedUsername) {
+      return 'Username is required.';
+    }
+
+    if (!emailPattern.test(trimmedEmail)) {
+      return 'Enter a valid email address.';
+    }
+
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters.';
+    }
+
+    if (password !== confirmPassword) {
+      return 'Passwords do not match.';
+    }
+
+    return null;
+  }
+
+  async function handleRegisterSubmit(event) {
     event.preventDefault();
-  };
-
-  const changePassword = (value) => {
-    const temp = strengthIndicator(value);
-    setLevel(strengthColor(temp));
-  };
-
-  useEffect(() => {
-    changePassword('');
-  }, []);
-
-  const handleRegisterSubmit = async (values, { setSubmitting }) => {
     setRegisterError(null);
+    setFieldError(null);
+
+    const validationError = validateForm();
+    if (validationError) {
+      setFieldError(validationError);
+      return;
+    }
+
     try {
-      await registerUser({
-        username: values.username,
-        email: values.email,
-        password: values.password
+      setIsSubmitting(true);
+
+      const user = await registerUser({
+        username: username.trim(),
+        email: email.trim().toLowerCase(),
+        password
       });
-      const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
-      window.location.href = `${baseUrl}/login`;
+
+      localStorage.setItem('seclab-access-token', user.access_token);
+      localStorage.setItem('seclab-user-role', user.role);
+      localStorage.setItem('seclab-user-id', String(user.id));
+      localStorage.setItem('seclab-username', user.username);
+      localStorage.setItem('seclab-user-email', user.email);
+
+      navigate(user.role === 'admin' ? '/admin' : '/user', { replace: true });
     } catch (error) {
       console.error('Registration failed:', error);
-      setRegisterError('Registration failed. Please check your email format or if it is already registered.');
+      setRegisterError(error.message || 'Registration failed.');
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
-  };
+  }
 
   return (
-    <>
-      {registerError && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {registerError}
-        </Alert>
-      )}
-      <Formik
-        initialValues={{
-          username: '',
-          email: '',
-          password: '',
-          submit: null
-        }}
-        validationSchema={Yup.object().shape({
-          username: Yup.string().max(50).required('Username is required'),
-          email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
-          password: Yup.string()
-            .required('Password is required')
-            .test('no-leading-trailing-whitespace', 'Password cannot start or end with spaces', (value) => value === value.trim())
-            .max(50, 'Password is too long')
-        })}
-        onSubmit={handleRegisterSubmit}
-      >
-        {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
-          <form noValidate onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
-              <Grid size={12}>
-                <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="username-signup">Username*</InputLabel>
-                  <OutlinedInput
-                    id="username-signup"
-                    type="text"
-                    value={values.username}
-                    name="username"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    placeholder="Enter username"
-                    fullWidth
-                    error={Boolean(touched.username && errors.username)}
-                  />
-                </Stack>
-                {touched.username && errors.username && (
-                  <FormHelperText error id="helper-text-username-signup">
-                    {errors.username}
-                  </FormHelperText>
-                )}
-              </Grid>
-              <Grid size={12}>
-                <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="email-signup">Email Address*</InputLabel>
-                  <OutlinedInput
-                    fullWidth
-                    error={Boolean(touched.email && errors.email)}
-                    id="email-signup"
-                    type="email"
-                    value={values.email}
-                    name="email"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    placeholder="user@example.com"
-                  />
-                </Stack>
-                {touched.email && errors.email && (
-                  <FormHelperText error id="helper-text-email-signup">
-                    {errors.email}
-                  </FormHelperText>
-                )}
-              </Grid>
-              <Grid size={12}>
-                <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="password-signup">Password</InputLabel>
-                  <OutlinedInput
-                    fullWidth
-                    error={Boolean(touched.password && errors.password)}
-                    id="password-signup"
-                    type={showPassword ? 'text' : 'password'}
-                    value={values.password}
-                    name="password"
-                    onBlur={handleBlur}
-                    onChange={(e) => {
-                      handleChange(e);
-                      changePassword(e.target.value);
-                    }}
-                    endAdornment={
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={handleClickShowPassword}
-                          onMouseDown={handleMouseDownPassword}
-                          edge="end"
-                          color="secondary"
-                        >
-                          {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                        </IconButton>
-                      </InputAdornment>
-                    }
-                    placeholder="******"
-                  />
-                </Stack>
-                {touched.password && errors.password && (
-                  <FormHelperText error id="helper-text-password-signup">
-                    {errors.password}
-                  </FormHelperText>
-                )}
-                <FormControl fullWidth sx={{ mt: 2 }}>
-                  <Grid container spacing={2} alignItems="center">
-                    <Grid>
-                      <Box sx={{ bgcolor: level?.color, width: 85, height: 8, borderRadius: '7px' }} />
-                    </Grid>
-                    <Grid>
-                      <Typography variant="subtitle1" fontSize="0.75rem">
-                        {level?.label}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </FormControl>
-              </Grid>
-              <Grid size={12}>
-                <AnimateButton>
-                  <Button fullWidth size="large" type="submit" variant="contained" color="primary" disabled={isSubmitting}>
-                    {isSubmitting ? 'Creating...' : 'Create Account'}
-                  </Button>
-                </AnimateButton>
-              </Grid>
-            </Grid>
-          </form>
-        )}
-      </Formik>
-    </>
+    <Stack component="form" spacing={2.5} onSubmit={handleRegisterSubmit}>
+      {registerError && <Alert severity="error">{registerError}</Alert>}
+      {fieldError && <Alert severity="warning">{fieldError}</Alert>}
+
+      <Grid container spacing={2}>
+        <Grid size={12}>
+          <TextField
+            label="Username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            fullWidth
+            autoComplete="username"
+          />
+        </Grid>
+
+        <Grid size={12}>
+          <TextField
+            label="Email Address"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            fullWidth
+            autoComplete="email"
+          />
+        </Grid>
+
+        <Grid size={12}>
+          <TextField
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            fullWidth
+            autoComplete="new-password"
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword((value) => !value)} edge="end">
+                      {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }
+            }}
+          />
+          <FormHelperText>Password must be at least 8 characters.</FormHelperText>
+        </Grid>
+
+        <Grid size={12}>
+          <TextField
+            label="Confirm Password"
+            type={showPassword ? 'text' : 'password'}
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            fullWidth
+            autoComplete="new-password"
+          />
+        </Grid>
+      </Grid>
+
+      <Button type="submit" variant="contained" size="large" disabled={isSubmitting} fullWidth>
+        {isSubmitting ? 'Creating Account...' : 'Create Account'}
+      </Button>
+
+      <Typography variant="body2" color="text.secondary" align="center">
+        Already have an account?{' '}
+        <Link component={RouterLink} to="/login" underline="hover">
+          Sign in
+        </Link>
+      </Typography>
+    </Stack>
   );
 }

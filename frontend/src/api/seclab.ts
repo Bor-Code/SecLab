@@ -110,6 +110,16 @@ export type LoginPayload = {
   password: string;
 };
 
+export type ChangePasswordPayload = {
+  current_password: string;
+  new_password: string;
+};
+
+export type ProfileUpdatePayload = {
+  username?: string;
+  email?: string;
+};
+
 export type TopicFilters = {
   user_id?: number;
   search?: string;
@@ -168,7 +178,18 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed: ${path}`);
+    let message = `Request failed: ${path}`;
+
+    try {
+      const errorBody = await response.json();
+      if (typeof errorBody?.detail === 'string') {
+        message = errorBody.detail;
+      }
+    } catch {
+      message = `Request failed: ${path}`;
+    }
+
+    throw new Error(message);
   }
 
   if (response.status === 204) {
@@ -205,6 +226,24 @@ export function registerUser(payload: RegisterPayload) {
 export function loginUser(payload: LoginPayload) {
   return request<AuthUser>('/auth/login', {
     method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function changePassword(payload: ChangePasswordPayload) {
+  return request<{ message: string }>('/auth/password', {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function fetchMyProfile() {
+  return request<User>('/auth/me');
+}
+
+export function updateMyProfile(payload: ProfileUpdatePayload) {
+  return request<User>('/auth/me', {
+    method: 'PATCH',
     body: JSON.stringify(payload),
   });
 }

@@ -5,6 +5,7 @@ import DashboardLayout from 'layout/Dashboard';
 import UserGuard from './UserGuard';
 
 const UserDashboardPage = Loadable(lazy(() => import('pages/user/dashboard')));
+const UserProfilePage = Loadable(lazy(() => import('pages/user/profile')));
 
 const UserRoutes = {
   path: '/user',
@@ -16,6 +17,10 @@ const UserRoutes = {
         {
           index: true,
           element: <UserDashboardPage />
+        },
+        {
+          path: 'profile',
+          element: <UserProfilePage />
         },
         {
           path: 'topics',

@@ -12,8 +12,10 @@ import {
   updateTopic,
   deleteTopic,
   createLearningLog,
+  updateLearningLog,
   deleteLearningLog,
   createResource,
+  updateResource,
   deleteResource,
   fetchLearningLogs,
   fetchResources,
@@ -39,6 +41,15 @@ const sectionCopy = {
     description: 'Save useful links, references, and documentation.'
   }
 };
+
+function isValidHttpUrl(value) {
+  try {
+    const parsedUrl = new URL(value);
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
 
 export default function UserDashboardPage() {
   const location = useLocation();
@@ -76,9 +87,20 @@ export default function UserDashboardPage() {
   const [resourceType, setResourceType] = useState('documentation');
   const [resourceNotes, setResourceNotes] = useState('');
 
+  const [editingLogId, setEditingLogId] = useState(null);
+  const [editLogTitle, setEditLogTitle] = useState('');
+  const [editLogNotes, setEditLogNotes] = useState('');
+
+  const [editingResourceId, setEditingResourceId] = useState(null);
+  const [editResourceTitle, setEditResourceTitle] = useState('');
+  const [editResourceUrl, setEditResourceUrl] = useState('');
+  const [editResourceType, setEditResourceType] = useState('documentation');
+  const [editResourceNotes, setEditResourceNotes] = useState('');
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   const loadUserData = useCallback(async () => {
     if (!userId) return;
@@ -131,6 +153,7 @@ export default function UserDashboardPage() {
       setNewTopicName('');
       setNewTopicDescription('');
       await loadUserData();
+      setSuccess('Topic created.');
     } catch (createError) {
       console.error('Failed to create topic:', createError);
       setError('Could not create topic.');
@@ -168,6 +191,7 @@ export default function UserDashboardPage() {
       setLogTitle('');
       setLogNotes('');
       await loadUserData();
+      setSuccess('Learning log created.');
     } catch (createError) {
       console.error('Failed to create learning log:', createError);
       setError('Could not create learning log.');
@@ -192,6 +216,11 @@ export default function UserDashboardPage() {
       return;
     }
 
+    if (!isValidHttpUrl(trimmedUrl)) {
+      setError('Please enter a valid http or https URL.');
+      return;
+    }
+
     try {
       setIsSaving(true);
       setError(null);
@@ -211,6 +240,7 @@ export default function UserDashboardPage() {
       setResourceType('documentation');
       setResourceNotes('');
       await loadUserData();
+      setSuccess('Resource created.');
     } catch (createError) {
       console.error('Failed to create resource:', createError);
       setError('Could not create resource.');
@@ -277,6 +307,101 @@ export default function UserDashboardPage() {
     }
   };
 
+  const handleStartEditLearningLog = (log) => {
+    setEditingLogId(log.id);
+    setEditLogTitle(log.title);
+    setEditLogNotes(log.notes || '');
+  };
+
+  const handleCancelEditLearningLog = () => {
+    setEditingLogId(null);
+    setEditLogTitle('');
+    setEditLogNotes('');
+  };
+
+  const handleUpdateLearningLog = async (event, logId) => {
+    event.preventDefault();
+
+    const trimmedTitle = editLogTitle.trim();
+
+    if (!trimmedTitle) {
+      setError('Learning log title is required.');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setError(null);
+
+      await updateLearningLog(logId, {
+        title: trimmedTitle,
+        notes: editLogNotes.trim() || null
+      });
+
+      handleCancelEditLearningLog();
+      await loadUserData();
+      setSuccess('Learning log updated.');
+    } catch (updateError) {
+      console.error('Failed to update learning log:', updateError);
+      setError('Could not update learning log.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleStartEditResource = (resource) => {
+    setEditingResourceId(resource.id);
+    setEditResourceTitle(resource.title);
+    setEditResourceUrl(resource.url);
+    setEditResourceType(resource.resource_type || 'documentation');
+    setEditResourceNotes(resource.notes || '');
+  };
+
+  const handleCancelEditResource = () => {
+    setEditingResourceId(null);
+    setEditResourceTitle('');
+    setEditResourceUrl('');
+    setEditResourceType('documentation');
+    setEditResourceNotes('');
+  };
+
+  const handleUpdateResource = async (event, resourceId) => {
+    event.preventDefault();
+
+    const trimmedTitle = editResourceTitle.trim();
+    const trimmedUrl = editResourceUrl.trim();
+
+    if (!trimmedTitle || !trimmedUrl) {
+      setError('Resource title and URL are required.');
+      return;
+    }
+
+    if (!isValidHttpUrl(trimmedUrl)) {
+      setError('Please enter a valid http or https URL.');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setError(null);
+
+      await updateResource(resourceId, {
+        title: trimmedTitle,
+        url: trimmedUrl,
+        resource_type: editResourceType,
+        notes: editResourceNotes.trim() || null
+      });
+
+      handleCancelEditResource();
+      await loadUserData();
+      setSuccess('Resource updated.');
+    } catch (updateError) {
+      console.error('Failed to update resource:', updateError);
+      setError('Could not update resource.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
   const handleDeleteLearningLog = async (logId) => {
     if (!window.confirm('Delete this learning log?')) return;
 
@@ -285,6 +410,7 @@ export default function UserDashboardPage() {
       setError(null);
       await deleteLearningLog(logId);
       await loadUserData();
+      setSuccess('Learning log deleted.');
     } catch (deleteError) {
       console.error('Failed to delete learning log:', deleteError);
       setError('Could not delete learning log.');
@@ -301,6 +427,7 @@ export default function UserDashboardPage() {
       setError(null);
       await deleteResource(resourceId);
       await loadUserData();
+      setSuccess('Resource deleted.');
     } catch (deleteError) {
       console.error('Failed to delete resource:', deleteError);
       setError('Could not delete resource.');
@@ -366,7 +493,8 @@ export default function UserDashboardPage() {
         </MainCard>
       )}
 
-      {error && <Alert severity="error">{error}</Alert>}
+      {error && <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>}
+      {success && <Alert severity="success" onClose={() => setSuccess(null)}>{success}</Alert>}
 
       {activeSection && (
         <CreateRecordsPanel
@@ -416,11 +544,39 @@ export default function UserDashboardPage() {
       )}
 
       {activeSection === 'learning-logs' && (
-        <LearningLogList learningLogs={learningLogs} isSaving={isSaving} handleDeleteLearningLog={handleDeleteLearningLog} />
+        <LearningLogList
+          learningLogs={learningLogs}
+          isSaving={isSaving}
+          editingLogId={editingLogId}
+          editLogTitle={editLogTitle}
+          editLogNotes={editLogNotes}
+          setEditLogTitle={setEditLogTitle}
+          setEditLogNotes={setEditLogNotes}
+          handleStartEditLearningLog={handleStartEditLearningLog}
+          handleCancelEditLearningLog={handleCancelEditLearningLog}
+          handleUpdateLearningLog={handleUpdateLearningLog}
+          handleDeleteLearningLog={handleDeleteLearningLog}
+        />
       )}
 
       {activeSection === 'resources' && (
-        <ResourceList resources={resources} isSaving={isSaving} handleDeleteResource={handleDeleteResource} />
+        <ResourceList
+          resources={resources}
+          isSaving={isSaving}
+          editingResourceId={editingResourceId}
+          editResourceTitle={editResourceTitle}
+          editResourceUrl={editResourceUrl}
+          editResourceType={editResourceType}
+          editResourceNotes={editResourceNotes}
+          setEditResourceTitle={setEditResourceTitle}
+          setEditResourceUrl={setEditResourceUrl}
+          setEditResourceType={setEditResourceType}
+          setEditResourceNotes={setEditResourceNotes}
+          handleStartEditResource={handleStartEditResource}
+          handleCancelEditResource={handleCancelEditResource}
+          handleUpdateResource={handleUpdateResource}
+          handleDeleteResource={handleDeleteResource}
+        />
       )}
     </Stack>
   );

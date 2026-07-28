@@ -2,6 +2,7 @@
 import hashlib
 import hmac
 import secrets
+import re
 from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, status, Depends, Header
 from pydantic import BaseModel, Field
@@ -20,6 +21,19 @@ JWT_SECRET = os.getenv("SECLAB_JWT_SECRET", "seclab_super_secret_jwt_key_2026_ch
 JWT_ALGORITHM = "HS256"
 TOKEN_EXPIRE_MINUTES = int(os.getenv("SECLAB_TOKEN_EXPIRE_MINUTES", "60"))
 
+
+EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+
+def is_valid_email(value: str) -> bool:
+    return bool(EMAIL_PATTERN.match(value.strip().lower()))
+
+def validate_password_strength(password: str) -> None:
+    if len(password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 8 characters"
+        )
+
 class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
     email: str = Field(..., min_length=1, max_length=255)
@@ -28,6 +42,25 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str = Field(..., min_length=1, max_length=255)
     password: str = Field(..., min_length=1, max_length=255)
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(..., min_length=1, max_length=255)
+    new_password: str = Field(..., min_length=8, max_length=255)
+
+class UpdateProfileRequest(BaseModel):
+    username: str | None = Field(None, min_length=1, max_length=50)
+    email: str | None = Field(None, min_length=1, max_length=255)
+
+class ProfileResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    role: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 class AuthUserResponse(BaseModel):
     id: int
@@ -122,6 +155,11 @@ def register_user(payload: RegisterRequest):
         if not norm_username:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username cannot be empty")
 
+        if not is_valid_email(norm_email):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format")
+
+        validate_password_strength(payload.password)
+
         with engine.begin() as connection:
             check_query = select(users_table).where(users_table.c.email == norm_email)
             existing = connection.execute(check_query).first()
@@ -164,6 +202,104 @@ def register_user(payload: RegisterRequest):
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Authentication service unavailable"
         )
+
+
+@router.get("/me", response_model=ProfileResponse)
+def get_my_profile(current_user: dict = Depends(require_signed_in_user)):
+    return current_user
+
+
+@router.patch("/me", response_model=ProfileResponse)
+def update_my_profile(payload: UpdateProfileRequest, current_user: dict = Depends(require_signed_in_user)):
+    update_data = {}
+
+    if payload.username is not None:
+        username = payload.username.strip()
+        if not username:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username cannot be empty")
+        update_data["username"] = username
+
+    if payload.email is not None:
+        email = payload.email.strip().lower()
+        if not is_valid_email(email):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format")
+        update_data["email"] = email
+
+    if not update_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields provided for update")
+
+    try:
+        with engine.begin() as connection:
+            if "email" in update_data:
+                existing_query = select(users_table).where(users_table.c.email == update_data["email"])
+                existing = connection.execute(existing_query).mappings().first()
+
+                if existing and existing["id"] != current_user["id"]:
+                    raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+
+            update_query = (
+                update(users_table)
+                .where(users_table.c.id == current_user["id"])
+                .values(**update_data)
+                .returning(
+                    users_table.c.id,
+                    users_table.c.username,
+                    users_table.c.email,
+                    users_table.c.role,
+                    users_table.c.created_at
+                )
+            )
+            updated = connection.execute(update_query).mappings().first()
+
+            if not updated:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+            return dict(updated)
+    except HTTPException:
+        raise
+    except SQLAlchemyError as e:
+        print(f"Database error during profile update: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service unavailable"
+        )
+
+
+@router.patch("/password")
+def change_password(payload: ChangePasswordRequest, current_user: dict = Depends(require_signed_in_user)):
+    validate_password_strength(payload.new_password)
+
+    if payload.current_password == payload.new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from current password"
+        )
+
+    stored_hash = current_user.get("password_hash")
+    if not verify_password(payload.current_password, stored_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is incorrect"
+        )
+
+    try:
+        new_hash = hash_password(payload.new_password)
+        with engine.begin() as connection:
+            update_query = (
+                update(users_table)
+                .where(users_table.c.id == current_user["id"])
+                .values(password_hash=new_hash)
+            )
+            connection.execute(update_query)
+
+        return {"message": "Password changed successfully"}
+    except SQLAlchemyError as e:
+        print(f"Database error during password change: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service unavailable"
+        )
+
 
 @router.post("/login", response_model=AuthUserResponse)
 def login_user(payload: LoginRequest):

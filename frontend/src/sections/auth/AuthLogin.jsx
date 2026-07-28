@@ -65,6 +65,7 @@ export default function AuthLogin({ isDemo = false }) {
       localStorage.setItem('seclab-user-id', String(response.id));
       localStorage.setItem('seclab-user-role', response.role);
       localStorage.setItem('seclab-user-username', response.username || '');
+      localStorage.setItem('seclab-username', response.username || '');
       localStorage.setItem('seclab-user-email', response.email || '');
 
       if (response.role === 'admin') {
@@ -94,8 +95,8 @@ export default function AuthLogin({ isDemo = false }) {
       )}
       <Formik
         initialValues={{
-          email: 'admin@seclab.local',
-          password: 'admin123',
+          email: '',
+          password: '',
           submit: null
         }}
         validationSchema={Yup.object().shape({
@@ -120,7 +121,7 @@ export default function AuthLogin({ isDemo = false }) {
                     name="email"
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    placeholder="Enter email address"
+                    placeholder="example@gmail.com"
                     fullWidth
                     error={Boolean(touched.email && errors.email)}
                   />
@@ -156,7 +157,7 @@ export default function AuthLogin({ isDemo = false }) {
                         </IconButton>
                       </InputAdornment>
                     }
-                    placeholder="Enter password"
+                    placeholder="Password"
                   />
                 </Stack>
                 {touched.password && errors.password && (
