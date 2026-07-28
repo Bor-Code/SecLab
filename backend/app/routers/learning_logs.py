@@ -1,4 +1,4 @@
-﻿from datetime import datetime, date
+from datetime import datetime, date
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import Table, Column, Integer, String, Text, Date, DateTime, insert, select, update, delete
@@ -88,6 +88,47 @@ def create_learning_log(payload: LearningLogCreate, current_user: dict = Depends
             return dict(result.mappings().one())
     except SQLAlchemyError as e:
         print(f"Database error in create_learning_log: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+
+@router.patch("/{log_id}", response_model=LearningLogRead)
+def update_learning_log(log_id: int, payload: LearningLogUpdate, current_user: dict = Depends(require_signed_in_user)):
+    update_data = payload.model_dump(exclude_unset=True)
+
+    if not update_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields provided for update")
+
+    try:
+        with engine.begin() as connection:
+            existing_query = select(learning_logs_table).where(learning_logs_table.c.id == log_id)
+            existing = connection.execute(existing_query).mappings().first()
+
+            if not existing:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Learning log not found")
+
+            if current_user["role"] != "admin" and existing["user_id"] != current_user["id"]:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+            update_query = (
+                update(learning_logs_table)
+                .where(learning_logs_table.c.id == log_id)
+                .values(**update_data)
+                .returning(
+                    learning_logs_table.c.id,
+                    learning_logs_table.c.user_id,
+                    learning_logs_table.c.topic_id,
+                    learning_logs_table.c.title,
+                    learning_logs_table.c.notes,
+                    learning_logs_table.c.study_date,
+                    learning_logs_table.c.created_at
+                )
+            )
+
+            updated = connection.execute(update_query).mappings().first()
+            return dict(updated)
+    except HTTPException:
+        raise
+    except SQLAlchemyError as e:
+        print(f"Database error in update_learning_log: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
 
 @router.delete("/{log_id}", status_code=status.HTTP_204_NO_CONTENT)

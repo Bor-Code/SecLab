@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import Table, Column, Integer, String, Text, DateTime, insert, select, update, delete
@@ -26,6 +26,13 @@ resources_table = Table(
     Column("notes", Text),
     Column("created_at", DateTime, default=datetime.utcnow)
 )
+
+
+class ResourceUpdate(BaseModel):
+    title: str | None = Field(None, min_length=1, max_length=150)
+    url: str | None = Field(None, min_length=1)
+    resource_type: str | None = Field(None, min_length=1, max_length=50)
+    notes: str | None = None
 
 class ResourceRead(BaseModel):
     id: int
@@ -87,6 +94,48 @@ def create_resource(payload: ResourceCreate, current_user: dict = Depends(requir
             return dict(result.mappings().one())
     except SQLAlchemyError as e:
         print(f"Database error in create_resource: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+
+@router.patch("/{resource_id}", response_model=ResourceRead)
+def update_resource(resource_id: int, payload: ResourceUpdate, current_user: dict = Depends(require_signed_in_user)):
+    update_data = payload.model_dump(exclude_unset=True)
+
+    if not update_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields provided for update")
+
+    try:
+        with engine.begin() as connection:
+            existing_query = select(resources_table).where(resources_table.c.id == resource_id)
+            existing = connection.execute(existing_query).mappings().first()
+
+            if not existing:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
+
+            if current_user["role"] != "admin" and existing["user_id"] != current_user["id"]:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+            update_query = (
+                update(resources_table)
+                .where(resources_table.c.id == resource_id)
+                .values(**update_data)
+                .returning(
+                    resources_table.c.id,
+                    resources_table.c.user_id,
+                    resources_table.c.topic_id,
+                    resources_table.c.title,
+                    resources_table.c.url,
+                    resources_table.c.resource_type,
+                    resources_table.c.notes,
+                    resources_table.c.created_at
+                )
+            )
+
+            updated = connection.execute(update_query).mappings().first()
+            return dict(updated)
+    except HTTPException:
+        raise
+    except SQLAlchemyError as e:
+        print(f"Database error in update_resource: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
 
 @router.delete("/{resource_id}", status_code=status.HTTP_204_NO_CONTENT)
