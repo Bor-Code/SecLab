@@ -2,6 +2,7 @@
 import hashlib
 import hmac
 import secrets
+import re
 from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, status, Depends, Header
 from pydantic import BaseModel, Field
@@ -20,6 +21,19 @@ JWT_SECRET = os.getenv("SECLAB_JWT_SECRET", "seclab_super_secret_jwt_key_2026_ch
 JWT_ALGORITHM = "HS256"
 TOKEN_EXPIRE_MINUTES = int(os.getenv("SECLAB_TOKEN_EXPIRE_MINUTES", "60"))
 
+
+EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+
+def is_valid_email(value: str) -> bool:
+    return bool(EMAIL_PATTERN.match(value.strip().lower()))
+
+def validate_password_strength(password: str) -> None:
+    if len(password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 8 characters"
+        )
+
 class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
     email: str = Field(..., min_length=1, max_length=255)
@@ -28,6 +42,11 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str = Field(..., min_length=1, max_length=255)
     password: str = Field(..., min_length=1, max_length=255)
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(..., min_length=1, max_length=255)
+    new_password: str = Field(..., min_length=8, max_length=255)
 
 class AuthUserResponse(BaseModel):
     id: int
@@ -122,6 +141,11 @@ def register_user(payload: RegisterRequest):
         if not norm_username:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username cannot be empty")
 
+        if not is_valid_email(norm_email):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format")
+
+        validate_password_strength(payload.password)
+
         with engine.begin() as connection:
             check_query = select(users_table).where(users_table.c.email == norm_email)
             existing = connection.execute(check_query).first()
@@ -164,6 +188,43 @@ def register_user(payload: RegisterRequest):
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Authentication service unavailable"
         )
+
+
+@router.patch("/password")
+def change_password(payload: ChangePasswordRequest, current_user: dict = Depends(require_signed_in_user)):
+    validate_password_strength(payload.new_password)
+
+    if payload.current_password == payload.new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from current password"
+        )
+
+    stored_hash = current_user.get("password_hash")
+    if not verify_password(payload.current_password, stored_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is incorrect"
+        )
+
+    try:
+        new_hash = hash_password(payload.new_password)
+        with engine.begin() as connection:
+            update_query = (
+                update(users_table)
+                .where(users_table.c.id == current_user["id"])
+                .values(password_hash=new_hash)
+            )
+            connection.execute(update_query)
+
+        return {"message": "Password changed successfully"}
+    except SQLAlchemyError as e:
+        print(f"Database error during password change: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service unavailable"
+        )
+
 
 @router.post("/login", response_model=AuthUserResponse)
 def login_user(payload: LoginRequest):

@@ -110,6 +110,11 @@ export type LoginPayload = {
   password: string;
 };
 
+export type ChangePasswordPayload = {
+  current_password: string;
+  new_password: string;
+};
+
 export type TopicFilters = {
   user_id?: number;
   search?: string;
@@ -205,6 +210,13 @@ export function registerUser(payload: RegisterPayload) {
 export function loginUser(payload: LoginPayload) {
   return request<AuthUser>('/auth/login', {
     method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function changePassword(payload: ChangePasswordPayload) {
+  return request<{ message: string }>('/auth/password', {
+    method: 'PATCH',
     body: JSON.stringify(payload),
   });
 }
