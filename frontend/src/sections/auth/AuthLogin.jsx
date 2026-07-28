@@ -65,6 +65,7 @@ export default function AuthLogin({ isDemo = false }) {
       localStorage.setItem('seclab-user-id', String(response.id));
       localStorage.setItem('seclab-user-role', response.role);
       localStorage.setItem('seclab-user-username', response.username || '');
+      localStorage.setItem('seclab-username', response.username || '');
       localStorage.setItem('seclab-user-email', response.email || '');
 
       if (response.role === 'admin') {

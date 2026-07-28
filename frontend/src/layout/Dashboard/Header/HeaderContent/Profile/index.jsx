@@ -49,7 +49,7 @@ export default function Profile() {
 
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const username = localStorage.getItem('seclab-username') || 'SecLab User';
+  const username = localStorage.getItem('seclab-username') || localStorage.getItem('seclab-user-username') || 'SecLab User';
   const email = localStorage.getItem('seclab-user-email') || 'Signed in';
   const role = localStorage.getItem('seclab-user-role') || 'user';
   const handleToggle = () => {

@@ -14,7 +14,7 @@ import { changePassword, updateMyProfile } from 'api/seclab';
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function UserProfilePage() {
-  const storedUsername = localStorage.getItem('seclab-username') || 'SecLab User';
+  const storedUsername = localStorage.getItem('seclab-username') || localStorage.getItem('seclab-user-username') || 'SecLab User';
   const storedEmail = localStorage.getItem('seclab-user-email') || 'Signed in';
   const role = localStorage.getItem('seclab-user-role') || 'user';
 
@@ -57,6 +57,7 @@ export default function UserProfilePage() {
       });
 
       localStorage.setItem('seclab-username', updatedUser.username);
+      localStorage.setItem('seclab-user-username', updatedUser.username);
       localStorage.setItem('seclab-user-email', updatedUser.email);
 
       setUsername(updatedUser.username);
