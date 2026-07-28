@@ -1,4 +1,4 @@
-﻿import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import React from 'react';
 
 // material-ui
@@ -18,7 +18,7 @@ import { Formik } from 'formik';
 // project imports
 import IconButton from 'components/@extended/IconButton';
 import AnimateButton from 'components/@extended/AnimateButton';
-import { loginUser } from 'api/seclab';
+
 
 // assets
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
@@ -41,12 +41,24 @@ export default function AuthLogin({ isDemo = false }) {
   const handleLoginSubmit = async (values, { setSubmitting }) => {
     setLoginError(null);
     try {
-      const response = await loginUser({
-        email: values.email,
-        password: values.password
+      const loginResponse = await fetch('http://127.0.0.1:8000/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password
+        })
       });
 
-      const expiresMs = response.expires_at ? new Date(response.expires_at).getTime() : new Date().getTime() + 3600000;
+      if (!loginResponse.ok) {
+        throw new Error('Login request failed');
+      }
+
+      const response = await loginResponse.json();
+
+      const expiresMs = Date.now() + 3600000;
 
       localStorage.setItem('seclab-access-token', response.access_token);
       localStorage.setItem('seclab-token-expires-at', String(expiresMs));
@@ -55,17 +67,16 @@ export default function AuthLogin({ isDemo = false }) {
       localStorage.setItem('seclab-user-username', response.username || '');
       localStorage.setItem('seclab-user-email', response.email || '');
 
-      const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
       if (response.role === 'admin') {
         localStorage.setItem('seclab-admin-auth', 'true');
-        localStorage.setItem('seclab-admin-role', response.role);
-        window.location.href = `${baseUrl}/admin`;
+        localStorage.setItem('seclab-admin-role', 'admin');
+                window.location.assign('/free/admin');
         return;
       }
 
       localStorage.removeItem('seclab-admin-auth');
       localStorage.removeItem('seclab-admin-role');
-      window.location.href = `${baseUrl}/user`;
+            window.location.assign('/free/user');
     } catch (error) {
       console.error('Login failed:', error);
       setLoginError('Invalid email or password.');
@@ -126,7 +137,7 @@ export default function AuthLogin({ isDemo = false }) {
                   <OutlinedInput
                     fullWidth
                     error={Boolean(touched.password && errors.password)}
-                    id="-password-login"
+                    id="password-login"
                     type={showPassword ? 'text' : 'password'}
                     value={values.password}
                     name="password"
@@ -170,3 +181,5 @@ export default function AuthLogin({ isDemo = false }) {
 }
 
 AuthLogin.propTypes = { isDemo: PropTypes.bool };
+
+

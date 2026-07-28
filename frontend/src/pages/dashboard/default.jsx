@@ -46,7 +46,7 @@ export default function DashboardDefault() {
       setActivityMessage(null);
       try {
         const data = await fetchDashboardRecentActivity();
-        setDashboardActivity(data);
+        setDashboardActivity(Array.isArray(data) ? data : data?.items || data?.activities || data?.recent_activity || []);
       } catch (error) {
         console.error('Activity load error:', error);
         setActivityMessage('Activity unavailable');
@@ -103,25 +103,25 @@ export default function DashboardDefault() {
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
         <AnalyticEcommerce
           title="Users"
-          count={isSummaryLoading ? '...' : String(dashboardSummary?.users_count ?? 0)}
+          count={isSummaryLoading ? '...' : String(dashboardSummary?.users_count ?? dashboardSummary?.users ?? 0)}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
         <AnalyticEcommerce
           title="Topics"
-          count={isSummaryLoading ? '...' : String(dashboardSummary?.topics_count ?? 0)}
+          count={isSummaryLoading ? '...' : String(dashboardSummary?.topics_count ?? dashboardSummary?.topics ?? 0)}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
         <AnalyticEcommerce
           title="Learning Logs"
-          count={isSummaryLoading ? '...' : String(dashboardSummary?.learning_logs_count ?? 0)}
+          count={isSummaryLoading ? '...' : String(dashboardSummary?.learning_logs_count ?? dashboardSummary?.learning_logs ?? 0)}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
         <AnalyticEcommerce
           title="Resources"
-          count={isSummaryLoading ? '...' : String(dashboardSummary?.resources_count ?? 0)}
+          count={isSummaryLoading ? '...' : String(dashboardSummary?.resources_count ?? dashboardSummary?.resources ?? 0)}
         />
       </Grid>
 
@@ -221,7 +221,7 @@ export default function DashboardDefault() {
                 Loading activity...
               </Typography>
             </Box>
-          ) : dashboardActivity.length === 0 ? (
+          ) : (!Array.isArray(dashboardActivity) || dashboardActivity.length === 0) ? (
             <Box sx={{ p: 3 }}>
               <Typography variant="body2" color="textSecondary">
                 No recent activity found.
@@ -229,7 +229,7 @@ export default function DashboardDefault() {
             </Box>
           ) : (
             <List sx={{ p: 0, '& .MuiListItemButton-root': { py: 2 } }}>
-              {dashboardActivity.map((item, index) => (
+              {(Array.isArray(dashboardActivity) ? dashboardActivity : []).map((item, index) => (
                 <ListItemButton divider={index !== dashboardActivity.length - 1} key={index}>
                   <ListItemText
                     primary={item.title}
