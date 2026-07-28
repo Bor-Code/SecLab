@@ -1,55 +1,41 @@
-// material-ui
+import PropTypes from 'prop-types';
+
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 
-// assets
-import EditOutlined from '@ant-design/icons/EditOutlined';
-import ProfileOutlined from '@ant-design/icons/ProfileOutlined';
+import DashboardOutlined from '@ant-design/icons/DashboardOutlined';
 import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
 import UserOutlined from '@ant-design/icons/UserOutlined';
-import WalletOutlined from '@ant-design/icons/WalletOutlined';
-import PropTypes from 'prop-types';
-
-// ==============================|| HEADER PROFILE - PROFILE TAB ||============================== //
 
 export default function ProfileTab({ onLogout }) {
   return (
-    <List component="nav" sx={{ p: 0, '& .MuiListItemIcon-root': { minWidth: 32 } }}>
-      <ListItemButton>
-        <ListItemIcon>
-          <EditOutlined />
-        </ListItemIcon>
-        <ListItemText primary="Edit Profile" />
-      </ListItemButton>
+    <List component="nav" sx={{ p: 0, '& .MuiListItemIcon-root': { minWidth: 36 } }}>
       <ListItemButton>
         <ListItemIcon>
           <UserOutlined />
         </ListItemIcon>
-        <ListItemText primary="View Profile" />
+        <ListItemText primary="Account" secondary="Signed-in SecLab profile" />
       </ListItemButton>
 
       <ListItemButton>
         <ListItemIcon>
-          <ProfileOutlined />
+          <DashboardOutlined />
         </ListItemIcon>
-        <ListItemText primary="Social Profile" />
+        <ListItemText primary="Workspace" secondary="Topics, logs, and resources" />
       </ListItemButton>
-      <ListItemButton>
+
+      <ListItemButton onClick={onLogout}>
         <ListItemIcon>
-          <WalletOutlined />
+          <LogoutOutlined />
         </ListItemIcon>
-        <ListItemText primary="Billing" />
+        <ListItemText primary="Logout" />
       </ListItemButton>
-        <ListItemButton onClick={onLogout}>
-          <ListItemIcon>
-            <LogoutOutlined />
-            </ListItemIcon>
-            <ListItemText primary="Logout" />
-            </ListItemButton>
     </List>
   );
 }
 
-ProfileTab.propTypes = { onLogout: PropTypes.func };
+ProfileTab.propTypes = {
+  onLogout: PropTypes.func
+};
