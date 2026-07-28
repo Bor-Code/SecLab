@@ -46,6 +46,10 @@ export default function AuthLogin({ isDemo = false }) {
         password: values.password
       });
 
+      const expiresMs = response.expires_at ? new Date(response.expires_at).getTime() : new Date().getTime() + 3600000;
+
+      localStorage.setItem('seclab-access-token', response.access_token);
+      localStorage.setItem('seclab-token-expires-at', String(expiresMs));
       localStorage.setItem('seclab-user-id', String(response.id));
       localStorage.setItem('seclab-user-role', response.role);
       localStorage.setItem('seclab-user-username', response.username || '');

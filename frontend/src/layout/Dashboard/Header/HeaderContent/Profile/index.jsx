@@ -29,7 +29,6 @@ import SettingOutlined from '@ant-design/icons/SettingOutlined';
 import UserOutlined from '@ant-design/icons/UserOutlined';
 import avatar1 from 'assets/images/users/avatar-1.png';
 
-// tab panel wrapper
 function TabPanel({ children, value, index, ...other }) {
   return (
     <div role="tabpanel" hidden={value !== index} id={`profile-tabpanel-${index}`} aria-labelledby={`profile-tab-${index}`} {...other}>
@@ -44,8 +43,6 @@ function a11yProps(index) {
     'aria-controls': `profile-tabpanel-${index}`
   };
 }
-
-// ==============================|| HEADER CONTENT - PROFILE ||============================== //
 
 export default function Profile() {
   const theme = useTheme();
@@ -64,12 +61,7 @@ export default function Profile() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('seclab-admin-auth');
-    localStorage.removeItem('seclab-admin-role');
-    localStorage.removeItem('seclab-user-id');
-    localStorage.removeItem('seclab-user-role');
-    localStorage.removeItem('seclab-user-username');
-    localStorage.removeItem('seclab-user-email');
+    localStorage.clear();
     const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     window.location.href = `${baseUrl}/login`;
   };
