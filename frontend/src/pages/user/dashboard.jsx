@@ -42,6 +42,15 @@ const sectionCopy = {
   }
 };
 
+function isValidHttpUrl(value) {
+  try {
+    const parsedUrl = new URL(value);
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export default function UserDashboardPage() {
   const location = useLocation();
   const activeSection = location.pathname.includes('/topics')
@@ -207,6 +216,11 @@ export default function UserDashboardPage() {
       return;
     }
 
+    if (!isValidHttpUrl(trimmedUrl)) {
+      setError('Please enter a valid http or https URL.');
+      return;
+    }
+
     try {
       setIsSaving(true);
       setError(null);
@@ -359,6 +373,11 @@ export default function UserDashboardPage() {
 
     if (!trimmedTitle || !trimmedUrl) {
       setError('Resource title and URL are required.');
+      return;
+    }
+
+    if (!isValidHttpUrl(trimmedUrl)) {
+      setError('Please enter a valid http or https URL.');
       return;
     }
 
