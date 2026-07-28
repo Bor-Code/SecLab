@@ -1,106 +1,51 @@
-from datetime import datetime
-
-from fastapi import APIRouter
-from pydantic import BaseModel
-from sqlalchemy import func, select
+﻿from fastapi import APIRouter, HTTPException, status, Depends
+from sqlalchemy import select, func
+from sqlalchemy.exc import SQLAlchemyError
 from app.database import engine
-
+from app.routers.users import users_table
+from app.routers.topics import topics_table
 from app.routers.learning_logs import learning_logs_table
 from app.routers.resources import resources_table
-from app.routers.topics import topics_table
-from app.routers.users import users_table
+from app.routers.auth import require_admin
 
 router = APIRouter(
     prefix="/dashboard",
     tags=["Dashboard"]
 )
 
-class DashboardSummary(BaseModel):
-    users_count: int
-    topics_count: int
-    learning_logs_count: int
-    resources_count: int
+@router.get("/summary")
+def get_dashboard_summary(admin: dict = Depends(require_admin)):
+    try:
+        with engine.begin() as connection:
+            users_count = connection.execute(select(func.count()).select_from(users_table)).scalar() or 0
+            topics_count = connection.execute(select(func.count()).select_from(topics_table)).scalar() or 0
+            logs_count = connection.execute(select(func.count()).select_from(learning_logs_table)).scalar() or 0
+            resources_count = connection.execute(select(func.count()).select_from(resources_table)).scalar() or 0
 
-class DashboardActivityItem(BaseModel):
-    activity_type: str
-    title: str
-    description: str | None
-    created_at: datetime
+            return {
+                "users": users_count,
+                "topics": topics_count,
+                "learning_logs": logs_count,
+                "resources": resources_count
+            }
+    except SQLAlchemyError as e:
+        print(f"Database error in dashboard summary: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
 
-@router.get("/summary", response_model=DashboardSummary)
-def get_dashboard_summary():
-    with engine.connect() as connection:
-        users_count = connection.execute(
-            select(func.count()).select_from(users_table)
-        ).scalar()
-        
-        topics_count = connection.execute(
-            select(func.count()).select_from(topics_table)
-        ).scalar()
-        
-        learning_logs_count = connection.execute(
-            select(func.count()).select_from(learning_logs_table)
-        ).scalar()
-        
-        resources_count = connection.execute(
-            select(func.count()).select_from(resources_table)
-        ).scalar()
-        
-        return DashboardSummary(
-            users_count=users_count or 0,
-            topics_count=topics_count or 0,
-            learning_logs_count=learning_logs_count or 0,
-            resources_count=resources_count or 0,
-        )
+@router.get("/recent-activity")
+def get_recent_activity(admin: dict = Depends(require_admin)):
+    try:
+        with engine.begin() as connection:
+            logs_query = select(learning_logs_table).order_by(learning_logs_table.c.created_at.desc()).limit(10)
+            logs = [dict(row) for row in connection.execute(logs_query).mappings()]
 
-@router.get("/recent-activity", response_model=list[DashboardActivityItem])
-def get_dashboard_recent_activity():
-    items = []
+            resources_query = select(resources_table).order_by(resources_table.c.created_at.desc()).limit(10)
+            resources = [dict(row) for row in connection.execute(resources_query).mappings()]
 
-    with engine.connect() as connection:
-        users_query = select(users_table).order_by(users_table.c.created_at.desc()).limit(4)
-        for row in connection.execute(users_query):
-            items.append(
-                DashboardActivityItem(
-                    activity_type="user",
-                    title=row.username,
-                    description=row.email,
-                    created_at=row.created_at,
-                )
-            )
-
-        topics_query = select(topics_table).order_by(topics_table.c.created_at.desc()).limit(4)
-        for row in connection.execute(topics_query):
-            items.append(
-                DashboardActivityItem(
-                    activity_type="topic",
-                    title=row.name,
-                    description=row.description,
-                    created_at=row.created_at,
-                )
-            )
-
-        logs_query = select(learning_logs_table).order_by(learning_logs_table.c.created_at.desc()).limit(4)
-        for row in connection.execute(logs_query):
-            items.append(
-                DashboardActivityItem(
-                    activity_type="learning_log",
-                    title=row.title,
-                    description=row.notes,
-                    created_at=row.created_at,
-                )
-            )
-
-        resources_query = select(resources_table).order_by(resources_table.c.created_at.desc()).limit(4)
-        for row in connection.execute(resources_query):
-            items.append(
-                DashboardActivityItem(
-                    activity_type="resource",
-                    title=row.title,
-                    description=row.url,
-                    created_at=row.created_at,
-                )
-            )
-
-    items.sort(key=lambda item: item.created_at, reverse=True)
-    return items[:8]
+            return {
+                "recent_logs": logs,
+                "recent_resources": resources
+            }
+    except SQLAlchemyError as e:
+        print(f"Database error in dashboard recent activity: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")

@@ -1,8 +1,11 @@
-from datetime import date, datetime
-from fastapi import APIRouter, status, HTTPException
+﻿from datetime import datetime, date
+from fastapi import APIRouter, HTTPException, status, Depends, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import Column, Date, DateTime, Integer, MetaData, String, Table, Text, delete, insert, or_, select, update
+from sqlalchemy import Table, Column, Integer, String, Text, Date, DateTime, insert, select, update, delete
+from sqlalchemy.exc import SQLAlchemyError
 from app.database import engine
+from sqlalchemy import MetaData
+from app.routers.auth import require_signed_in_user
 
 router = APIRouter(
     prefix="/learning-logs",
@@ -10,27 +13,18 @@ router = APIRouter(
 )
 
 metadata = MetaData()
+
 learning_logs_table = Table(
     "learning_logs",
     metadata,
-    Column("id", Integer),
-    Column("user_id", Integer),
-    Column("topic_id", Integer),
-    Column("title", String(150)),
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("user_id", Integer, nullable=False),
+    Column("topic_id", Integer, nullable=False),
+    Column("title", String(150), nullable=False),
     Column("notes", Text),
-    Column("study_date", Date),
-    Column("created_at", DateTime),
+    Column("study_date", Date, default=datetime.utcnow),
+    Column("created_at", DateTime, default=datetime.utcnow)
 )
-
-class LearningLogCreate(BaseModel):
-    user_id: int
-    topic_id: int
-    title: str = Field(..., min_length=1, max_length=150)
-    notes: str | None = Field(default=None)
-
-class LearningLogUpdate(BaseModel):
-    title: str | None = Field(default=None, min_length=1, max_length=150)
-    notes: str | None = Field(default=None)
 
 class LearningLogRead(BaseModel):
     id: int
@@ -38,136 +32,83 @@ class LearningLogRead(BaseModel):
     topic_id: int
     title: str
     notes: str | None
-    study_date: date
+    study_date: date | None
     created_at: datetime
 
     class Config:
         from_attributes = True
 
-class LearningLogDeleteResponse(BaseModel):
-    message: str
-    deleted_log: LearningLogRead
+class LearningLogCreate(BaseModel):
+    user_id: int
+    topic_id: int
+    title: str = Field(..., min_length=1, max_length=150)
+    notes: str | None = None
+    study_date: date | None = None
+
+class LearningLogUpdate(BaseModel):
+    title: str | None = Field(None, min_length=1, max_length=150)
+    notes: str | None = None
+    study_date: date | None = None
 
 @router.get("", response_model=list[LearningLogRead])
-def get_learning_logs(
-    user_id: int | None = None,
-    topic_id: int | None = None,
-    search: str | None = None,
-):
-    with engine.connect() as connection:
-        query = select(learning_logs_table).order_by(learning_logs_table.c.id)
-        
-        if user_id is not None:
-            query = query.where(learning_logs_table.c.user_id == user_id)
-            
-        if topic_id is not None:
-            query = query.where(learning_logs_table.c.topic_id == topic_id)
-            
-        if search is not None and search.strip():
-            search_pattern = f"%{search.strip()}%"
-            query = query.where(
-                or_(
-                    learning_logs_table.c.title.ilike(search_pattern),
-                    learning_logs_table.c.notes.ilike(search_pattern),
-                )
-            )
-            
-        result = connection.execute(query)
-        logs = result.mappings().all()
-        return [dict(log) for log in logs]
+def get_learning_logs(user_id: int | None = Query(None), current_user: dict = Depends(require_signed_in_user)):
+    try:
+        with engine.begin() as connection:
+            query = select(learning_logs_table)
+            if current_user["role"] != "admin":
+                query = query.where(learning_logs_table.c.user_id == current_user["id"])
+            elif user_id is not None:
+                query = query.where(learning_logs_table.c.user_id == user_id)
+
+            result = connection.execute(query)
+            return [dict(row) for row in result.mappings()]
+    except SQLAlchemyError as e:
+        print(f"Database error in get_learning_logs: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
 
 @router.post("", response_model=LearningLogRead, status_code=status.HTTP_201_CREATED)
-def create_learning_log(log: LearningLogCreate):
-    with engine.begin() as connection:
-        query = (
-            insert(learning_logs_table)
-            .values(
-                user_id=log.user_id,
-                topic_id=log.topic_id,
-                title=log.title,
-                notes=log.notes,
+def create_learning_log(payload: LearningLogCreate, current_user: dict = Depends(require_signed_in_user)):
+    if current_user["role"] != "admin" and payload.user_id != current_user["id"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+    try:
+        with engine.begin() as connection:
+            insert_query = (
+                insert(learning_logs_table)
+                .values(
+                    user_id=payload.user_id,
+                    topic_id=payload.topic_id,
+                    title=payload.title.strip(),
+                    notes=payload.notes,
+                    study_date=payload.study_date or datetime.utcnow().date()
+                )
+                .returning(learning_logs_table)
             )
-            .returning(
-                learning_logs_table.c.id,
-                learning_logs_table.c.user_id,
-                learning_logs_table.c.topic_id,
-                learning_logs_table.c.title,
-                learning_logs_table.c.notes,
-                learning_logs_table.c.study_date,
-                learning_logs_table.c.created_at,
-            )
-        )
-        result = connection.execute(query)
-        created_log = result.mappings().one()
-        return dict(created_log)
+            result = connection.execute(insert_query)
+            return dict(result.mappings().one())
+    except SQLAlchemyError as e:
+        print(f"Database error in create_learning_log: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
 
-@router.get("/{log_id}", response_model=LearningLogRead)
-def get_learning_log(log_id: int):
-    with engine.connect() as connection:
-        query = select(learning_logs_table).where(learning_logs_table.c.id == log_id)
-        result = connection.execute(query)
-        log = result.mappings().first()
-        
-        if log is None:
-            raise HTTPException(status_code=404, detail="Learning log not found")
-            
-        return dict(log)
+@router.delete("/{log_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_learning_log(log_id: int, current_user: dict = Depends(require_signed_in_user)):
+    try:
+        with engine.begin() as connection:
+            check_query = select(learning_logs_table).where(learning_logs_table.c.id == log_id)
+            log = connection.execute(check_query).mappings().first()
+            if not log:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Learning log not found")
 
-@router.patch("/{log_id}", response_model=LearningLogRead)
-def update_learning_log(log_id: int, log: LearningLogUpdate):
-    update_data = log.model_dump(exclude_unset=True)
-    
-    if not update_data:
-        raise HTTPException(status_code=400, detail="No fields to update")
-        
-    query = (
-        update(learning_logs_table)
-        .where(learning_logs_table.c.id == log_id)
-        .values(**update_data)
-        .returning(
-            learning_logs_table.c.id,
-            learning_logs_table.c.user_id,
-            learning_logs_table.c.topic_id,
-            learning_logs_table.c.title,
-            learning_logs_table.c.notes,
-            learning_logs_table.c.study_date,
-            learning_logs_table.c.created_at,
-        )
-    )
-    
-    with engine.begin() as connection:
-        result = connection.execute(query)
-        updated_log = result.mappings().first()
-        
-        if updated_log is None:
-            raise HTTPException(status_code=404, detail="Learning log not found")
-            
-        return dict(updated_log)
+            if current_user["role"] != "admin" and log["user_id"] != current_user["id"]:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
-@router.delete("/{log_id}", response_model=LearningLogDeleteResponse)
-def delete_learning_log(log_id: int):
-    query = (
-        delete(learning_logs_table)
-        .where(learning_logs_table.c.id == log_id)
-        .returning(
-            learning_logs_table.c.id,
-            learning_logs_table.c.user_id,
-            learning_logs_table.c.topic_id,
-            learning_logs_table.c.title,
-            learning_logs_table.c.notes,
-            learning_logs_table.c.study_date,
-            learning_logs_table.c.created_at,
-        )
-    )
-    
-    with engine.begin() as connection:
-        result = connection.execute(query)
-        deleted_log = result.mappings().first()
-        
-        if deleted_log is None:
-            raise HTTPException(status_code=404, detail="Learning log not found")
-            
-        return {
-            "message": "Learning log deleted successfully",
-            "deleted_log": dict(deleted_log)
-        }
+            delete_query = delete(learning_logs_table).where(learning_logs_table.c.id == log_id)
+            connection.execute(delete_query)
+            return None
+    except HTTPException:
+        raise
+    except SQLAlchemyError as e:
+        print(f"Database error in delete_learning_log: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+
+

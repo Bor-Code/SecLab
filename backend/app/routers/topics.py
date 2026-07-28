@@ -1,8 +1,11 @@
-from datetime import datetime
-from fastapi import APIRouter, HTTPException, status
+﻿from datetime import datetime
+from fastapi import APIRouter, HTTPException, status, Depends, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, Text, delete, insert, or_, select, update
+from sqlalchemy import Table, Column, Integer, String, Text, DateTime, insert, select, update, delete
+from sqlalchemy.exc import SQLAlchemyError
 from app.database import engine
+from sqlalchemy import MetaData
+from app.routers.auth import require_signed_in_user
 
 router = APIRouter(
     prefix="/topics",
@@ -10,24 +13,18 @@ router = APIRouter(
 )
 
 metadata = MetaData()
+
+metadata = MetaData()
+
 topics_table = Table(
     "topics",
     metadata,
-    Column("id", Integer),
-    Column("user_id", Integer),
-    Column("name", String(100)),
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("user_id", Integer, nullable=False),
+    Column("name", String(100), nullable=False),
     Column("description", Text),
-    Column("created_at", DateTime),
+    Column("created_at", DateTime, default=datetime.utcnow)
 )
-
-class TopicCreate(BaseModel):
-    user_id: int = Field(...)
-    name: str = Field(..., min_length=1, max_length=100)
-    description: str | None = Field(default=None)
-
-class TopicUpdate(BaseModel):
-    name: str | None = Field(default=None, min_length=1, max_length=100)
-    description: str | None = Field(default=None)
 
 class TopicRead(BaseModel):
     id: int
@@ -39,119 +36,104 @@ class TopicRead(BaseModel):
     class Config:
         from_attributes = True
 
-class TopicDeleteResponse(BaseModel):
-    message: str
-    topic: TopicRead
+class TopicCreate(BaseModel):
+    user_id: int
+    name: str = Field(..., min_length=1, max_length=100)
+    description: str | None = None
+
+class TopicUpdate(BaseModel):
+    name: str | None = Field(None, min_length=1, max_length=100)
+    description: str | None = None
 
 @router.get("", response_model=list[TopicRead])
-def get_topics(
-    user_id: int | None = None,
-    search: str | None = None,
-):
-    with engine.connect() as connection:
-        query = select(topics_table).order_by(topics_table.c.id)
-        
-        if user_id is not None:
-            query = query.where(topics_table.c.user_id == user_id)
-            
-        if search is not None and search.strip():
-            search_pattern = f"%{search.strip()}%"
-            query = query.where(
-                or_(
-                    topics_table.c.name.ilike(search_pattern),
-                    topics_table.c.description.ilike(search_pattern),
-                )
-            )
-            
-        result = connection.execute(query)
-        topics = result.mappings().all()
-        return [dict(topic) for topic in topics]
-    
+def get_topics(user_id: int | None = Query(None), current_user: dict = Depends(require_signed_in_user)):
+    try:
+        with engine.begin() as connection:
+            query = select(topics_table)
+            if current_user["role"] != "admin":
+                query = query.where(topics_table.c.user_id == current_user["id"])
+            elif user_id is not None:
+                query = query.where(topics_table.c.user_id == user_id)
+
+            result = connection.execute(query)
+            return [dict(row) for row in result.mappings()]
+    except SQLAlchemyError as e:
+        print(f"Database error in get_topics: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+
 @router.post("", response_model=TopicRead, status_code=status.HTTP_201_CREATED)
-def create_topic(topic: TopicCreate):
-    with engine.begin() as connection:
-        query = (
-            insert(topics_table)
-            .values(
-                user_id=topic.user_id,
-                name=topic.name,
-                description=topic.description,
+def create_topic(payload: TopicCreate, current_user: dict = Depends(require_signed_in_user)):
+    if current_user["role"] != "admin" and payload.user_id != current_user["id"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+    try:
+        with engine.begin() as connection:
+            insert_query = (
+                insert(topics_table)
+                .values(user_id=payload.user_id, name=payload.name.strip(), description=payload.description)
+                .returning(topics_table)
             )
-            .returning(
-                topics_table.c.id,
-                topics_table.c.user_id,
-                topics_table.c.name,
-                topics_table.c.description,
-                topics_table.c.created_at,
-            )
-        )
-        result = connection.execute(query)
-        created_topic = result.mappings().one()
-        return dict(created_topic)
-    
-@router.get("/{topic_id}", response_model=TopicRead)
-def get_topic(topic_id: int):
-    with engine.connect() as connection:
-        query = select(topics_table).where(topics_table.c.id == topic_id)
-        result = connection.execute(query)
-        topic = result.mappings().first()
-        
-        if topic is None:
-            raise HTTPException(status_code=404, detail="Topic not found")
-            
-        return dict(topic)
+            result = connection.execute(insert_query)
+            return dict(result.mappings().one())
+    except SQLAlchemyError as e:
+        print(f"Database error in create_topic: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
 
 @router.patch("/{topic_id}", response_model=TopicRead)
-def update_topic(topic_id: int, topic: TopicUpdate):
-    update_data = topic.model_dump(exclude_unset=True)
-    
-    if not update_data:
-        raise HTTPException(status_code=400, detail="No fields to update")
-        
-    query = (
-        update(topics_table)
-        .where(topics_table.c.id == topic_id)
-        .values(**update_data)
-        .returning(
-            topics_table.c.id,
-            topics_table.c.user_id,
-            topics_table.c.name,
-            topics_table.c.description,
-            topics_table.c.created_at,
-        )
-    )
-    
-    with engine.begin() as connection:
-        result = connection.execute(query)
-        updated_topic = result.mappings().first()
-        
-        if updated_topic is None:
-            raise HTTPException(status_code=404, detail="Topic not found")
-            
-        return dict(updated_topic)
-    
-@router.delete("/{topic_id}", response_model=TopicDeleteResponse)
-def delete_topic(topic_id: int):
-    query = (
-        delete(topics_table)
-        .where(topics_table.c.id == topic_id)
-        .returning(
-            topics_table.c.id,
-            topics_table.c.user_id,
-            topics_table.c.name,
-            topics_table.c.description,
-            topics_table.c.created_at,
-        )
-    )
-    
-    with engine.begin() as connection:
-        result = connection.execute(query)
-        deleted_topic = result.mappings().first()
-        
-        if deleted_topic is None:
-            raise HTTPException(status_code=404, detail="Topic not found")
-            
-        return {
-            "message": "Topic deleted successfully",
-            "topic": dict(deleted_topic)
-        }
+def update_topic(topic_id: int, payload: TopicUpdate, current_user: dict = Depends(require_signed_in_user)):
+    try:
+        with engine.begin() as connection:
+            check_query = select(topics_table).where(topics_table.c.id == topic_id)
+            topic = connection.execute(check_query).mappings().first()
+            if not topic:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Topic not found")
+
+            if current_user["role"] != "admin" and topic["user_id"] != current_user["id"]:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+            update_data = {}
+            if payload.name is not None:
+                update_data["name"] = payload.name.strip()
+            if payload.description is not None:
+                update_data["description"] = payload.description
+
+            if not update_data:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
+
+            update_query = (
+                update(topics_table)
+                .where(topics_table.c.id == topic_id)
+                .values(**update_data)
+                .returning(topics_table)
+            )
+            result = connection.execute(update_query).mappings().first()
+            return dict(result)
+    except HTTPException:
+        raise
+    except SQLAlchemyError as e:
+        print(f"Database error in update_topic: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+
+@router.delete("/{topic_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_topic(topic_id: int, current_user: dict = Depends(require_signed_in_user)):
+    try:
+        with engine.begin() as connection:
+            check_query = select(topics_table).where(topics_table.c.id == topic_id)
+            topic = connection.execute(check_query).mappings().first()
+            if not topic:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Topic not found")
+
+            if current_user["role"] != "admin" and topic["user_id"] != current_user["id"]:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+            delete_query = delete(topics_table).where(topics_table.c.id == topic_id)
+            connection.execute(delete_query)
+            return None
+    except HTTPException:
+        raise
+    except SQLAlchemyError as e:
+        print(f"Database error in delete_topic: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+
+
+
