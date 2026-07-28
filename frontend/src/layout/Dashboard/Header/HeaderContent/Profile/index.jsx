@@ -68,6 +68,8 @@ export default function Profile() {
     localStorage.removeItem('seclab-admin-role');
     localStorage.removeItem('seclab-user-id');
     localStorage.removeItem('seclab-user-role');
+    localStorage.removeItem('seclab-user-username');
+    localStorage.removeItem('seclab-user-email');
     const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     window.location.href = `${baseUrl}/login`;
   };
