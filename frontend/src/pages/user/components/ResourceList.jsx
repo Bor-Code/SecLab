@@ -1,4 +1,4 @@
-﻿import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -6,7 +6,7 @@ import MainCard from 'components/MainCard';
 
 export default function ResourceList({ resources, isSaving, handleDeleteResource }) {
   return (
-    <MainCard title="Saved Resources">
+    <MainCard id="resources" title="Saved Resources" sx={{ scrollMarginTop: 96 }}>
       {resources.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
           No resources yet. Add useful links and documentation references above.
@@ -36,10 +36,7 @@ export default function ResourceList({ resources, isSaving, handleDeleteResource
                   {resource.url}
                 </Typography>
               </Stack>
-              <Button
-                variant="outlined"
-                color="error"
-                size="small"
+              <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }}
                 onClick={() => handleDeleteResource(resource.id)}
                 disabled={isSaving}
               >

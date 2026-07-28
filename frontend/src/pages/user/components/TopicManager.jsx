@@ -1,4 +1,4 @@
-﻿import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -20,7 +20,7 @@ export default function TopicManager({
   handleDeleteTopic
 }) {
   return (
-    <MainCard title="My Topics">
+    <MainCard id="topics" title="My Topics" sx={{ scrollMarginTop: 96 }}>
       {topics.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
           No topics yet. Create your first topic above to start organizing your learning journey.
@@ -47,7 +47,7 @@ export default function TopicManager({
                     minRows={2}
                     disabled={isSaving}
                   />
-                  <Stack direction="row" spacing={1}>
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ alignItems: { xs: "stretch", sm: "center" }, justifyContent: "flex-end", minWidth: 160 }}>
                     <Button type="submit" variant="contained" size="small" disabled={isSaving}>
                       Save
                     </Button>
@@ -66,11 +66,11 @@ export default function TopicManager({
                       </Typography>
                     )}
                   </Stack>
-                  <Stack direction="row" spacing={1}>
-                    <Button variant="outlined" size="small" onClick={() => handleStartEditTopic(topic)} disabled={isSaving}>
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ alignItems: { xs: "stretch", sm: "center" }, justifyContent: "flex-end", minWidth: 160 }}>
+                    <Button variant="outlined" size="small" sx={{ minWidth: 72 }} onClick={() => handleStartEditTopic(topic)} disabled={isSaving}>
                       Edit
                     </Button>
-                    <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteTopic(topic.id)} disabled={isSaving}>
+                    <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleDeleteTopic(topic.id)} disabled={isSaving}>
                       Delete
                     </Button>
                   </Stack>

@@ -1,4 +1,5 @@
-﻿import { lazy } from 'react';
+import { lazy } from 'react';
+
 import Loadable from 'components/Loadable';
 import DashboardLayout from 'layout/Dashboard';
 import UserGuard from './UserGuard';
@@ -14,6 +15,18 @@ const UserRoutes = {
       children: [
         {
           index: true,
+          element: <UserDashboardPage />
+        },
+        {
+          path: 'topics',
+          element: <UserDashboardPage />
+        },
+        {
+          path: 'learning-logs',
+          element: <UserDashboardPage />
+        },
+        {
+          path: 'resources',
           element: <UserDashboardPage />
         }
       ]
