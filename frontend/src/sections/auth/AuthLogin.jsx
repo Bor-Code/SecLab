@@ -1,247 +1,163 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-// material-ui
+import { useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import FormHelperText from '@mui/material/FormHelperText';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
+import Link from '@mui/material/Link';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
-import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
 
-// third-party
-import * as Yup from 'yup';
-import { Formik } from 'formik';
-
-// project imports
-import IconButton from 'components/@extended/IconButton';
-import AnimateButton from 'components/@extended/AnimateButton';
-
-
-// assets
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
 import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 
-// ============================|| JWT - LOGIN ||============================ //
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
-export default function AuthLogin({ isDemo = false }) {
-  const [isResettingPassword, setIsResettingPassword] = useState(false);
-  const [loginSuccess, setLoginSuccess] = useState(null);
-  const [resetToken, setResetToken] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [loginError, setLoginError] = React.useState(null);
+export default function AuthLogin() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const handleMouseDownPassword = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-  };
 
-  const handleLoginSubmit = async (values, { setSubmitting }) => {
-    setLoginError(null);
+    setLoginError('');
+
+    if (!email.trim() || !password) {
+      setLoginError('Email and password are required.');
+      return;
+    }
+
     try {
-      const loginResponse = await fetch('http://127.0.0.1:8000/auth/login', {
+      setIsSubmitting(true);
+
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email: values.email,
-          password: values.password
+          email: email.trim(),
+          password
         })
       });
 
-      if (!loginResponse.ok) {
-        throw new Error('Login request failed');
+      let data = null;
+
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
       }
 
-      const response = await loginResponse.json();
+      if (!response.ok) {
+        throw new Error(data?.detail || 'Invalid email or password.');
+      }
 
       const expiresMs = Date.now() + 3600000;
 
-      localStorage.setItem('seclab-access-token', response.access_token);
+      localStorage.setItem('seclab-access-token', data.access_token);
       localStorage.setItem('seclab-token-expires-at', String(expiresMs));
-      localStorage.setItem('seclab-user-id', String(response.id));
-      localStorage.setItem('seclab-user-role', response.role);
-      localStorage.setItem('seclab-user-username', response.username || '');
-      localStorage.setItem('seclab-username', response.username || '');
-      localStorage.setItem('seclab-user-email', response.email || '');
-      localStorage.setItem('seclab-email-verified', String(response.email_verified || 0));
-      localStorage.setItem('seclab-must-change-password', String(response.must_change_password || 0));
+      localStorage.setItem('seclab-user-id', String(data.id));
+      localStorage.setItem('seclab-user-role', data.role);
+      localStorage.setItem('seclab-user-username', data.username || '');
+      localStorage.setItem('seclab-user-email', data.email || '');
 
-      if (response.role === 'admin') {
+      if (data.role === 'admin') {
         localStorage.setItem('seclab-admin-auth', 'true');
         localStorage.setItem('seclab-admin-role', 'admin');
-                window.location.assign('/free/admin');
+        window.location.assign('/free/admin');
         return;
       }
 
       localStorage.removeItem('seclab-admin-auth');
       localStorage.removeItem('seclab-admin-role');
-            window.location.assign('/free/user');
+      window.location.assign('/free/user');
     } catch (error) {
-      console.error('Login failed:', error);
-      setLoginError(error.message || 'Invalid email or password.');
+      setLoginError(error.message || 'Login failed.');
     } finally {
-      setSubmitting(false);
-    }
-  };
-
-  
-
-  const handleForgotPassword = async (email) => {
-    if (!email) {
-      setLoginError('Enter your email address first.');
-      return;
-    }
-
-    try {
-      setIsResettingPassword(true);
-      setLoginError(null);
-      setLoginSuccess(null);
-      const response = await forgotPassword(email);
-      setDemoResetToken(response.demo_reset_token || '');
-      setLoginSuccess(response.demo_reset_token ? 'Password reset token generated.' : response.message);
-    } catch (error) {
-      console.error('Forgot password failed:', error);
-      setLoginError(error.message || 'Password reset request failed.');
-    } finally {
-      setIsResettingPassword(false);
-    }
-  };
-
-  const handleResetPassword = async () => {
-    if (!resetToken || !resetNewPassword) {
-      setLoginError('Reset token and new password are required.');
-      return;
-    }
-
-    try {
-      setIsResettingPassword(true);
-      setLoginError(null);
-      setLoginSuccess(null);
-      await resetPassword({ token: resetToken, new_password: resetNewPassword });
-      setLoginSuccess('Password reset successfully. You can log in with your new password.');
-      setResetToken('');
-      setResetNewPassword('');
-      setDemoResetToken('');
-    } catch (error) {
-      console.error('Reset password failed:', error);
-      setLoginError(error.message || 'Password reset failed.');
-    } finally {
-      setIsResettingPassword(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <>
-      {loginError && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {loginError}
-        </Alert>
-      )}
-      <Formik
-        initialValues={{
-          email: '',
-          password: '',
-          submit: null
-        }}
-        validationSchema={Yup.object().shape({
-          email: Yup.string().max(255).required('Email is required'),
-          password: Yup.string()
-            .required('Password is required')
-            .test('no-leading-trailing-whitespace', 'Password cannot start or end with spaces', (value) => value === value.trim())
-            .max(50, 'Password is too long')
-        })}
-        onSubmit={handleLoginSubmit}
-      >
-        {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
-          <form noValidate onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
-              <Grid size={12}>
-                <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="email-login">Email Address</InputLabel>
-                  <OutlinedInput
-                    id="email-login"
-                    type="email"
-                    value={values.email}
-                    name="email"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    placeholder="example@gmail.com"
-                    fullWidth
-                    error={Boolean(touched.email && errors.email)}
-                  />
-                </Stack>
-                  <Button
-                    type="button"
-                    variant="text"
-                    size="small"
-                    sx={{ alignSelf: 'flex-start', px: 0 }}
-                    onClick={() => handleForgotPassword(values.email)}
-                    disabled={isSubmitting}
-                  >
-                    Forgot password?
-                  </Button>
-                {touched.email && errors.email && (
-                  <FormHelperText error id="standard-weight-helper-text-email-login">
-                    {errors.email}
-                  </FormHelperText>
-                )}
-              </Grid>
-              <Grid size={12}>
-                <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="password-login">Password</InputLabel>
-                  <OutlinedInput
-                    fullWidth
-                    error={Boolean(touched.password && errors.password)}
-                    id="password-login"
-                    type={showPassword ? 'text' : 'password'}
-                    value={values.password}
-                    name="password"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    endAdornment={
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={handleClickShowPassword}
-                          onMouseDown={handleMouseDownPassword}
-                          edge="end"
-                          color="secondary"
-                        >
-                          {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                        </IconButton>
-                      </InputAdornment>
-                    }
-                    placeholder="Password"
-                  />
-                </Stack>
-                {touched.password && errors.password && (
-                  <FormHelperText error id="standard-weight-helper-text-password-login">
-                    {errors.password}
-                  </FormHelperText>
-                )}
-              </Grid>
-              <Grid size={12}>
-                <AnimateButton>
-                  <Button fullWidth size="large" type="submit" variant="contained" color="primary" disabled={isSubmitting}>
-                    {isSubmitting ? 'Authenticating...' : 'SecLab Login'}
-                  </Button>
-                </AnimateButton>
-              </Grid>
-            </Grid>
-          </form>
+    <form noValidate onSubmit={handleSubmit}>
+      <Grid container spacing={3}>
+        <Grid size={12}>
+          <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+            <Typography variant="h3">SecLab Login</Typography>
+            <Link component={RouterLink} to="/register" variant="h5">
+              Create account
+            </Link>
+          </Stack>
+        </Grid>
+
+        {loginError && (
+          <Grid size={12}>
+            <Alert severity="error">{loginError}</Alert>
+          </Grid>
         )}
-      </Formik>
-    </>
+
+        <Grid size={12}>
+          <Stack sx={{ gap: 1 }}>
+            <InputLabel htmlFor="email-login">Email Address</InputLabel>
+            <OutlinedInput
+              id="email-login"
+              type="email"
+              value={email}
+              name="email"
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="example@gmail.com"
+              fullWidth
+              autoComplete="email"
+            />
+          </Stack>
+        </Grid>
+
+        <Grid size={12}>
+          <Stack sx={{ gap: 1 }}>
+            <InputLabel htmlFor="password-login">Password</InputLabel>
+            <OutlinedInput
+              id="password-login"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              name="password"
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Password"
+              fullWidth
+              autoComplete="current-password"
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() => setShowPassword((show) => !show)}
+                    edge="end"
+                    color="secondary"
+                  >
+                    {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                  </IconButton>
+                </InputAdornment>
+              }
+            />
+          </Stack>
+        </Grid>
+
+        <Grid size={12}>
+          <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained" color="primary">
+            SecLab Login
+          </Button>
+          <FormHelperText sx={{ mt: 1 }}>
+            Password reset will be connected after the production email flow is added.
+          </FormHelperText>
+        </Grid>
+      </Grid>
+    </form>
   );
 }
-
-AuthLogin.propTypes = { isDemo: PropTypes.bool };
-
-
