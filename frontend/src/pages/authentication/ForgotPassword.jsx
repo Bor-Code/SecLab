@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
 import FormHelperText from '@mui/material/FormHelperText';
-import Grid from '@mui/material/Grid';
 import InputLabel from '@mui/material/InputLabel';
 import Link from '@mui/material/Link';
 import OutlinedInput from '@mui/material/OutlinedInput';
+import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
@@ -103,84 +105,118 @@ export default function ForgotPassword() {
   };
 
   return (
-    <Grid container spacing={3}>
-      <Grid size={12}>
-        <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-          <Typography variant="h3">Reset Password</Typography>
-          <Link component={RouterLink} to="/login" variant="h5">
-            Back to login
-          </Link>
-        </Stack>
-      </Grid>
-
-      {error && (
-        <Grid size={12}>
-          <Alert severity="error">{error}</Alert>
-        </Grid>
-      )}
-
-      {message && (
-        <Grid size={12}>
-          <Alert severity="success">{message}</Alert>
-        </Grid>
-      )}
-
-      <Grid size={12}>
-        <Stack component="form" spacing={2} onSubmit={handleRequestReset}>
-          <Stack sx={{ gap: 1 }}>
-            <InputLabel htmlFor="reset-email">Email Address</InputLabel>
-            <OutlinedInput
-              id="reset-email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="example@gmail.com"
-              fullWidth
-              autoComplete="email"
-            />
-          </Stack>
-
-          <Button disabled={isRequesting} fullWidth size="large" type="submit" variant="contained">
-            Create Reset Token
-          </Button>
-        </Stack>
-      </Grid>
-
-      {resetToken && (
-        <Grid size={12}>
-          <Stack component="form" spacing={2} onSubmit={handleResetPassword}>
-            <Stack sx={{ gap: 1 }}>
-              <InputLabel htmlFor="reset-token">Demo Reset Token</InputLabel>
-              <OutlinedInput
-                id="reset-token"
-                value={resetToken}
-                onChange={(event) => setResetToken(event.target.value)}
-                fullWidth
-              />
-              <FormHelperText>
-                In demo mode, the reset token is shown on screen. In production, this token will be sent by email.
-              </FormHelperText>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: 'grey.50',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        px: 2,
+        py: 5
+      }}
+    >
+      <Paper
+        elevation={0}
+        sx={{
+          width: '100%',
+          maxWidth: 640,
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 2,
+          boxShadow: '0 8px 28px rgba(15, 23, 42, 0.08)',
+          overflow: 'hidden'
+        }}
+      >
+        <Stack spacing={0}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 2,
+              px: { xs: 3, sm: 4 },
+              pt: { xs: 3, sm: 4 },
+              pb: 3
+            }}
+          >
+            <Stack spacing={0.75}>
+              <Typography variant="h3">Reset Password</Typography>
+              <Typography variant="body1" color="text.secondary">
+                Create a demo reset token and choose a new password.
+              </Typography>
             </Stack>
 
-            <Stack sx={{ gap: 1 }}>
-              <InputLabel htmlFor="new-password">New Password</InputLabel>
-              <OutlinedInput
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(event) => setNewPassword(event.target.value)}
-                placeholder="New password"
-                fullWidth
-                autoComplete="new-password"
-              />
+            <Link component={RouterLink} to="/login" variant="subtitle1" sx={{ whiteSpace: 'nowrap' }}>
+              Back to login
+            </Link>
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={3} sx={{ px: { xs: 3, sm: 4 }, py: { xs: 3, sm: 4 } }}>
+            {error && <Alert severity="error">{error}</Alert>}
+            {message && <Alert severity="success">{message}</Alert>}
+
+            <Stack component="form" spacing={2} onSubmit={handleRequestReset}>
+              <Stack sx={{ gap: 1 }}>
+                <InputLabel htmlFor="reset-email">Email Address</InputLabel>
+                <OutlinedInput
+                  id="reset-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="example@gmail.com"
+                  fullWidth
+                  autoComplete="email"
+                />
+              </Stack>
+
+              <Button disabled={isRequesting} fullWidth size="large" type="submit" variant="contained">
+                Create Reset Token
+              </Button>
             </Stack>
 
-            <Button disabled={isResetting} fullWidth size="large" type="submit" variant="contained">
-              Reset Password
-            </Button>
+            {resetToken && (
+              <>
+                <Divider />
+
+                <Stack component="form" spacing={2} onSubmit={handleResetPassword}>
+                  <Stack sx={{ gap: 1 }}>
+                    <InputLabel htmlFor="reset-token">Demo Reset Token</InputLabel>
+                    <OutlinedInput
+                      id="reset-token"
+                      value={resetToken}
+                      onChange={(event) => setResetToken(event.target.value)}
+                      fullWidth
+                    />
+                    <FormHelperText>
+                      In demo mode, the reset token is shown on screen. In production, this token will be sent by email.
+                    </FormHelperText>
+                  </Stack>
+
+                  <Stack sx={{ gap: 1 }}>
+                    <InputLabel htmlFor="new-password">New Password</InputLabel>
+                    <OutlinedInput
+                      id="new-password"
+                      type="password"
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      placeholder="New password"
+                      fullWidth
+                      autoComplete="new-password"
+                    />
+                  </Stack>
+
+                  <Button disabled={isResetting} fullWidth size="large" type="submit" variant="contained">
+                    Reset Password
+                  </Button>
+                </Stack>
+              </>
+            )}
           </Stack>
-        </Grid>
-      )}
-    </Grid>
+        </Stack>
+      </Paper>
+    </Box>
   );
 }
