@@ -1,6 +1,5 @@
-import PropTypes from 'prop-types';
 import React, { useState } from 'react';
-
+import PropTypes from 'prop-types';
 // material-ui
 import Button from '@mui/material/Button';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -27,6 +26,7 @@ import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 // ============================|| JWT - LOGIN ||============================ //
 
 export default function AuthLogin({ isDemo = false }) {
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [loginError, setLoginError] = React.useState(null);
 
