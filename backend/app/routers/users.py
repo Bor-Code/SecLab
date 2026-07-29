@@ -1,9 +1,11 @@
-﻿from datetime import datetime
+﻿import secrets
+from datetime import datetime
 from fastapi import APIRouter, Header, HTTPException, status, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy import Table, Column, Integer, String, DateTime, MetaData, insert, select, update, delete
 from sqlalchemy.exc import SQLAlchemyError
 from app.database import engine
+from app.routers.auth import hash_password
 from app.activity import record_activity
 
 router = APIRouter(
@@ -69,6 +71,8 @@ def require_admin_user(authorization: str = Header(None)) -> dict:
 
 @router.get("", response_model=list[UserRead])
 def get_users(admin: dict = Depends(require_admin_user)):
+    temporary_password = secrets.token_urlsafe(8)
+
     try:
         with engine.begin() as connection:
             query = select(
