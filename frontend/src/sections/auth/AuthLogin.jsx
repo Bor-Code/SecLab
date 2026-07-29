@@ -180,7 +180,7 @@ export default function AuthLogin({ isDemo = false }) {
                     size="small"
                     sx={{ alignSelf: 'flex-start', px: 0 }}
                     onClick={() => handleForgotPassword(values.email)}
-                    disabled={isResettingPassword}
+                    disabled={isSubmitting}
                   >
                     Forgot password?
                   </Button>
