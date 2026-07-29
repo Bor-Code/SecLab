@@ -61,6 +61,10 @@ class ResetPasswordRequest(BaseModel):
     new_password: str = Field(..., min_length=5, max_length=128)
 
 
+class EmailResendRequest(BaseModel):
+    email: str = Field(..., min_length=3, max_length=255)
+
+
 class EmailVerificationRequest(BaseModel):
     token: str = Field(..., min_length=10, max_length=128)
 
@@ -236,6 +240,46 @@ def register(payload: RegisterRequest):
         raise
     except SQLAlchemyError as error:
         print(f"Database error in register: {error}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+
+
+
+@router.post("/resend-verification")
+def resend_verification(payload: EmailResendRequest):
+    norm_email = normalize_email(payload.email)
+    validate_email(norm_email)
+
+    try:
+        with engine.begin() as connection:
+            ensure_auth_columns(connection)
+
+            query = select(users_table).where(users_table.c.email == norm_email)
+            user = connection.execute(query).mappings().first()
+
+            if not user:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+            if user.get("email_verified"):
+                return {"message": "Email is already verified"}
+
+            verification_token = secrets.token_urlsafe(32)
+
+            connection.execute(
+                update(users_table)
+                .where(users_table.c.id == user["id"])
+                .values(email_verification_token=verification_token)
+            )
+
+            record_activity("auth.resend_verification", "Verification token refreshed", f"{user['email']} requested a new verification token.")
+
+            return {
+                "message": "Verification token generated",
+                "demo_verification_token": verification_token
+            }
+    except HTTPException:
+        raise
+    except SQLAlchemyError as error:
+        print(f"Database error in resend_verification: {error}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
 
 
