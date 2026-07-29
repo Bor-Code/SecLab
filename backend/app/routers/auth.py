@@ -37,6 +37,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer(auto_error=False)
 
 JWT_SECRET = os.getenv("SECLAB_JWT_SECRET", "dev-secret")
+REQUIRE_EMAIL_VERIFICATION = os.getenv("SECLAB_REQUIRE_EMAIL_VERIFICATION", "false").lower() == "true"
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_MINUTES = 60
 
@@ -324,6 +325,9 @@ def login(payload: LoginRequest):
 
             if not user or not verify_password(payload.password, user["password_hash"]):
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+
+            if REQUIRE_EMAIL_VERIFICATION and not user.get("email_verified"):
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Email verification required")
 
             record_activity("auth.login", "User signed in", f"{user['email']} signed in.")
             return create_access_response(dict(user))
