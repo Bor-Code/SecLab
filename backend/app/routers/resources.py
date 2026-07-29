@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import Table, Column, Integer, String, Text, DateTime, insert, select, update, delete
 from sqlalchemy.exc import SQLAlchemyError
 from app.database import engine
+from app.activity import record_activity
 from sqlalchemy import MetaData
 from app.routers.auth import require_signed_in_user
 
@@ -131,6 +132,7 @@ def update_resource(resource_id: int, payload: ResourceUpdate, current_user: dic
             )
 
             updated = connection.execute(update_query).mappings().first()
+            record_activity("resource.update", "Resource updated", f"Resource '{updated['title']}' was updated.")
             return dict(updated)
     except HTTPException:
         raise
@@ -152,6 +154,7 @@ def delete_resource(resource_id: int, current_user: dict = Depends(require_signe
 
             delete_query = delete(resources_table).where(resources_table.c.id == resource_id)
             connection.execute(delete_query)
+            record_activity("resource.delete", "Resource deleted\", f\"Resource id {resource_id} was deleted.")
             return None
     except HTTPException:
         raise
