@@ -1,3 +1,18 @@
+function clearSecLabSession() {
+  localStorage.removeItem('seclab-access-token');
+  localStorage.removeItem('seclab-token-expires-at');
+  localStorage.removeItem('seclab-user-id');
+  localStorage.removeItem('seclab-user-role');
+  localStorage.removeItem('seclab-user-username');
+  localStorage.removeItem('seclab-user-email');
+  localStorage.removeItem('seclab-admin-auth');
+  localStorage.removeItem('seclab-admin-role');
+}
+
+function redirectToLogin() {
+  const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
+  window.location.assign(`${baseUrl}/login`);
+}
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
 export type User = {
@@ -176,6 +191,12 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     ...options,
     headers,
   });
+
+  if (response.status === 401) {
+    clearSecLabSession();
+    redirectToLogin();
+    throw new Error('Session expired. Please log in again.');
+  }
 
   if (!response.ok) {
     let message = `Request failed: ${path}`;
