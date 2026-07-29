@@ -400,3 +400,10 @@ export function resetPassword(payload: { token: string; new_password: string }) 
     body: JSON.stringify(payload)
   });
 }
+
+
+export function resetUserPassword(userId: number) {
+  return request(`/users/${userId}/reset-password`, {
+    method: 'POST'
+  });
+}

@@ -190,6 +190,44 @@ def update_user(user_id: int, payload: UserUpdate, admin: dict = Depends(require
         print(f"Database error in update_user: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
 
+
+
+@router.post("/{user_id}/reset-password")
+def reset_user_password(user_id: int, current_user: dict = Depends(require_admin_user)):
+    if user_id == current_user["id"]:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Admins should change their own password from profile")
+
+    temporary_password = secrets.token_urlsafe(8)
+
+    try:
+        with engine.begin() as connection:
+            existing_query = select(users_table).where(users_table.c.id == user_id)
+            existing_user = connection.execute(existing_query).mappings().first()
+
+            if not existing_user:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+            update_query = (
+                update(users_table)
+                .where(users_table.c.id == user_id)
+                .values(
+                    password_hash=hash_password(temporary_password),
+                    must_change_password=1,
+                )
+            )
+            connection.execute(update_query)
+
+            record_activity("users.reset_password", "User password reset", f"{existing_user['email']} received a temporary password.")
+            return {
+                "message": "Temporary password generated",
+                "temporary_password": temporary_password,
+            }
+    except HTTPException:
+        raise
+    except SQLAlchemyError as error:
+        print(f"Database error in reset_user_password: {error}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(user_id: int, admin: dict = Depends(require_admin_user)):
     try:
