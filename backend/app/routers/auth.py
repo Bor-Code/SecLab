@@ -118,7 +118,6 @@ def validate_password_strength(password: str):
 def hash_password(password: str):
     return pwd_context.hash(password)
 
-
 def verify_password(password: str, password_hash: str):
     if not password_hash:
         return False
@@ -127,7 +126,6 @@ def verify_password(password: str, password_hash: str):
         return pwd_context.verify(password, password_hash)
     except UnknownHashError:
         return False
-
 
 def create_access_response(user: dict):
     expires_at = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRE_MINUTES)

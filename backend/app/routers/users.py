@@ -1,4 +1,4 @@
-﻿import secrets
+import secrets
 from datetime import datetime
 from fastapi import APIRouter, Header, HTTPException, status, Depends
 from pydantic import BaseModel, Field
