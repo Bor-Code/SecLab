@@ -4,7 +4,6 @@ import { Link as RouterLink } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import FormHelperText from '@mui/material/FormHelperText';
-import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
@@ -15,6 +14,8 @@ import Typography from '@mui/material/Typography';
 
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
 import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
+
+import AuthShell from './AuthShell';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
@@ -40,13 +41,8 @@ export default function AuthLogin() {
 
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: email.trim(),
-          password
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password })
       });
 
       const data = await response.json().catch(() => null);
@@ -82,31 +78,24 @@ export default function AuthLogin() {
   };
 
   return (
-    <form noValidate onSubmit={handleSubmit}>
-      <Grid container spacing={3}>
-        <Grid size={12}>
-          <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-            <Typography variant="h3">SecLab Login</Typography>
-            <Link component={RouterLink} to="/register" variant="h5">
-              Create account
-            </Link>
-          </Stack>
-        </Grid>
+    <AuthShell title="Access your SecLab workspace" description="Sign in to continue managing users, learning records, topics, and saved resources.">
+      <Stack spacing={3.25}>
+        <Stack spacing={1}>
+          <Typography variant="h3">SecLab Login</Typography>
+          <Typography variant="body1" color="text.secondary">
+            Use your workspace credentials to continue.
+          </Typography>
+        </Stack>
 
-        {loginError && (
-          <Grid size={12}>
-            <Alert severity="error">{loginError}</Alert>
-          </Grid>
-        )}
+        {loginError && <Alert severity="error">{loginError}</Alert>}
 
-        <Grid size={12}>
+        <Stack component="form" spacing={2.25} onSubmit={handleSubmit}>
           <Stack sx={{ gap: 1 }}>
             <InputLabel htmlFor="email-login">Email Address</InputLabel>
             <OutlinedInput
               id="email-login"
               type="email"
               value={email}
-              name="email"
               onChange={(event) => setEmail(event.target.value)}
               placeholder="example@gmail.com"
               fullWidth
@@ -118,16 +107,13 @@ export default function AuthLogin() {
               </Link>
             </FormHelperText>
           </Stack>
-        </Grid>
 
-        <Grid size={12}>
           <Stack sx={{ gap: 1 }}>
             <InputLabel htmlFor="password-login">Password</InputLabel>
             <OutlinedInput
               id="password-login"
               type={showPassword ? 'text' : 'password'}
               value={password}
-              name="password"
               onChange={(event) => setPassword(event.target.value)}
               placeholder="Password"
               fullWidth
@@ -146,14 +132,19 @@ export default function AuthLogin() {
               }
             />
           </Stack>
-        </Grid>
 
-        <Grid size={12}>
-          <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained" color="primary">
+          <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained">
             SecLab Login
           </Button>
-        </Grid>
-      </Grid>
-    </form>
+        </Stack>
+
+        <Typography variant="body2" color="text.secondary">
+          Need an account?{' '}
+          <Link component={RouterLink} to="/register">
+            Create account
+          </Link>
+        </Typography>
+      </Stack>
+    </AuthShell>
   );
 }
