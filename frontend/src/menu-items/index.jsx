@@ -1,12 +1,13 @@
 import dashboard from './dashboard';
 import records from './records';
 import monitoring from './monitoring';
-
-import DashboardOutlined from '@ant-design/icons/DashboardOutlined';
-import UserOutlined from '@ant-design/icons/UserOutlined';
-import BookOutlined from '@ant-design/icons/BookOutlined';
-import ReadOutlined from '@ant-design/icons/ReadOutlined';
-import LinkOutlined from '@ant-design/icons/LinkOutlined';
+import {
+  DashboardOutlined,
+  BookOutlined,
+  ReadOutlined,
+  LinkOutlined,
+  UserOutlined
+} from '@ant-design/icons';
 
 const userWorkspace = {
   id: 'group-user-workspace',
@@ -19,14 +20,6 @@ const userWorkspace = {
       type: 'item',
       url: '/user',
       icon: DashboardOutlined,
-      breadcrumbs: false
-    },
-    {
-      id: 'user-profile',
-      title: 'Profilim',
-      type: 'item',
-      url: '/user/profile',
-      icon: UserOutlined,
       breadcrumbs: false
     },
     {
@@ -52,14 +45,24 @@ const userWorkspace = {
       url: '/user/resources',
       icon: LinkOutlined,
       breadcrumbs: false
+    },
+    {
+      id: 'user-profile',
+      title: 'Profilim',
+      type: 'item',
+      url: '/user/profile',
+      icon: UserOutlined,
+      breadcrumbs: false
     }
   ]
 };
 
+const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
 const role = typeof window !== 'undefined' ? localStorage.getItem('seclab-user-role') : null;
+const isUserWorkspace = role === 'user' || pathname.includes('/user');
 
 const menuItems = {
-  items: role === 'user' ? [userWorkspace] : [dashboard, records, monitoring]
+  items: isUserWorkspace ? [userWorkspace] : [dashboard, records, monitoring]
 };
 
 export default menuItems;
