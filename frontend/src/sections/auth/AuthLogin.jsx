@@ -1,186 +1,146 @@
-import PropTypes from 'prop-types';
-import React from 'react';
+import { useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 
-// material-ui
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import FormHelperText from '@mui/material/FormHelperText';
-import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
+import Link from '@mui/material/Link';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
-import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
 
-// third-party
-import * as Yup from 'yup';
-import { Formik } from 'formik';
-
-// project imports
-import IconButton from 'components/@extended/IconButton';
-import AnimateButton from 'components/@extended/AnimateButton';
-
-
-// assets
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
 import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 
-// ============================|| JWT - LOGIN ||============================ //
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
-export default function AuthLogin({ isDemo = false }) {
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [loginError, setLoginError] = React.useState(null);
+export default function AuthLogin() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const handleMouseDownPassword = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-  };
 
-  const handleLoginSubmit = async (values, { setSubmitting }) => {
-    setLoginError(null);
+    setLoginError('');
+
+    if (!email.trim() || !password) {
+      setLoginError('Email and password are required.');
+      return;
+    }
+
     try {
-      const loginResponse = await fetch('http://127.0.0.1:8000/auth/login', {
+      setIsSubmitting(true);
+
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: values.email,
-          password: values.password
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password })
       });
 
-      if (!loginResponse.ok) {
-        throw new Error('Login request failed');
-      }
+      const data = await response.json().catch(() => null);
 
-      const response = await loginResponse.json();
+      if (!response.ok) {
+        throw new Error(data?.detail || 'Invalid email or password.');
+      }
 
       const expiresMs = Date.now() + 3600000;
 
-      localStorage.setItem('seclab-access-token', response.access_token);
+      localStorage.setItem('seclab-access-token', data.access_token);
       localStorage.setItem('seclab-token-expires-at', String(expiresMs));
-      localStorage.setItem('seclab-user-id', String(response.id));
-      localStorage.setItem('seclab-user-role', response.role);
-      localStorage.setItem('seclab-user-username', response.username || '');
-      localStorage.setItem('seclab-username', response.username || '');
-      localStorage.setItem('seclab-user-email', response.email || '');
+      localStorage.setItem('seclab-user-id', String(data.id));
+      localStorage.setItem('seclab-user-role', data.role);
+      localStorage.setItem('seclab-user-username', data.username || '');
+      localStorage.setItem('seclab-user-email', data.email || '');
 
-      if (response.role === 'admin') {
+      if (data.role === 'admin') {
         localStorage.setItem('seclab-admin-auth', 'true');
         localStorage.setItem('seclab-admin-role', 'admin');
-                window.location.assign('/free/admin');
+        window.location.assign('/free/admin');
         return;
       }
 
       localStorage.removeItem('seclab-admin-auth');
       localStorage.removeItem('seclab-admin-role');
-            window.location.assign('/free/user');
+      window.location.assign('/free/user');
     } catch (error) {
-      console.error('Login failed:', error);
-      setLoginError('Invalid email or password.');
+      setLoginError(error.message || 'Login failed.');
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <>
-      {loginError && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {loginError}
-        </Alert>
-      )}
-      <Formik
-        initialValues={{
-          email: '',
-          password: '',
-          submit: null
-        }}
-        validationSchema={Yup.object().shape({
-          email: Yup.string().max(255).required('Email is required'),
-          password: Yup.string()
-            .required('Password is required')
-            .test('no-leading-trailing-whitespace', 'Password cannot start or end with spaces', (value) => value === value.trim())
-            .max(50, 'Password is too long')
-        })}
-        onSubmit={handleLoginSubmit}
-      >
-        {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
-          <form noValidate onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
-              <Grid size={12}>
-                <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="email-login">Email Address</InputLabel>
-                  <OutlinedInput
-                    id="email-login"
-                    type="email"
-                    value={values.email}
-                    name="email"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    placeholder="example@gmail.com"
-                    fullWidth
-                    error={Boolean(touched.email && errors.email)}
-                  />
-                </Stack>
-                {touched.email && errors.email && (
-                  <FormHelperText error id="standard-weight-helper-text-email-login">
-                    {errors.email}
-                  </FormHelperText>
-                )}
-              </Grid>
-              <Grid size={12}>
-                <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="password-login">Password</InputLabel>
-                  <OutlinedInput
-                    fullWidth
-                    error={Boolean(touched.password && errors.password)}
-                    id="password-login"
-                    type={showPassword ? 'text' : 'password'}
-                    value={values.password}
-                    name="password"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    endAdornment={
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={handleClickShowPassword}
-                          onMouseDown={handleMouseDownPassword}
-                          edge="end"
-                          color="secondary"
-                        >
-                          {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                        </IconButton>
-                      </InputAdornment>
-                    }
-                    placeholder="Password"
-                  />
-                </Stack>
-                {touched.password && errors.password && (
-                  <FormHelperText error id="standard-weight-helper-text-password-login">
-                    {errors.password}
-                  </FormHelperText>
-                )}
-              </Grid>
-              <Grid size={12}>
-                <AnimateButton>
-                  <Button fullWidth size="large" type="submit" variant="contained" color="primary" disabled={isSubmitting}>
-                    {isSubmitting ? 'Authenticating...' : 'SecLab Login'}
-                  </Button>
-                </AnimateButton>
-              </Grid>
-            </Grid>
-          </form>
-        )}
-      </Formik>
-    </>
+    <Stack spacing={3.25}>
+      <Stack spacing={1}>
+        <Typography variant="h3">SecLab Login</Typography>
+        <Typography variant="body1" color="text.secondary">
+          Use your workspace credentials to continue.
+        </Typography>
+      </Stack>
+
+      {loginError && <Alert severity="error">{loginError}</Alert>}
+
+      <Stack component="form" spacing={2.25} onSubmit={handleSubmit}>
+        <Stack sx={{ gap: 1 }}>
+          <InputLabel htmlFor="email-login">Email Address</InputLabel>
+          <OutlinedInput
+            id="email-login"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="example@gmail.com"
+            fullWidth
+            autoComplete="email"
+          />
+          <FormHelperText>
+            <Link component={RouterLink} to="/forgot-password">
+              Forgot Password?
+            </Link>
+          </FormHelperText>
+        </Stack>
+
+        <Stack sx={{ gap: 1 }}>
+          <InputLabel htmlFor="password-login">Password</InputLabel>
+          <OutlinedInput
+            id="password-login"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Password"
+            fullWidth
+            autoComplete="current-password"
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={() => setShowPassword((show) => !show)}
+                  edge="end"
+                  color="secondary"
+                >
+                  {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                </IconButton>
+              </InputAdornment>
+            }
+          />
+        </Stack>
+
+        <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained">
+          SecLab Login
+        </Button>
+      </Stack>
+
+      <Typography variant="body2" color="text.secondary">
+        Need an account?{' '}
+        <Link component={RouterLink} to="/register">
+          Create account
+        </Link>
+      </Typography>
+    </Stack>
   );
 }
-
-AuthLogin.propTypes = { isDemo: PropTypes.bool };
-
-

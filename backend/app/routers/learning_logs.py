@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import Table, Column, Integer, String, Text, Date, DateTime, insert, select, update, delete
 from sqlalchemy.exc import SQLAlchemyError
 from app.database import engine
+from app.activity import record_activity
 from sqlalchemy import MetaData
 from app.routers.auth import require_signed_in_user
 
@@ -124,6 +125,7 @@ def update_learning_log(log_id: int, payload: LearningLogUpdate, current_user: d
             )
 
             updated = connection.execute(update_query).mappings().first()
+            record_activity("learning_log.update", "Learning log updated", f"Learning log '{updated['title']}' was updated.")
             return dict(updated)
     except HTTPException:
         raise
@@ -145,6 +147,7 @@ def delete_learning_log(log_id: int, current_user: dict = Depends(require_signed
 
             delete_query = delete(learning_logs_table).where(learning_logs_table.c.id == log_id)
             connection.execute(delete_query)
+            record_activity("learning_log.delete", "Learning log deleted\", f\"Learning log id {log_id} was deleted.")
             return None
     except HTTPException:
         raise

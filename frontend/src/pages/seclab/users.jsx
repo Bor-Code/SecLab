@@ -22,7 +22,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
 import MainCard from 'components/MainCard';
-import { fetchUsers, createUser, updateUser, deleteUser } from 'api/seclab';
+import { fetchUsers, createUser, updateUser, deleteUser,
+  resetUserPassword } from 'api/seclab';
 
 export default function UsersPage() {
   const currentUserId = Number(localStorage.getItem('seclab-user-id') || 0);
@@ -133,6 +134,23 @@ export default function UsersPage() {
   function closeDeleteDialog() {
     setDeleteTargetUser(null);
       setEditingUserId(null);
+  }
+
+
+
+  async function handleResetUserPassword(user) {
+    if (!window.confirm(`Reset password for ${user.email}?`)) {
+      return;
+    }
+
+    try {
+      setErrorMessage(null);
+      const response = await resetUserPassword(user.id);
+      setSuccessMessage(`Temporary password: ${response.temporary_password}`);
+    } catch (error) {
+      console.error('Failed to reset user password:', error);
+      setErrorMessage(error.message || 'Could not reset user password.');
+    }
   }
 
   async function confirmDeleteUser() {

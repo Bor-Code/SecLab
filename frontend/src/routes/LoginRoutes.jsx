@@ -1,29 +1,27 @@
 import { lazy } from 'react';
+import { Outlet } from 'react-router-dom';
 
-// project imports
 import Loadable from 'components/Loadable';
 
-// jwt auth
-const LoginPage = Loadable(lazy(() => import('pages/auth/Login')));
-const RegisterPage = Loadable(lazy(() => import('pages/auth/Register')));
-
-// ==============================|| AUTH ROUTING ||============================== //
+const Login = Loadable(lazy(() => import('../pages/auth/Login')));
+const Register = Loadable(lazy(() => import('../pages/auth/Login')));
+const ForgotPassword = Loadable(lazy(() => import('../pages/authentication/ForgotPassword')));
 
 const LoginRoutes = {
   path: '/',
+  element: <Outlet />,
   children: [
     {
-      path: '/',
-      children: [
-        {
-          path: '/login',
-          element: <LoginPage />
-        },
-        {
-          path: '/register',
-          element: <RegisterPage />
-        }
-      ]
+      path: '/login',
+      element: <Login />
+    },
+    {
+      path: '/register',
+      element: <Register />
+    },
+    {
+      path: '/forgot-password',
+      element: <ForgotPassword />
     }
   ]
 };

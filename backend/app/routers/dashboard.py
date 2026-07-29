@@ -2,6 +2,7 @@
 from sqlalchemy import select, func
 from sqlalchemy.exc import SQLAlchemyError
 from app.database import engine
+from app.activity import get_recent_activity as load_recent_activity
 from app.routers.users import users_table
 from app.routers.topics import topics_table
 from app.routers.learning_logs import learning_logs_table
@@ -34,18 +35,4 @@ def get_dashboard_summary(admin: dict = Depends(require_admin)):
 
 @router.get("/recent-activity")
 def get_recent_activity(admin: dict = Depends(require_admin)):
-    try:
-        with engine.begin() as connection:
-            logs_query = select(learning_logs_table).order_by(learning_logs_table.c.created_at.desc()).limit(10)
-            logs = [dict(row) for row in connection.execute(logs_query).mappings()]
-
-            resources_query = select(resources_table).order_by(resources_table.c.created_at.desc()).limit(10)
-            resources = [dict(row) for row in connection.execute(resources_query).mappings()]
-
-            return {
-                "recent_logs": logs,
-                "recent_resources": resources
-            }
-    except SQLAlchemyError as e:
-        print(f"Database error in dashboard recent activity: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+    return load_recent_activity()
