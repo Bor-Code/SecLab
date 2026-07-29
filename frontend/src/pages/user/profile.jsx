@@ -18,6 +18,7 @@ export default function UserProfilePage() {
   const storedEmail = localStorage.getItem('seclab-user-email') || 'Signed in';
   const role = localStorage.getItem('seclab-user-role') || 'user';
   const emailVerified = localStorage.getItem('seclab-email-verified') === '1';
+  const mustChangePassword = localStorage.getItem('seclab-must-change-password') === '1';
 
   const [username, setUsername] = useState(storedUsername);
   const [email, setEmail] = useState(storedEmail);
@@ -121,7 +122,7 @@ export default function UserProfilePage() {
           </Typography>
           <Stack direction="row" spacing={1}>
             <Chip label={`Role: ${role}`} color="primary" variant="outlined" />
-            <Chip label="{emailVerified ? 'Email verified' : 'Email not verified'}" variant="outlined" />
+            <Chip label="{mustChangePassword ? 'Temporary password active' : emailVerified ? 'Email verified' : 'Email not verified'}" variant="outlined" />
           </Stack>
         </Stack>
       </MainCard>

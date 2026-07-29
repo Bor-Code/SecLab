@@ -28,6 +28,7 @@ users_table = Table(
     Column("role", String(20), nullable=False, default="user"),
     Column("email_verified", Integer, nullable=False, default=0),
     Column("email_verification_token", String(128), nullable=True),
+    Column("must_change_password", Integer, nullable=False, default=0),
     Column("created_at", DateTime, default=lambda: datetime.now(timezone.utc)),
 )
 
@@ -76,6 +77,7 @@ class AuthResponse(BaseModel):
     token_type: str = "bearer"
     expires_at: datetime
     email_verified: int | None = None
+    must_change_password: int | None = None
     demo_verification_token: str | None = None
 
 
@@ -84,6 +86,7 @@ def ensure_auth_columns(connection):
     connection.exec_driver_sql("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'user'")
     connection.exec_driver_sql("ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified INTEGER NOT NULL DEFAULT 0")
     connection.exec_driver_sql("ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_token VARCHAR(128)")
+    connection.exec_driver_sql("ALTER TABLE users ADD COLUMN IF NOT EXISTS must_change_password INTEGER NOT NULL DEFAULT 0")
 
 
 def normalize_email(email: str) -> str:
@@ -132,6 +135,7 @@ def create_access_response(user: dict) -> dict:
         "token_type": "bearer",
         "expires_at": expires_at,
         "email_verified": user.get("email_verified", 0),
+        "must_change_password": user.get("must_change_password", 0),
     }
 
 
