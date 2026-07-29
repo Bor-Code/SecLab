@@ -394,16 +394,16 @@ def forgot_password(payload: ForgotPasswordRequest):
             ensure_auth_columns(connection)
 
             user = connection.execute(
-                select(users_table).where(users_table.c.email == norm_email)
+                text("SELECT id, email FROM users WHERE email = :email"),
+                {"email": norm_email},
             ).mappings().first()
 
             if not user:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
             connection.execute(
-                update(users_table)
-                .where(users_table.c.id == user["id"])
-                .values(password_reset_token=reset_token)
+                text("UPDATE users SET password_reset_token = :token WHERE id = :user_id"),
+                {"token": reset_token, "user_id": user["id"]},
             )
 
             return {"message": "Password reset token created", "demo_reset_token": reset_token}
@@ -412,7 +412,6 @@ def forgot_password(payload: ForgotPasswordRequest):
     except SQLAlchemyError as error:
         print(f"Database error in forgot_password: {error}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
-
 
 @router.post("/reset-password")
 def reset_password(payload: ResetPasswordRequest):
@@ -423,16 +422,16 @@ def reset_password(payload: ResetPasswordRequest):
             ensure_auth_columns(connection)
 
             user = connection.execute(
-                select(users_table).where(users_table.c.password_reset_token == payload.token)
+                text("SELECT id, email FROM users WHERE password_reset_token = :token"),
+                {"token": payload.token},
             ).mappings().first()
 
             if not user:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reset token not found")
 
             connection.execute(
-                update(users_table)
-                .where(users_table.c.id == user["id"])
-                .values(password_hash=hash_password(payload.password), password_reset_token=None)
+                text("UPDATE users SET password_hash = :password_hash, password_reset_token = NULL WHERE id = :user_id"),
+                {"password_hash": hash_password(payload.password), "user_id": user["id"]},
             )
 
             return {"message": "Password reset successfully"}
