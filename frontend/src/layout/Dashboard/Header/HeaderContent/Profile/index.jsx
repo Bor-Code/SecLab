@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -28,6 +28,7 @@ import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
 import SettingOutlined from '@ant-design/icons/SettingOutlined';
 import UserOutlined from '@ant-design/icons/UserOutlined';
 import avatar1 from 'assets/images/users/avatar-1.png';
+import { fetchCurrentUser } from 'api/seclab';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -53,6 +54,37 @@ export default function Profile() {
   const email = localStorage.getItem('seclab-user-email') || 'Signed in';
   const role = localStorage.getItem('seclab-user-role') || 'user';
   const roleLabel = role === 'admin' ? 'Admin' : 'User';
+  useEffect(() => {
+    const token = localStorage.getItem('seclab-access-token');
+
+    if (!token) {
+      return;
+    }
+
+    fetchCurrentUser()
+      .then((currentUser) => {
+        localStorage.setItem('seclab-user-id', String(currentUser.id));
+        localStorage.setItem('seclab-user-username', currentUser.username || '');
+        localStorage.setItem('seclab-user-email', currentUser.email || '');
+        localStorage.setItem('seclab-user-role', currentUser.role || 'user');
+
+        if (currentUser.email_verified !== undefined && currentUser.email_verified !== null) {
+          localStorage.setItem('seclab-email-verified', String(currentUser.email_verified));
+        }
+
+        if (currentUser.must_change_password !== undefined && currentUser.must_change_password !== null) {
+          localStorage.setItem('seclab-must-change-password', String(currentUser.must_change_password));
+        }
+
+        setUsername(currentUser.username || 'SecLab User');
+        setEmail(currentUser.email || 'Signed in');
+        setRole(currentUser.role || 'user');
+      })
+      .catch(() => {
+        // Header bilgisi kritik de?il; guard zaten yetkisiz oturumu login'e al?yor.
+      });
+  }, []);
+
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
@@ -63,6 +95,8 @@ export default function Profile() {
     }
     setOpen(false);
   };
+
+  const displayRole = role === 'admin' ? 'Admin' : 'User';
 
   const handleLogout = () => {
     localStorage.clear();

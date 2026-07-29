@@ -407,3 +407,7 @@ export function resetUserPassword(userId: number) {
     method: 'POST'
   });
 }
+
+export function fetchCurrentUser() {
+  return request('/auth/me');
+}

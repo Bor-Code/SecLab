@@ -338,6 +338,20 @@ def login(payload: LoginRequest):
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
 
 
+
+@router.get("/me", response_model=UserRead)
+def get_current_user_profile(current_user: dict = Depends(require_signed_in_user)):
+    return {
+        "id": current_user["id"],
+        "username": current_user["username"],
+        "email": current_user["email"],
+        "role": current_user["role"],
+        "created_at": current_user.get("created_at"),
+        "email_verified": current_user.get("email_verified", 0),
+        "must_change_password": current_user.get("must_change_password", 0),
+    }
+
+
 @router.patch("/me", response_model=UserRead)
 def update_current_user(payload: ProfileUpdate, current_user: dict = Depends(require_signed_in_user)):
     update_data = payload.model_dump(exclude_unset=True)
