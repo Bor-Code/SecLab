@@ -99,6 +99,7 @@ class AuthResponse(BaseModel):
     email_verified: int | None = None
     must_change_password: int | None = None
     demo_verification_token: str | None = None
+    demo_reset_token: str | None = None
 
 
 def ensure_auth_columns(connection):
