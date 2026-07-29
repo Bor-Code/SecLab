@@ -15,8 +15,6 @@ import Typography from '@mui/material/Typography';
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
 import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 
-import AuthShell from './AuthShell';
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 export default function AuthLogin() {
@@ -78,73 +76,71 @@ export default function AuthLogin() {
   };
 
   return (
-    <AuthShell title="Access your SecLab workspace" description="Sign in to continue managing users, learning records, topics, and saved resources.">
-      <Stack spacing={3.25}>
-        <Stack spacing={1}>
-          <Typography variant="h3">SecLab Login</Typography>
-          <Typography variant="body1" color="text.secondary">
-            Use your workspace credentials to continue.
-          </Typography>
-        </Stack>
-
-        {loginError && <Alert severity="error">{loginError}</Alert>}
-
-        <Stack component="form" spacing={2.25} onSubmit={handleSubmit}>
-          <Stack sx={{ gap: 1 }}>
-            <InputLabel htmlFor="email-login">Email Address</InputLabel>
-            <OutlinedInput
-              id="email-login"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="example@gmail.com"
-              fullWidth
-              autoComplete="email"
-            />
-            <FormHelperText>
-              <Link component={RouterLink} to="/forgot-password">
-                Forgot Password?
-              </Link>
-            </FormHelperText>
-          </Stack>
-
-          <Stack sx={{ gap: 1 }}>
-            <InputLabel htmlFor="password-login">Password</InputLabel>
-            <OutlinedInput
-              id="password-login"
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Password"
-              fullWidth
-              autoComplete="current-password"
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={() => setShowPassword((show) => !show)}
-                    edge="end"
-                    color="secondary"
-                  >
-                    {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                  </IconButton>
-                </InputAdornment>
-              }
-            />
-          </Stack>
-
-          <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained">
-            SecLab Login
-          </Button>
-        </Stack>
-
-        <Typography variant="body2" color="text.secondary">
-          Need an account?{' '}
-          <Link component={RouterLink} to="/register">
-            Create account
-          </Link>
+    <Stack spacing={3.25}>
+      <Stack spacing={1}>
+        <Typography variant="h3">SecLab Login</Typography>
+        <Typography variant="body1" color="text.secondary">
+          Use your workspace credentials to continue.
         </Typography>
       </Stack>
-    </AuthShell>
+
+      {loginError && <Alert severity="error">{loginError}</Alert>}
+
+      <Stack component="form" spacing={2.25} onSubmit={handleSubmit}>
+        <Stack sx={{ gap: 1 }}>
+          <InputLabel htmlFor="email-login">Email Address</InputLabel>
+          <OutlinedInput
+            id="email-login"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="example@gmail.com"
+            fullWidth
+            autoComplete="email"
+          />
+          <FormHelperText>
+            <Link component={RouterLink} to="/forgot-password">
+              Forgot Password?
+            </Link>
+          </FormHelperText>
+        </Stack>
+
+        <Stack sx={{ gap: 1 }}>
+          <InputLabel htmlFor="password-login">Password</InputLabel>
+          <OutlinedInput
+            id="password-login"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Password"
+            fullWidth
+            autoComplete="current-password"
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={() => setShowPassword((show) => !show)}
+                  edge="end"
+                  color="secondary"
+                >
+                  {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                </IconButton>
+              </InputAdornment>
+            }
+          />
+        </Stack>
+
+        <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained">
+          SecLab Login
+        </Button>
+      </Stack>
+
+      <Typography variant="body2" color="text.secondary">
+        Need an account?{' '}
+        <Link component={RouterLink} to="/register">
+          Create account
+        </Link>
+      </Typography>
+    </Stack>
   );
 }
