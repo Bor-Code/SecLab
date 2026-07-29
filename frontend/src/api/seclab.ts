@@ -379,3 +379,10 @@ export function fetchDashboardRecentActivity() {
 export function fetchHealthStatus() {
   return request<HealthStatus>('/health');
 }
+
+export function verifyEmail(token: string) {
+  return request('/auth/verify-email', {
+    method: 'POST',
+    body: JSON.stringify({ token })
+  });
+}

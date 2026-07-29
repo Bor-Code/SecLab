@@ -15,7 +15,7 @@ import Typography from '@mui/material/Typography';
 import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
 
-import { registerUser } from 'api/seclab';
+import { registerUser, verifyEmail } from 'api/seclab';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -27,6 +27,9 @@ export default function AuthRegister() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [registerError, setRegisterError] = useState(null);
+  const [registerSuccess, setRegisterSuccess] = useState(null);
+  const [verificationToken, setVerificationToken] = useState('');
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [fieldError, setFieldError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
