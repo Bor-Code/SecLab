@@ -80,7 +80,7 @@ export default function AuthLogin({ isDemo = false }) {
             window.location.assign('/free/user');
     } catch (error) {
       console.error('Login failed:', error);
-      setLoginError('Invalid email or password.');
+      setLoginError(error.message || 'Invalid email or password.');
     } finally {
       setSubmitting(false);
     }
