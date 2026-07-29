@@ -19,8 +19,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000
 
 export default function AuthLogin() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [password, setŞifre] = useState('');
+  const [showŞifre, setShowŞifre] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -46,7 +46,7 @@ export default function AuthLogin() {
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(data?.detail || 'Invalid email or password.');
+        throw new Error(data?.detail || 'Email veya şifre hatalı.');
       }
 
       const expiresMs = Date.now() + 3600000;
@@ -88,7 +88,7 @@ export default function AuthLogin() {
 
       <Stack component="form" spacing={2.25} onSubmit={handleSubmit}>
         <Stack sx={{ gap: 1 }}>
-          <InputLabel htmlFor="email-login">Email Address</InputLabel>
+          <InputLabel htmlFor="email-login">Email Adresi</InputLabel>
           <OutlinedInput
             id="email-login"
             type="email"
@@ -100,30 +100,30 @@ export default function AuthLogin() {
           />
           <FormHelperText>
             <Link component={RouterLink} to="/forgot-password">
-              Forgot Password?
+              Forgot Şifre?
             </Link>
           </FormHelperText>
         </Stack>
 
         <Stack sx={{ gap: 1 }}>
-          <InputLabel htmlFor="password-login">Password</InputLabel>
+          <InputLabel htmlFor="password-login">Şifre</InputLabel>
           <OutlinedInput
             id="password-login"
-            type={showPassword ? 'text' : 'password'}
+            type={showŞifre ? 'text' : 'password'}
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="Password"
+            onChange={(event) => setŞifre(event.target.value)}
+            placeholder="Şifre"
             fullWidth
             autoComplete="current-password"
             endAdornment={
               <InputAdornment position="end">
                 <IconButton
                   aria-label="toggle password visibility"
-                  onClick={() => setShowPassword((show) => !show)}
+                  onClick={() => setShowŞifre((show) => !show)}
                   edge="end"
                   color="secondary"
                 >
-                  {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                  {showŞifre ? <EyeOutlined /> : <EyeInvisibleOutlined />}
                 </IconButton>
               </InputAdornment>
             }
@@ -138,7 +138,7 @@ export default function AuthLogin() {
       <Typography variant="body2" color="text.secondary">
         Need an account?{' '}
         <Link component={RouterLink} to="/register">
-          Create account
+          Hesap oluştur
         </Link>
       </Typography>
     </Stack>

@@ -32,7 +32,7 @@ export default function ProfileTab({ onLogout }) {
         <ListItemIcon>
           <DashboardOutlined />
         </ListItemIcon>
-        <ListItemText primary="Workspace" secondary="Topics, logs, and resources" />
+        <ListItemText primary="Workspace" secondary="Konular, logs, and resources" />
       </ListItemButton>
 
       <ListItemButton onClick={onLogout}>

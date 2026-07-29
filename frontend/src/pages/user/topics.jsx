@@ -7,11 +7,11 @@ import TopicManager from './components/TopicManager';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
-export default function UserTopicsPage() {
-  const [topics, setTopics] = useState([]);
+export default function UserKonularPage() {
+  const [topics, setKonular] = useState([]);
   const [error, setError] = useState('');
 
-  async function loadTopics() {
+  async function loadKonular() {
     try {
       const token = localStorage.getItem('seclab-access-token');
 
@@ -24,24 +24,24 @@ export default function UserTopicsPage() {
       const data = await response.json().catch(() => []);
 
       if (!response.ok) {
-        throw new Error(data?.detail || 'Topics could not be loaded.');
+        throw new Error(data?.detail || 'Konular could not be loaded.');
       }
 
-      setTopics(Array.isArray(data) ? data : []);
+      setKonular(Array.isArray(data) ? data : []);
     } catch (loadError) {
-      setError(loadError.message || 'Topics could not be loaded.');
-      setTopics([]);
+      setError(loadError.message || 'Konular could not be loaded.');
+      setKonular([]);
     }
   }
 
   useEffect(() => {
-    loadTopics();
+    loadKonular();
   }, []);
 
   return (
     <Box>
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      <TopicManager topics={topics} setTopics={setTopics} onChange={loadTopics} />
+      <TopicManager topics={topics} setKonular={setKonular} onChange={loadKonular} />
     </Box>
   );
 }

@@ -66,7 +66,7 @@ export default function UserProfilePage() {
           <Typography variant="h4">Account Details</Typography>
           <TextField label="Username" value={username} onChange={(event) => setUsername(event.target.value)} />
           <TextField label="Email" value={email} onChange={(event) => setEmail(event.target.value)} />
-          <TextField label="Role" value={role} disabled />
+          <TextField label="Rol" value={role} disabled />
           <Typography color="text.secondary">
             Avatar is stored locally for demo use. Backend avatar persistence can be added in the next pass.
           </Typography>

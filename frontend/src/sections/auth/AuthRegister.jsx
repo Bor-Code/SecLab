@@ -24,15 +24,15 @@ export default function AuthRegister() {
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setŞifre] = useState('');
+  const [confirmŞifre, setConfirmŞifre] = useState('');
   const [registerError, setRegisterError] = useState(null);
   const [registerSuccess, setRegisterSuccess] = useState(null);
   const [verificationToken, setVerificationToken] = useState('');
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [fieldError, setFieldError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showŞifre, setShowŞifre] = useState(false);
 
   function validateForm() {
     const trimmedUsername = username.trim();
@@ -47,11 +47,11 @@ export default function AuthRegister() {
     }
 
     if (password.length < 8) {
-      return 'Password must be at least 8 characters.';
+      return 'Şifre must be at least 8 characters.';
     }
 
-    if (password !== confirmPassword) {
-      return 'Passwords do not match.';
+    if (password !== confirmŞifre) {
+      return 'Şifres do not match.';
     }
 
     return null;
@@ -110,7 +110,7 @@ export default function AuthRegister() {
 
         <Grid size={12}>
           <TextField
-            label="Email Address"
+            label="Email Adresi"
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
@@ -121,33 +121,33 @@ export default function AuthRegister() {
 
         <Grid size={12}>
           <TextField
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
+            label="Şifre"
+            type={showŞifre ? 'text' : 'password'}
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(event) => setŞifre(event.target.value)}
             fullWidth
             autoComplete="new-password"
             slotProps={{
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword((value) => !value)} edge="end">
-                      {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                    <IconButton onClick={() => setShowŞifre((value) => !value)} edge="end">
+                      {showŞifre ? <EyeOutlined /> : <EyeInvisibleOutlined />}
                     </IconButton>
                   </InputAdornment>
                 )
               }
             }}
           />
-          <FormHelperText>Password must be at least 8 characters.</FormHelperText>
+          <FormHelperText>Şifre must be at least 8 characters.</FormHelperText>
         </Grid>
 
         <Grid size={12}>
           <TextField
-            label="Confirm Password"
-            type={showPassword ? 'text' : 'password'}
-            value={confirmPassword}
-            onChange={(event) => setConfirmPassword(event.target.value)}
+            label="Confirm Şifre"
+            type={showŞifre ? 'text' : 'password'}
+            value={confirmŞifre}
+            onChange={(event) => setConfirmŞifre(event.target.value)}
             fullWidth
             autoComplete="new-password"
           />
@@ -155,7 +155,7 @@ export default function AuthRegister() {
       </Grid>
 
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting} fullWidth>
-        {isSubmitting ? 'Creating Account...' : 'Create Account'}
+        {isSubmitting ? 'Creating Account...' : 'Hesap Oluştur'}
       </Button>
 
       <Typography variant="body2" color="text.secondary" align="center">

@@ -9,7 +9,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000
 
 export default function UserResourcesPage() {
   const [resources, setResources] = useState([]);
-  const [topics, setTopics] = useState([]);
+  const [topics, setKonular] = useState([]);
   const [error, setError] = useState('');
 
   async function loadData() {
@@ -30,11 +30,11 @@ export default function UserResourcesPage() {
       }
 
       setResources(Array.isArray(resourcesData) ? resourcesData : []);
-      setTopics(Array.isArray(topicsData) ? topicsData : []);
+      setKonular(Array.isArray(topicsData) ? topicsData : []);
     } catch (loadError) {
       setError(loadError.message || 'Resources could not be loaded.');
       setResources([]);
-      setTopics([]);
+      setKonular([]);
     }
   }
 

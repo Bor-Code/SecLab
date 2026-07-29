@@ -1,31 +1,91 @@
-// material-ui
-import FormControl from '@mui/material/FormControl';
-import InputAdornment from '@mui/material/InputAdornment';
-import OutlinedInput from '@mui/material/OutlinedInput';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import Box from '@mui/material/Box';
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
-// assets
-import SearchOutlined from '@ant-design/icons/SearchOutlined';
-
-// ==============================|| HEADER CONTENT - SEARCH ||============================== //
+const items = [
+  { label: 'MyWorkspace', path: '/user' },
+  { label: 'Konular', path: '/user/topics' },
+  { label: 'LearningLogs', path: '/user/learning-logs' },
+  { label: 'Resources', path: '/user/resources' },
+  { label: 'MyProgress', path: '/user/progress' },
+  { label: 'StudyPlan', path: '/user/study-plan' },
+  { label: 'Notes', path: '/user/notes' },
+  { label: 'Activity', path: '/user/activity' },
+  { label: 'Profile', path: '/user/profile' }
+];
 
 export default function Search() {
+  const navigate = useNavigate();
+  const [value, setValue] = useState('');
+  const [open, setOpen] = useState(false);
+
+  const results = useMemo(() => {
+    const query = value.trim().toLowerCase();
+
+    if (!query) {
+      return items.slice(0, 5);
+    }
+
+    return items.filter((item) => item.label.toLowerCase().includes(query)).slice(0, 6);
+  }, [value]);
+
+  const goTo = (path) => {
+    setValue('');
+    setOpen(false);
+    navigate(path);
+  };
+
   return (
-    <Box sx={{ width: '100%', ml: { xs: 0, md: 1 } }}>
-      <FormControl sx={{ width: { xs: '100%', md: 224 } }}>
-        <OutlinedInput
-          size="small"
-          id="header-search"
-          startAdornment={
-            <InputAdornment position="start" sx={{ mr: -0.5 }}>
-              <SearchOutlined />
-            </InputAdornment>
+    <Box sx={{ position: 'relative', width: { xs: 220, sm: 320 } }}>
+      <TextField
+        size="small"
+        fullWidth
+        value={value}
+        onFocus={() => setOpen(true)}
+        onChange={(event) => {
+          setValue(event.target.value);
+          setOpen(true);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && results[0]) {
+            goTo(results[0].path);
           }
-          aria-describedby="header-search-text"
-          slotProps={{ input: { 'aria-label': 'weight' } }}
-          placeholder="Ctrl + K"
-        />
-      </FormControl>
+
+          if (event.key === 'Escape') {
+            setOpen(false);
+          }
+        }}
+        placeholder="Çalışma alanında ara"
+      />
+
+      {open && (
+        <Paper
+          sx={{
+            position: 'absolute',
+            zIndex: 20,
+            top: 46,
+            left: 0,
+            right: 0,
+            borderRadius: 0,
+            overflow: 'hidden',
+            boxShadow: '0 18px 45px rgba(15, 23, 42, 0.18)'
+          }}
+        >
+          <List dense disablePadding>
+            {results.map((item) => (
+              <ListItemButton key={item.path} onMouseDown={() => goTo(item.path)}>
+                <Typography>{item.label}</Typography>
+              </ListItemButton>
+            ))}
+          </List>
+        </Paper>
+      )}
     </Box>
   );
 }

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -14,7 +14,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000
 
 const pageConfig = {
   progress: {
-    title: 'My Progress',
+    title: 'MyProgress',
     eyebrow: 'Progress Command Center',
     description: 'Track learning momentum, workspace coverage, and recent study consistency.',
     mainLabel: 'Workspace score',
@@ -22,11 +22,11 @@ const pageConfig = {
     actionText: 'Add a learning log after each study session so progress becomes more accurate.'
   },
   plan: {
-    title: 'Study Plan',
+    title: 'StudyPlan',
     eyebrow: 'Study Control Room',
     description: 'Plan the next study step using your latest topic and learning records.',
     mainLabel: 'Study readiness',
-    actionTitle: 'Next study step',
+    actionTitle: 'Sonraki çalışma adımı',
     actionText: 'Use the latest topic as today focus, then record the result as a learning log.'
   },
   notes: {
@@ -75,9 +75,9 @@ const demoData = {
     }
   },
   activity: [
-    { title: 'Latest topic', description: 'SecLab Test Topic' },
+    { title: 'Son konu', description: 'SecLab Test Topic' },
     { title: 'Latest learning log', description: 'SecLab Test Log' },
-    { title: 'Latest resource', description: 'SecLab Test Resource' }
+    { title: 'Son kaynak', description: 'SecLab Test Resource' }
   ],
   notifications: [],
   unread_notifications: 0
@@ -154,7 +154,7 @@ export default function WorkspaceDataPage({ type = 'progress' }) {
   const metrics = useMemo(
     () => [
       {
-        label: 'Topics',
+        label: 'Konular',
         value: counts.topics ?? 0,
         helper: 'Learning subjects',
         percent: Math.min(100, Number(counts.topics || 0) * 25)
@@ -162,7 +162,7 @@ export default function WorkspaceDataPage({ type = 'progress' }) {
       {
         label: 'Logs',
         value: counts.learning_logs ?? 0,
-        helper: 'Study records',
+        helper: 'Çalışma kayıtları',
         percent: Math.min(100, Number(counts.learning_logs || 0) * 25)
       },
       {
@@ -196,19 +196,19 @@ export default function WorkspaceDataPage({ type = 'progress' }) {
   const detailRows = useMemo(() => {
     if (type === 'plan') {
       return [
-        ['Latest topic', latest.topic?.name],
+        ['Son konu', latest.topic?.name],
         ['Topic description', latest.topic?.description],
         ['Latest learning log', latest.learning_log?.title],
-        ['Last study date', progress.last_study_date],
-        ['Active study days', progress.active_days]
+        ['Son çalışma tarihi', progress.last_study_date],
+        ['Aktif çalışma günleri', progress.active_days]
       ];
     }
 
     if (type === 'notes') {
       return [
-        ['Latest log notes', latest.learning_log?.notes],
-        ['Latest resource notes', latest.resource?.notes],
-        ['Latest resource', latest.resource?.title],
+        ['Son kayıt notes', latest.learning_log?.notes],
+        ['Son kaynak notes', latest.resource?.notes],
+        ['Son kaynak', latest.resource?.title],
         ['Resource type', latest.resource?.resource_type],
         ['Resource URL', latest.resource?.url]
       ];
@@ -220,11 +220,11 @@ export default function WorkspaceDataPage({ type = 'progress' }) {
     }
 
     return [
-      ['Total records', counts.total_records],
-      ['Active study days', progress.active_days],
-      ['Last study date', progress.last_study_date],
-      ['Latest topic', latest.topic?.name],
-      ['Latest resource', latest.resource?.title]
+      ['Toplam kayıt', counts.total_records],
+      ['Aktif çalışma günleri', progress.active_days],
+      ['Son çalışma tarihi', progress.last_study_date],
+      ['Son konu', latest.topic?.name],
+      ['Son kaynak', latest.resource?.title]
     ];
   }, [counts, data, latest, progress, type]);
 
@@ -419,7 +419,7 @@ export default function WorkspaceDataPage({ type = 'progress' }) {
 
                 <Box>
                   <Button variant="contained" onClick={() => window.location.reload()}>
-                    Refresh Data
+                    Veriyi Yenile
                   </Button>
                 </Box>
               </Stack>
@@ -449,7 +449,7 @@ export default function WorkspaceDataPage({ type = 'progress' }) {
                 <Divider sx={{ borderColor: 'rgba(255,255,255,0.18)' }} />
 
                 <Stack spacing={1}>
-                  <Chip label={`Total records: ${counts.total_records ?? 0}`} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.34)' }} variant="outlined" />
+                  <Chip label={`Toplam kayıt: ${counts.total_records ?? 0}`} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.34)' }} variant="outlined" />
                   <Chip label={`Active days: ${progress.active_days ?? 0}`} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.34)' }} variant="outlined" />
                   <Chip label={`Last study: ${formatValue(progress.last_study_date)}`} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.34)' }} variant="outlined" />
                 </Stack>

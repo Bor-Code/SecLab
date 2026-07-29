@@ -31,7 +31,7 @@ const records = {
     },
     {
       id: 'topics',
-      title: 'Topics',
+      title: 'Konular',
       type: 'item',
       url: '/admin/topics',
       icon: icons.BookOutlined,
@@ -39,7 +39,7 @@ const records = {
     },
     {
       id: 'learning-logs',
-      title: 'Learning Logs',
+      title: 'LearningLogs',
       type: 'item',
       url: '/admin/learning-logs',
       icon: icons.ReadOutlined,

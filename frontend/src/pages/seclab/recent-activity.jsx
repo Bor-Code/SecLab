@@ -75,7 +75,7 @@ export default function RecentActivityPage() {
               <TableCell>Type</TableCell>
               <TableCell>Title</TableCell>
               <TableCell>Description</TableCell>
-              <TableCell>Created At</TableCell>
+              <TableCell>Oluşturulma Tarihi</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

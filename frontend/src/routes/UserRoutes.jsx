@@ -4,7 +4,7 @@ import Loadable from 'components/Loadable';
 import DashboardLayout from 'layout/Dashboard';
 
 const UserDashboard = Loadable(lazy(() => import('pages/user/dashboard')));
-const UserTopics = Loadable(lazy(() => import('pages/user/topics')));
+const UserKonular = Loadable(lazy(() => import('pages/user/topics')));
 const UserLearningLogs = Loadable(lazy(() => import('pages/user/learning-logs')));
 const UserResources = Loadable(lazy(() => import('pages/user/resources')));
 const UserProfile = Loadable(lazy(() => import('pages/user/profile')));
@@ -18,7 +18,7 @@ const UserRoutes = {
   element: <DashboardLayout />,
   children: [
     { index: true, element: <UserDashboard /> },
-    { path: 'topics', element: <UserTopics /> },
+    { path: 'topics', element: <UserKonular /> },
     { path: 'learning-logs', element: <UserLearningLogs /> },
     { path: 'resources', element: <UserResources /> },
     { path: 'profile', element: <UserProfile /> },

@@ -54,7 +54,7 @@ export default function ForgotPassword() {
       setResetToken(data?.demo_reset_token || '');
       setMessage('Reset token created. Enter a new password to finish.');
     } catch (requestError) {
-      setError(requestError.message || 'Password reset request failed.');
+      setError(requestError.message || 'Şifre reset request failed.');
     } finally {
       setIsRequesting(false);
     }
@@ -87,9 +87,9 @@ export default function ForgotPassword() {
       }
 
       setNewPassword('');
-      setMessage('Password reset successfully. You can now log in.');
+      setMessage('Şifre reset successfully. You can now log in.');
     } catch (resetError) {
-      setError(resetError.message || 'Password reset failed.');
+      setError(resetError.message || 'Şifre reset failed.');
     } finally {
       setIsResetting(false);
     }
@@ -99,7 +99,7 @@ export default function ForgotPassword() {
     <AuthShell title="Recover access quickly" description="Generate a demo reset token and set a new password without leaving the SecLab auth flow.">
       <Stack spacing={3}>
         <Stack spacing={1}>
-          <Typography variant="h3">Reset Password</Typography>
+          <Typography variant="h3">Reset Şifre</Typography>
           <Typography variant="body1" color="text.secondary">
             Enter your account email to create a reset token.
           </Typography>
@@ -127,7 +127,7 @@ export default function ForgotPassword() {
           </Stack>
 
           <Button disabled={isRequesting} fullWidth size="large" type="submit" variant="contained">
-            Create Reset Token
+            Sıfırlama Tokenı Oluştur
           </Button>
         </Stack>
 
@@ -169,7 +169,7 @@ export default function ForgotPassword() {
               </Stack>
 
               <Button disabled={isResetting} fullWidth size="large" type="submit" variant="contained">
-                Reset Password
+                Reset Şifre
               </Button>
             </Stack>
           </>
@@ -178,7 +178,7 @@ export default function ForgotPassword() {
         <Typography variant="body2" color="text.secondary">
           Remembered your password?{' '}
           <Link component={RouterLink} to="/login">
-            Back to login
+            Logine dön
           </Link>
         </Typography>
       </Stack>

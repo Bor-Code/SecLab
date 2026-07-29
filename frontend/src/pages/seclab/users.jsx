@@ -23,26 +23,26 @@ import DialogTitle from '@mui/material/DialogTitle';
 
 import MainCard from 'components/MainCard';
 import { fetchUsers, createUser, updateUser, deleteUser,
-  resetUserPassword } from 'api/seclab';
+  resetUserŞifre } from 'api/seclab';
 
 export default function UsersPage() {
   const currentUserId = Number(localStorage.getItem('seclab-user-id') || 0);
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('user');
+  const [role, setRol] = useState('user');
   
   const [editingUserId, setEditingUserId] = useState(null);
   const [editingUsername, setEditingUsername] = useState('');
   const [editingEmail, setEditingEmail] = useState('');
-  const [editingRole, setEditingRole] = useState('user');
+  const [editingRol, setEditingRol] = useState('user');
 
   const [userSearch, setUserSearch] = useState('');
   
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const [deleteTargetUser, setDeleteTargetUser] = useState(null);
+  const [deleteTargetUser, setSilTargetUser] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -78,7 +78,7 @@ export default function UsersPage() {
       setUsers((prevUsers) => [...prevUsers, createdUser]);
       setUsername('');
       setEmail('');
-      setRole('user');
+      setRol('user');
       setUserSearch('');
       setPage(0);
       setMessage('User created successfully.');
@@ -93,7 +93,7 @@ export default function UsersPage() {
     setEditingUserId(user.id);
     setEditingUsername(user.username);
     setEditingEmail(user.email);
-    setEditingRole(user.role || 'user');
+    setEditingRol(user.role || 'user');
     setMessage(null);
     setErrorMessage(null);
   }
@@ -102,7 +102,7 @@ export default function UsersPage() {
     setEditingUserId(null);
     setEditingUsername('');
     setEditingEmail('');
-    setEditingRole('user');
+    setEditingRol('user');
   }
 
   async function handleUpdateUser(event) {
@@ -113,7 +113,7 @@ export default function UsersPage() {
       const updatedUser = await updateUser(editingUserId, {
         username: editingUsername,
         email: editingEmail,
-        role: editingRole,
+        role: editingRol,
       });
       setUsers((prevUsers) =>
         prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u))
@@ -125,27 +125,27 @@ export default function UsersPage() {
     }
   }
 
-  function openDeleteDialog(user) {
-    setDeleteTargetUser(user);
+  function openSilDialog(user) {
+    setSilTargetUser(user);
     setMessage(null);
     setErrorMessage(null);
   }
 
-  function closeDeleteDialog() {
-    setDeleteTargetUser(null);
+  function closeSilDialog() {
+    setSilTargetUser(null);
       setEditingUserId(null);
   }
 
 
 
-  async function handleResetUserPassword(user) {
+  async function handleResetUserŞifre(user) {
     if (!window.confirm(`Reset password for ${user.email}?`)) {
       return;
     }
 
     try {
       setErrorMessage(null);
-      const response = await resetUserPassword(user.id);
+      const response = await resetUserŞifre(user.id);
       setSuccessMessage(`Temporary password: ${response.temporary_password}`);
     } catch (error) {
       console.error('Failed to reset user password:', error);
@@ -153,7 +153,7 @@ export default function UsersPage() {
     }
   }
 
-  async function confirmDeleteUser() {
+  async function confirmSilUser() {
     if (!deleteTargetUser) return;
     
     setIsDeleting(true);
@@ -161,10 +161,10 @@ export default function UsersPage() {
       await deleteUser(deleteTargetUser.id);
       setUsers((prevUsers) => prevUsers.filter((u) => u.id !== deleteTargetUser.id));
       setMessage('User deleted successfully.');
-      closeDeleteDialog();
+      closeSilDialog();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
-      closeDeleteDialog();
+      closeSilDialog();
     } finally {
       setIsDeleting(false);
     }
@@ -232,9 +232,9 @@ export default function UsersPage() {
               <TextField
                 select
                 fullWidth
-                label="Role"
-                value={editingRole}
-                onChange={(e) => setEditingRole(e.target.value)}
+                label="Rol"
+                value={editingRol}
+                onChange={(e) => setEditingRol(e.target.value)}
                 required
               >
                 <MenuItem value="user">User</MenuItem>
@@ -257,7 +257,7 @@ export default function UsersPage() {
                   sx={{ height: '41px' }}
                   onClick={cancelEditingUser}
                 >
-                  Cancel
+                  İptal
                 </Button>
               </Stack>
             </Grid>
@@ -289,9 +289,9 @@ export default function UsersPage() {
               <TextField
                 select
                 fullWidth
-                label="Role"
+                label="Rol"
                 value={role}
-                onChange={(e) => setRole(e.target.value)}
+                onChange={(e) => setRol(e.target.value)}
                 required
               >
                 <MenuItem value="user">User</MenuItem>
@@ -315,7 +315,7 @@ export default function UsersPage() {
 
       <TextField
         fullWidth
-        label="Search users"
+        label="User ara"
         value={userSearch}
         onChange={(e) => {
           setUserSearch(e.target.value);
@@ -332,8 +332,8 @@ export default function UsersPage() {
               <TableCell>ID</TableCell>
               <TableCell>Username</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Role</TableCell>
-              <TableCell>Created At</TableCell>
+              <TableCell>Rol</TableCell>
+              <TableCell>Oluşturulma Tarihi</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -371,9 +371,9 @@ export default function UsersPage() {
                         size="small"
                         variant="outlined"
                         color="error"
-                        disabled={user.role === "admin"} onClick={() => openDeleteDialog(user)}
+                        disabled={user.role === "admin"} onClick={() => openSilDialog(user)}
                       >
-                        Delete
+                        Sil
                       </Button>
                     </Stack>
                   </TableCell>
@@ -393,19 +393,19 @@ export default function UsersPage() {
         />
       </TableContainer>
 
-      <Dialog open={deleteTargetUser !== null} onClose={closeDeleteDialog}>
-        <DialogTitle>Delete user</DialogTitle>
+      <Dialog open={deleteTargetUser !== null} onClose={closeSilDialog}>
+        <DialogTitle>Sil user</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Are you sure you want to delete this user? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDeleteDialog} color="primary" disabled={isDeleting}>
-            Cancel
+          <Button onClick={closeSilDialog} color="primary" disabled={isDeleting}>
+            İptal
           </Button>
-          <Button onClick={confirmDeleteUser} color="error" variant="contained" disabled={isDeleting}>
-            {isDeleting ? 'Deleting...' : 'Delete'}
+          <Button onClick={confirmSilUser} color="error" variant="contained" disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Sil'}
           </Button>
         </DialogActions>
       </Dialog>

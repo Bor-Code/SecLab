@@ -53,7 +53,7 @@ def validate_role(role: str) -> str:
     if normalized_role not in ALLOWED_ROLES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Role must be admin or user"
+            detail="Rol must be admin or user"
         )
     return normalized_role
 
@@ -66,7 +66,7 @@ def require_admin_user(authorization: str = Header(None)) -> dict:
 
     current_user = get_current_user(authorization)
     if current_user.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin yetkisi gerekli")
     return current_user
 
 @router.get("", response_model=list[UserRead])
@@ -101,7 +101,7 @@ def get_user(user_id: int):
             ).where(users_table.c.id == user_id)
             result = connection.execute(query).mappings().first()
             if result is None:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User bulunamadı")
             return dict(result)
     except HTTPException:
         raise
@@ -156,7 +156,7 @@ def update_user(user_id: int, payload: UserUpdate, admin: dict = Depends(require
             existing_user = connection.execute(existing_query).mappings().first()
 
             if existing_user is None:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User bulunamadı")
 
             if (
                 existing_user["role"] == "admin"
@@ -182,7 +182,7 @@ def update_user(user_id: int, payload: UserUpdate, admin: dict = Depends(require
             )
             result = connection.execute(update_query).mappings().first()
             if result is None:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User bulunamadı")
             return dict(result)
     except HTTPException:
         raise
@@ -205,7 +205,7 @@ def reset_user_password(user_id: int, current_user: dict = Depends(require_admin
             existing_user = connection.execute(existing_query).mappings().first()
 
             if not existing_user:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User bulunamadı")
 
             update_query = (
                 update(users_table)
@@ -242,7 +242,7 @@ def delete_user(user_id: int, admin: dict = Depends(require_admin_user)):
             existing_user = connection.execute(existing_query).mappings().first()
 
             if existing_user is None:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User bulunamadı")
 
             if existing_user["role"] == "admin" and count_admin_users(connection) <= 1:
                 raise HTTPException(

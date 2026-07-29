@@ -45,6 +45,8 @@ function a11yProps(index) {
   };
 }
 
+const getStoredAvatar = () => localStorage.getItem('seclab-user-avatar') || '';
+
 export default function Profile() {
   const theme = useTheme();
 
@@ -78,7 +80,7 @@ export default function Profile() {
 
         setUsername(currentUser.username || 'SecLab User');
         setEmail(currentUser.email || 'Signed in');
-        setRole(currentUser.role || 'user');
+        setRol(currentUser.role || 'user');
       })
       .catch(() => {
         // Header bilgisi kritik de?il; guard zaten yetkisiz oturumu login'e al?yor.
@@ -96,7 +98,7 @@ export default function Profile() {
     setOpen(false);
   };
 
-  const displayRole = role === 'admin' ? 'Admin' : 'User';
+  const displayRol = role === 'admin' ? 'Admin' : 'User';
 
   const handleLogout = () => {
     localStorage.clear();
@@ -125,7 +127,7 @@ export default function Profile() {
           aria-haspopup="true"
           onClick={handleToggle}
         >
-          <Avatar alt="profile user" src={avatar1} size="sm" sx={{ '&:hover': { outline: '1px solid', outlineColor: 'primary.main' } }} />
+          <Avatar alt="profile user" src={getStoredAvatar()} size="sm" sx={{ '&:hover': { outline: '1px solid', outlineColor: 'primary.main' } }} />
         </ButtonBase>
       </Tooltip>
       <Popper
@@ -154,7 +156,7 @@ export default function Profile() {
                   <CardContent sx={{ px: 2.5, pt: 3 }}>
                     <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
                       <Stack direction="row" sx={{ gap: 1.25, alignItems: 'center' }}>
-                        <Avatar alt="profile user" src={avatar1} sx={{ width: 32, height: 32 }} />
+                        <Avatar alt="profile user" src={getStoredAvatar()} sx={{ width: 32, height: 32 }} />
                         <Stack>
                           <Typography variant="h6">{username}</Typography>
                           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -223,4 +225,3 @@ export default function Profile() {
 }
 
 TabPanel.propTypes = { children: PropTypes.node, value: PropTypes.number, index: PropTypes.number, other: PropTypes.any };
-
