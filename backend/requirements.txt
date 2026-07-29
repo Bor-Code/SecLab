@@ -19,4 +19,5 @@ typing_extensions==4.16.0
 tzdata==2026.3
 uvicorn==0.51.0
 python-jose[cryptography]
-passlib[bcrypt]
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
