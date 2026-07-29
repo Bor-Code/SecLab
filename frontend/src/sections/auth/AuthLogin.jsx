@@ -49,13 +49,7 @@ export default function AuthLogin() {
         })
       });
 
-      let data = null;
-
-      try {
-        data = await response.json();
-      } catch {
-        data = null;
-      }
+      const data = await response.json().catch(() => null);
 
       if (!response.ok) {
         throw new Error(data?.detail || 'Invalid email or password.');
@@ -118,6 +112,11 @@ export default function AuthLogin() {
               fullWidth
               autoComplete="email"
             />
+            <FormHelperText>
+              <Link component={RouterLink} to="/forgot-password">
+                Forgot Password?
+              </Link>
+            </FormHelperText>
           </Stack>
         </Grid>
 
@@ -153,9 +152,6 @@ export default function AuthLogin() {
           <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained" color="primary">
             SecLab Login
           </Button>
-          <FormHelperText sx={{ mt: 1 }}>
-            Password reset will be connected after the production email flow is added.
-          </FormHelperText>
         </Grid>
       </Grid>
     </form>
