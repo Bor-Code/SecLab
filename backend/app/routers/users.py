@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import Table, Column, Integer, String, DateTime, MetaData, insert, select, update, delete
 from sqlalchemy.exc import SQLAlchemyError
 from app.database import engine
+from app.activity import record_activity
 
 router = APIRouter(
     prefix="/users",
@@ -209,6 +210,7 @@ def delete_user(user_id: int, admin: dict = Depends(require_admin_user)):
 
             delete_query = delete(users_table).where(users_table.c.id == user_id).returning(users_table.c.id)
             connection.execute(delete_query)
+            record_activity('users.delete', 'User deleted', f'User id {user_id} was deleted by admin.')
             return None
     except HTTPException:
         raise

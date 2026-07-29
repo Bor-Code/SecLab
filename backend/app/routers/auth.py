@@ -10,6 +10,7 @@ from sqlalchemy import insert, select, update
 from sqlalchemy.exc import SQLAlchemyError
 from jose import jwt, JWTError
 from app.database import engine
+from app.activity import record_activity
 from app.routers.users import users_table
 
 router = APIRouter(
