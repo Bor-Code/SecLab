@@ -88,6 +88,52 @@ export default function AuthLogin({ isDemo = false }) {
     }
   };
 
+  
+
+  const handleForgotPassword = async (email) => {
+    if (!email) {
+      setLoginError('Enter your email address first.');
+      return;
+    }
+
+    try {
+      setIsResettingPassword(true);
+      setLoginError(null);
+      setLoginSuccess(null);
+      const response = await forgotPassword(email);
+      setDemoResetToken(response.demo_reset_token || '');
+      setLoginSuccess(response.demo_reset_token ? 'Password reset token generated.' : response.message);
+    } catch (error) {
+      console.error('Forgot password failed:', error);
+      setLoginError(error.message || 'Password reset request failed.');
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetToken || !resetNewPassword) {
+      setLoginError('Reset token and new password are required.');
+      return;
+    }
+
+    try {
+      setIsResettingPassword(true);
+      setLoginError(null);
+      setLoginSuccess(null);
+      await resetPassword({ token: resetToken, new_password: resetNewPassword });
+      setLoginSuccess('Password reset successfully. You can log in with your new password.');
+      setResetToken('');
+      setResetNewPassword('');
+      setDemoResetToken('');
+    } catch (error) {
+      console.error('Reset password failed:', error);
+      setLoginError(error.message || 'Password reset failed.');
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
   return (
     <>
       {loginError && (
@@ -128,6 +174,16 @@ export default function AuthLogin({ isDemo = false }) {
                     error={Boolean(touched.email && errors.email)}
                   />
                 </Stack>
+                  <Button
+                    type="button"
+                    variant="text"
+                    size="small"
+                    sx={{ alignSelf: 'flex-start', px: 0 }}
+                    onClick={() => handleForgotPassword(values.email)}
+                    disabled={isResettingPassword}
+                  >
+                    Forgot password?
+                  </Button>
                 {touched.email && errors.email && (
                   <FormHelperText error id="standard-weight-helper-text-email-login">
                     {errors.email}

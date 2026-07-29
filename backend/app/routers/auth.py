@@ -29,6 +29,7 @@ users_table = Table(
     Column("email_verified", Integer, nullable=False, default=0),
     Column("email_verification_token", String(128), nullable=True),
     Column("must_change_password", Integer, nullable=False, default=0),
+    Column("password_reset_token", String(128), nullable=True),
     Column("created_at", DateTime, default=lambda: datetime.now(timezone.utc)),
 )
 
@@ -49,6 +50,15 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=1, max_length=128)
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(..., min_length=10, max_length=128)
+    new_password: str = Field(..., min_length=5, max_length=128)
 
 
 class EmailVerificationRequest(BaseModel):
@@ -92,6 +102,7 @@ def ensure_auth_columns(connection):
     connection.exec_driver_sql("ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified INTEGER NOT NULL DEFAULT 0")
     connection.exec_driver_sql("ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_token VARCHAR(128)")
     connection.exec_driver_sql("ALTER TABLE users ADD COLUMN IF NOT EXISTS must_change_password INTEGER NOT NULL DEFAULT 0")
+    connection.exec_driver_sql("ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(128)")
 
 
 def normalize_email(email: str) -> str:
@@ -366,5 +377,71 @@ def change_password(payload: PasswordChangeRequest, current_user: dict = Depends
         raise
     except SQLAlchemyError as error:
         print(f"Database error in change_password: {error}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+
+@router.post("/forgot-password")
+def forgot_password(payload: ForgotPasswordRequest):
+    norm_email = normalize_email(payload.email)
+
+    try:
+        with engine.begin() as connection:
+            ensure_auth_columns(connection)
+
+            query = select(users_table).where(users_table.c.email == norm_email)
+            user = connection.execute(query).mappings().first()
+
+            if not user:
+                return {"message": "If the email exists, a password reset token was generated."}
+
+            reset_token = secrets.token_urlsafe(32)
+
+            update_query = (
+                update(users_table)
+                .where(users_table.c.id == user["id"])
+                .values(password_reset_token=reset_token)
+            )
+            connection.execute(update_query)
+
+            record_activity("auth.forgot_password", "Password reset requested", f"{user['email']} requested password reset.")
+            return {
+                "message": "If the email exists, a password reset token was generated.",
+                "demo_reset_token": reset_token,
+            }
+    except SQLAlchemyError as error:
+        print(f"Database error in forgot_password: {error}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+
+
+@router.post("/reset-password")
+def reset_password(payload: ResetPasswordRequest):
+    validate_password_strength(payload.new_password)
+
+    try:
+        with engine.begin() as connection:
+            ensure_auth_columns(connection)
+
+            query = select(users_table).where(users_table.c.password_reset_token == payload.token)
+            user = connection.execute(query).mappings().first()
+
+            if not user:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Password reset token not found")
+
+            update_query = (
+                update(users_table)
+                .where(users_table.c.id == user["id"])
+                .values(
+                    password_hash=hash_password(payload.new_password),
+                    password_reset_token=None,
+                    must_change_password=0,
+                )
+            )
+            connection.execute(update_query)
+
+            record_activity("auth.reset_password", "Password reset completed", f"{user['email']} reset account password.")
+            return {"message": "Password reset successfully"}
+    except HTTPException:
+        raise
+    except SQLAlchemyError as error:
+        print(f"Database error in reset_password: {error}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
 
