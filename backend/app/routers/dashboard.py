@@ -110,7 +110,7 @@ def get_user_workspace(current_user: dict = Depends(require_signed_in_user)):
                 rows.append({
                     "id": f"topic-{latest_topic['id']}",
                     "type": "topic",
-                    "title": "Latest topic",
+                    "title": "Son konu",
                     "description": latest_topic["name"],
                     "created_at": latest_topic["created_at"],
                     "read": False,
@@ -130,7 +130,7 @@ def get_user_workspace(current_user: dict = Depends(require_signed_in_user)):
                 rows.append({
                     "id": f"resource-{latest_resource['id']}",
                     "type": "resource",
-                    "title": "Latest resource",
+                    "title": "Son kaynak",
                     "description": latest_resource["title"],
                     "created_at": latest_resource["created_at"],
                     "read": False,

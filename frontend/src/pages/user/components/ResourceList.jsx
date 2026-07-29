@@ -24,9 +24,9 @@ export default function ResourceList({
   setEditResourceType,
   setEditResourceNotes,
   handleStartEditResource,
-  handleCancelEditResource,
+  handleİptalEditResource,
   handleUpdateResource,
-  handleDeleteResource
+  handleSilResource
 }) {
   const [search, setSearch] = useState('');
 
@@ -44,7 +44,7 @@ export default function ResourceList({
     <MainCard id="resources" title="Saved Resources" sx={{ scrollMarginTop: 96 }}>
       <Stack spacing={2}>
         <TextField
-          label="Search resources"
+          label="Kaynak ara"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           fullWidth
@@ -75,8 +75,8 @@ export default function ResourceList({
                     </TextField>
                     <TextField label="Notes" value={editResourceNotes} onChange={(event) => setEditResourceNotes(event.target.value)} fullWidth multiline minRows={2} />
                     <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
-                      <Button variant="outlined" onClick={handleCancelEditResource} disabled={isSaving}>
-                        Cancel
+                      <Button variant="outlined" onClick={handleİptalEditResource} disabled={isSaving}>
+                        İptal
                       </Button>
                       <Button variant="contained" type="submit" disabled={isSaving}>
                         Save
@@ -102,8 +102,8 @@ export default function ResourceList({
                       <Button variant="outlined" size="small" sx={{ minWidth: 72 }} onClick={() => handleStartEditResource(resource)} disabled={isSaving}>
                         Edit
                       </Button>
-                      <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleDeleteResource(resource.id)} disabled={isSaving}>
-                        Delete
+                      <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleSilResource(resource.id)} disabled={isSaving}>
+                        Sil
                       </Button>
                     </Stack>
                   </Stack>
@@ -130,7 +130,7 @@ ResourceList.propTypes = {
   setEditResourceType: PropTypes.func.isRequired,
   setEditResourceNotes: PropTypes.func.isRequired,
   handleStartEditResource: PropTypes.func.isRequired,
-  handleCancelEditResource: PropTypes.func.isRequired,
+  handleİptalEditResource: PropTypes.func.isRequired,
   handleUpdateResource: PropTypes.func.isRequired,
-  handleDeleteResource: PropTypes.func.isRequired
+  handleSilResource: PropTypes.func.isRequired
 };

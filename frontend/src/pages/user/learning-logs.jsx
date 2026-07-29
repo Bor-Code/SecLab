@@ -9,7 +9,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000
 
 export default function UserLearningLogsPage() {
   const [learningLogs, setLearningLogs] = useState([]);
-  const [topics, setTopics] = useState([]);
+  const [topics, setKonular] = useState([]);
   const [error, setError] = useState('');
 
   async function loadData() {
@@ -26,15 +26,15 @@ export default function UserLearningLogsPage() {
       const topicsData = await topicsResponse.json().catch(() => []);
 
       if (!logsResponse.ok) {
-        throw new Error(logsData?.detail || 'Learning logs could not be loaded.');
+        throw new Error(logsData?.detail || 'LearningLogs could not be loaded.');
       }
 
       setLearningLogs(Array.isArray(logsData) ? logsData : []);
-      setTopics(Array.isArray(topicsData) ? topicsData : []);
+      setKonular(Array.isArray(topicsData) ? topicsData : []);
     } catch (loadError) {
-      setError(loadError.message || 'Learning logs could not be loaded.');
+      setError(loadError.message || 'LearningLogs could not be loaded.');
       setLearningLogs([]);
-      setTopics([]);
+      setKonular([]);
     }
   }
 

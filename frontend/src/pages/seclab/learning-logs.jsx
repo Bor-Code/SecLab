@@ -29,7 +29,7 @@ import {
   updateLearningLog,
   deleteLearningLog,
   fetchUsers,
-  fetchTopics
+  fetchKonular
 } from 'api/seclab';
 
 // ==============================|| LEARNING LOGS PAGE ||============================== //
@@ -37,7 +37,7 @@ import {
 export default function LearningLogsPage() {
   const [logs, setLogs] = useState([]);
   const [users, setUsers] = useState([]);
-  const [topics, setTopics] = useState([]);
+  const [topics, setKonular] = useState([]);
 
   // Create form state
   const [userId, setUserId] = useState('');
@@ -50,8 +50,8 @@ export default function LearningLogsPage() {
   const [editingTitle, setEditingTitle] = useState('');
   const [editingNotes, setEditingNotes] = useState('');
 
-  // Delete dialog state
-  const [deleteTargetLog, setDeleteTargetLog] = useState(null);
+  // Sil dialog state
+  const [deleteTargetLog, setSilTargetLog] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Search state
@@ -66,13 +66,13 @@ export default function LearningLogsPage() {
   async function loadData() {
     setIsLoading(true);
     try {
-      const [fetchedUsers, fetchedTopics, fetchedLogs] = await Promise.all([
+      const [fetchedUsers, fetchedKonular, fetchedLogs] = await Promise.all([
         fetchUsers(),
-        fetchTopics(),
+        fetchKonular(),
         fetchLearningLogs()
       ]);
       setUsers(fetchedUsers);
-      setTopics(fetchedTopics);
+      setKonular(fetchedKonular);
       setLogs(fetchedLogs);
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -144,17 +144,17 @@ export default function LearningLogsPage() {
     }
   }
 
-  function openDeleteDialog(log) {
-    setDeleteTargetLog(log);
+  function openSilDialog(log) {
+    setSilTargetLog(log);
     setMessage(null);
     setErrorMessage(null);
   }
 
-  function closeDeleteDialog() {
-    setDeleteTargetLog(null);
+  function closeSilDialog() {
+    setSilTargetLog(null);
   }
 
-  async function confirmDeleteLog() {
+  async function confirmSilLog() {
     if (!deleteTargetLog) return;
 
     setIsDeleting(true);
@@ -162,10 +162,10 @@ export default function LearningLogsPage() {
       await deleteLearningLog(deleteTargetLog.id);
       setLogs((prevLogs) => prevLogs.filter((log) => log.id !== deleteTargetLog.id));
       setMessage('Learning log deleted successfully.');
-      closeDeleteDialog();
+      closeSilDialog();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
-      closeDeleteDialog();
+      closeSilDialog();
     } finally {
       setIsDeleting(false);
     }
@@ -192,7 +192,7 @@ export default function LearningLogsPage() {
   });
 
   return (
-    <MainCard title="Learning Logs">
+    <MainCard title="LearningLogs">
       <Typography variant="body2" sx={{ mb: 3 }}>
         Record and review your study notes. Select a user and topic, then add your log entry.
       </Typography>
@@ -237,7 +237,7 @@ export default function LearningLogsPage() {
                   Save
                 </Button>
                 <Button variant="outlined" fullWidth sx={{ height: '41px' }} onClick={cancelEditingLog}>
-                  Cancel
+                  İptal
                 </Button>
               </Stack>
             </Grid>
@@ -330,7 +330,7 @@ export default function LearningLogsPage() {
               <TableCell>Topic</TableCell>
               <TableCell>Title</TableCell>
               <TableCell>Notes</TableCell>
-              <TableCell>Created At</TableCell>
+              <TableCell>Oluşturulma Tarihi</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -361,8 +361,8 @@ export default function LearningLogsPage() {
                       <Button size="small" variant="outlined" onClick={() => startEditingLog(log)}>
                         Edit
                       </Button>
-                      <Button size="small" variant="outlined" color="error" onClick={() => openDeleteDialog(log)}>
-                        Delete
+                      <Button size="small" variant="outlined" color="error" onClick={() => openSilDialog(log)}>
+                        Sil
                       </Button>
                     </Stack>
                   </TableCell>
@@ -373,19 +373,19 @@ export default function LearningLogsPage() {
         </Table>
       </TableContainer>
 
-      <Dialog open={deleteTargetLog !== null} onClose={closeDeleteDialog}>
-        <DialogTitle>Delete learning log</DialogTitle>
+      <Dialog open={deleteTargetLog !== null} onClose={closeSilDialog}>
+        <DialogTitle>Sil learning log</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Are you sure you want to delete this learning log? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDeleteDialog} color="primary" disabled={isDeleting}>
-            Cancel
+          <Button onClick={closeSilDialog} color="primary" disabled={isDeleting}>
+            İptal
           </Button>
-          <Button onClick={confirmDeleteLog} color="error" variant="contained" disabled={isDeleting}>
-            {isDeleting ? 'Deleting...' : 'Delete'}
+          <Button onClick={confirmSilLog} color="error" variant="contained" disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Sil'}
           </Button>
         </DialogActions>
       </Dialog>

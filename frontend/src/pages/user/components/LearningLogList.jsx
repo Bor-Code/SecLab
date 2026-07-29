@@ -17,9 +17,9 @@ export default function LearningLogList({
   setEditLogTitle,
   setEditLogNotes,
   handleStartEditLearningLog,
-  handleCancelEditLearningLog,
+  handleİptalEditLearningLog,
   handleUpdateLearningLog,
-  handleDeleteLearningLog
+  handleSilLearningLog
 }) {
   const [search, setSearch] = useState('');
 
@@ -34,7 +34,7 @@ export default function LearningLogList({
   });
 
   return (
-    <MainCard id="learning-logs" title="Learning Logs" sx={{ scrollMarginTop: 96 }}>
+    <MainCard id="learning-logs" title="LearningLogs" sx={{ scrollMarginTop: 96 }}>
       <Stack spacing={2}>
         <TextField
           label="Search learning logs"
@@ -60,8 +60,8 @@ export default function LearningLogList({
                     <TextField label="Title" value={editLogTitle} onChange={(event) => setEditLogTitle(event.target.value)} fullWidth />
                     <TextField label="Notes" value={editLogNotes} onChange={(event) => setEditLogNotes(event.target.value)} fullWidth multiline minRows={2} />
                     <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
-                      <Button variant="outlined" onClick={handleCancelEditLearningLog} disabled={isSaving}>
-                        Cancel
+                      <Button variant="outlined" onClick={handleİptalEditLearningLog} disabled={isSaving}>
+                        İptal
                       </Button>
                       <Button variant="contained" type="submit" disabled={isSaving}>
                         Save
@@ -84,8 +84,8 @@ export default function LearningLogList({
                       <Button variant="outlined" size="small" sx={{ minWidth: 72 }} onClick={() => handleStartEditLearningLog(log)} disabled={isSaving}>
                         Edit
                       </Button>
-                      <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleDeleteLearningLog(log.id)} disabled={isSaving}>
-                        Delete
+                      <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleSilLearningLog(log.id)} disabled={isSaving}>
+                        Sil
                       </Button>
                     </Stack>
                   </Stack>
@@ -108,7 +108,7 @@ LearningLogList.propTypes = {
   setEditLogTitle: PropTypes.func.isRequired,
   setEditLogNotes: PropTypes.func.isRequired,
   handleStartEditLearningLog: PropTypes.func.isRequired,
-  handleCancelEditLearningLog: PropTypes.func.isRequired,
+  handleİptalEditLearningLog: PropTypes.func.isRequired,
   handleUpdateLearningLog: PropTypes.func.isRequired,
-  handleDeleteLearningLog: PropTypes.func.isRequired
+  handleSilLearningLog: PropTypes.func.isRequired
 };

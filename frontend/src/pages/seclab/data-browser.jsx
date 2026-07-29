@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -14,12 +14,12 @@ import Alert from '@mui/material/Alert';
 import Link from '@mui/material/Link';
 
 import MainCard from 'components/MainCard';
-import { fetchUsers, fetchTopics, fetchLearningLogs, fetchResources } from 'api/seclab';
+import { fetchUsers, fetchKonular, fetchLearningLogs, fetchResources } from 'api/seclab';
 
 export default function DataBrowserPage() {
   const [tabIndex, setTabIndex] = useState(0);
   const [users, setUsers] = useState([]);
-  const [topics, setTopics] = useState([]);
+  const [topics, setKonular] = useState([]);
   const [logs, setLogs] = useState([]);
   const [resources, setResources] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,14 +28,14 @@ export default function DataBrowserPage() {
   async function loadData() {
     setIsLoading(true);
     try {
-      const [fUsers, fTopics, fLogs, fResources] = await Promise.all([
+      const [fUsers, fKonular, fLogs, fResources] = await Promise.all([
         fetchUsers(),
-        fetchTopics(),
+        fetchKonular(),
         fetchLearningLogs(),
         fetchResources()
       ]);
       setUsers(fUsers);
-      setTopics(fTopics);
+      setKonular(fKonular);
       setLogs(fLogs);
       setResources(fResources);
     } catch (error) {
@@ -69,8 +69,8 @@ export default function DataBrowserPage() {
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={tabIndex} onChange={handleTabChange} aria-label="data browser tables">
           <Tab label={`Users (${users.length})`} />
-          <Tab label={`Topics (${topics.length})`} />
-          <Tab label={`Learning Logs (${logs.length})`} />
+          <Tab label={`Konular (${topics.length})`} />
+          <Tab label={`LearningLogs (${logs.length})`} />
           <Tab label={`Resources (${resources.length})`} />
         </Tabs>
       </Box>
@@ -84,8 +84,8 @@ export default function DataBrowserPage() {
                 <TableCell>ID</TableCell>
                 <TableCell>Username</TableCell>
                 <TableCell>Email</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Created At</TableCell>
+                <TableCell>Rol</TableCell>
+                <TableCell>Oluşturulma Tarihi</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -113,7 +113,7 @@ export default function DataBrowserPage() {
         </TableContainer>
       )}
 
-      {/* Topics Tab */}
+      {/* Konular Tab */}
       {tabIndex === 1 && (
         <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
           <Table>
@@ -123,7 +123,7 @@ export default function DataBrowserPage() {
                 <TableCell>User ID</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Description</TableCell>
-                <TableCell>Created At</TableCell>
+                <TableCell>Oluşturulma Tarihi</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -151,7 +151,7 @@ export default function DataBrowserPage() {
         </TableContainer>
       )}
 
-      {/* Learning Logs Tab */}
+      {/* LearningLogs Tab */}
       {tabIndex === 2 && (
         <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
           <Table>
@@ -162,7 +162,7 @@ export default function DataBrowserPage() {
                 <TableCell>Topic ID</TableCell>
                 <TableCell>Title</TableCell>
                 <TableCell>Study Date</TableCell>
-                <TableCell>Created At</TableCell>
+                <TableCell>Oluşturulma Tarihi</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -203,7 +203,7 @@ export default function DataBrowserPage() {
                 <TableCell>Title</TableCell>
                 <TableCell>Type</TableCell>
                 <TableCell>URL</TableCell>
-                <TableCell>Created At</TableCell>
+                <TableCell>Oluşturulma Tarihi</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

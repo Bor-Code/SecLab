@@ -112,7 +112,7 @@ def validate_email(email: str):
 
 def validate_password_strength(password: str):
     if len(password) < 5:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password must be at least 5 characters")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Şifre must be at least 5 characters")
 
 
 def hash_password(password: str):
@@ -152,13 +152,13 @@ def create_access_response(user: dict):
 
 def get_current_user(credentials: HTTPAuthorizationCredentials | None = Depends(security)) -> dict:
     if credentials is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Oturum açılmamış")
 
     try:
         payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         user_id = int(payload.get("sub"))
     except (JWTError, TypeError, ValueError):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token geçersiz veya süresi dolmuş")
 
     try:
         with engine.begin() as connection:
@@ -168,14 +168,14 @@ def get_current_user(credentials: HTTPAuthorizationCredentials | None = Depends(
             ).mappings().first()
 
             if not user:
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User bulunamadı")
 
             return dict(user)
     except HTTPException:
         raise
     except SQLAlchemyError as error:
         print(f"Database error in get_current_user: {error}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Kimlik doğrulama servisi kullanılamıyor")
 
 
 def require_signed_in_user(current_user: dict = Depends(get_current_user)) -> dict:
@@ -184,7 +184,7 @@ def require_signed_in_user(current_user: dict = Depends(get_current_user)) -> di
 
 def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
     if current_user.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin yetkisi gerekli")
 
     return current_user
 
@@ -237,7 +237,7 @@ def register(payload: RegisterRequest):
         raise
     except SQLAlchemyError as error:
         print(f"Database error in register: {error}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Kimlik doğrulama servisi kullanılamıyor")
 
 
 @router.post("/login", response_model=AuthResponse)
@@ -253,7 +253,7 @@ def login(payload: LoginRequest):
             ).mappings().first()
 
             if not user or not verify_password(payload.password, user["password_hash"]):
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email veya şifre hatalı")
 
             record_activity("auth.login", "User signed in", f"{user['email']} signed in.")
             return create_access_response(dict(user))
@@ -261,7 +261,7 @@ def login(payload: LoginRequest):
         raise
     except SQLAlchemyError as error:
         print(f"Database error in login: {error}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Kimlik doğrulama servisi kullanılamıyor")
 
 
 @router.get("/me", response_model=UserRead)
@@ -313,7 +313,7 @@ def update_current_user(payload: ProfileUpdate, current_user: dict = Depends(req
             ).mappings().first()
 
             if not updated_user:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User bulunamadı")
 
             record_activity("profile.update", "Profile updated", f"{updated_user['email']} updated profile details.")
             return dict(updated_user)
@@ -321,7 +321,7 @@ def update_current_user(payload: ProfileUpdate, current_user: dict = Depends(req
         raise
     except SQLAlchemyError as error:
         print(f"Database error in update_current_user: {error}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Kimlik doğrulama servisi kullanılamıyor")
 
 
 @router.post("/verify-email")
@@ -349,7 +349,7 @@ def verify_email(payload: EmailVerificationRequest):
         raise
     except SQLAlchemyError as error:
         print(f"Database error in verify_email: {error}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Kimlik doğrulama servisi kullanılamıyor")
 
 
 @router.post("/resend-verification")
@@ -366,7 +366,7 @@ def resend_verification(payload: ForgotPasswordRequest):
             ).mappings().first()
 
             if not user:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User bulunamadı")
 
             connection.execute(
                 update(users_table)
@@ -379,7 +379,7 @@ def resend_verification(payload: ForgotPasswordRequest):
         raise
     except SQLAlchemyError as error:
         print(f"Database error in resend_verification: {error}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Kimlik doğrulama servisi kullanılamıyor")
 
 
 @router.post("/forgot-password")
@@ -397,19 +397,19 @@ def forgot_password(payload: ForgotPasswordRequest):
             ).mappings().first()
 
             if not user:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User bulunamadı")
 
             connection.execute(
                 text("UPDATE users SET password_reset_token = :token WHERE id = :user_id"),
                 {"token": reset_token, "user_id": user["id"]},
             )
 
-            return {"message": "Password reset token created", "demo_reset_token": reset_token}
+            return {"message": "Şifre reset token created", "demo_reset_token": reset_token}
     except HTTPException:
         raise
     except SQLAlchemyError as error:
         print(f"Database error in forgot_password: {error}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Kimlik doğrulama servisi kullanılamıyor")
 
 @router.post("/reset-password")
 def reset_password(payload: ResetPasswordRequest):
@@ -432,9 +432,9 @@ def reset_password(payload: ResetPasswordRequest):
                 {"password_hash": hash_password(payload.password), "user_id": user["id"]},
             )
 
-            return {"message": "Password reset successfully"}
+            return {"message": "Şifre reset successfully"}
     except HTTPException:
         raise
     except SQLAlchemyError as error:
         print(f"Database error in reset_password: {error}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Kimlik doğrulama servisi kullanılamıyor")

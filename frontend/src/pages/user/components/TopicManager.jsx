@@ -18,13 +18,13 @@ export default function TopicManager({
   setEditTopicDescription,
   isSaving,
   handleStartEditTopic,
-  handleCancelEditTopic,
+  handleİptalEditTopic,
   handleUpdateTopic,
-  handleDeleteTopic
+  handleSilTopic
 }) {
   const [search, setSearch] = useState('');
 
-  const filteredTopics = topics.filter((topic) => {
+  const filteredKonular = topics.filter((topic) => {
     const query = search.trim().toLowerCase();
 
     if (!query) return true;
@@ -35,10 +35,10 @@ export default function TopicManager({
   });
 
   return (
-    <MainCard id="topics" title="My Topics" sx={{ scrollMarginTop: 96 }}>
+    <MainCard id="topics" title="My Konular" sx={{ scrollMarginTop: 96 }}>
       <Stack spacing={2}>
         <TextField
-          label="Search topics"
+          label="Konu ara"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           fullWidth
@@ -48,13 +48,13 @@ export default function TopicManager({
           <Typography variant="body1" color="text.secondary">
             No topics yet. Create your first topic above to start organizing your learning journey.
           </Typography>
-        ) : filteredTopics.length === 0 ? (
+        ) : filteredKonular.length === 0 ? (
           <Typography variant="body1" color="text.secondary">
             No topics match your search.
           </Typography>
         ) : (
           <Stack spacing={2}>
-            {filteredTopics.map((topic) => (
+            {filteredKonular.map((topic) => (
               <Box key={topic.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                 {editingTopicId === topic.id ? (
                   <Stack component="form" spacing={2} onSubmit={(event) => handleUpdateTopic(event, topic.id)}>
@@ -75,8 +75,8 @@ export default function TopicManager({
                       disabled={isSaving}
                     />
                     <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
-                      <Button variant="outlined" size="small" onClick={handleCancelEditTopic} disabled={isSaving}>
-                        Cancel
+                      <Button variant="outlined" size="small" onClick={handleİptalEditTopic} disabled={isSaving}>
+                        İptal
                       </Button>
                       <Button type="submit" variant="contained" size="small" disabled={isSaving}>
                         Save
@@ -99,8 +99,8 @@ export default function TopicManager({
                       <Button variant="outlined" size="small" sx={{ minWidth: 72 }} onClick={() => handleStartEditTopic(topic)} disabled={isSaving}>
                         Edit
                       </Button>
-                      <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleDeleteTopic(topic.id)} disabled={isSaving}>
-                        Delete
+                      <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleSilTopic(topic.id)} disabled={isSaving}>
+                        Sil
                       </Button>
                     </Stack>
                   </Stack>
@@ -123,7 +123,7 @@ TopicManager.propTypes = {
   setEditTopicDescription: PropTypes.func.isRequired,
   isSaving: PropTypes.bool.isRequired,
   handleStartEditTopic: PropTypes.func.isRequired,
-  handleCancelEditTopic: PropTypes.func.isRequired,
+  handleİptalEditTopic: PropTypes.func.isRequired,
   handleUpdateTopic: PropTypes.func.isRequired,
-  handleDeleteTopic: PropTypes.func.isRequired
+  handleSilTopic: PropTypes.func.isRequired
 };

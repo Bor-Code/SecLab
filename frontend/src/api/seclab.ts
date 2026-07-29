@@ -125,7 +125,7 @@ export type LoginPayload = {
   password: string;
 };
 
-export type ChangePasswordPayload = {
+export type ChangeŞifrePayload = {
   current_password: string;
   new_password: string;
 };
@@ -251,7 +251,7 @@ export function loginUser(payload: LoginPayload) {
   });
 }
 
-export function changePassword(payload: ChangePasswordPayload) {
+export function changeŞifre(payload: ChangeŞifrePayload) {
   return request<{ message: string }>('/auth/password', {
     method: 'PATCH',
     body: JSON.stringify(payload),
@@ -293,7 +293,7 @@ export async function deleteUser(userId: number) {
   });
 }
 
-export function fetchTopics(params?: TopicFilters) {
+export function fetchKonular(params?: TopicFilters) {
   const queryString = buildQueryString(params);
   return request<Topic[]>(`/topics${queryString}`);
 }
@@ -402,7 +402,7 @@ export function resetPassword(payload: { token: string; new_password: string }) 
 }
 
 
-export function resetUserPassword(userId: number) {
+export function resetUserŞifre(userId: number) {
   return request(`/users/${userId}/reset-password`, {
     method: 'POST'
   });

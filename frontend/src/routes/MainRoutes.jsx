@@ -1,4 +1,4 @@
-﻿import { lazy } from 'react';
+import { lazy } from 'react';
 
 import Loadable from 'components/Loadable';
 import DashboardLayout from 'layout/Dashboard';
@@ -7,7 +7,7 @@ import AdminGuard from './AdminGuard';
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard/default')));
 
 const UsersPage = Loadable(lazy(() => import('pages/seclab/users')));
-const TopicsPage = Loadable(lazy(() => import('pages/seclab/topics')));
+const KonularPage = Loadable(lazy(() => import('pages/seclab/topics')));
 const LearningLogsPage = Loadable(lazy(() => import('pages/seclab/learning-logs')));
 const ResourcesPage = Loadable(lazy(() => import('pages/seclab/resources')));
 const SystemHealthPage = Loadable(lazy(() => import('pages/seclab/system-health')));
@@ -40,7 +40,7 @@ const MainRoutes = {
         },
         {
           path: 'topics',
-          element: <TopicsPage />
+          element: <KonularPage />
         },
         {
           path: 'learning-logs',

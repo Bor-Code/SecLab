@@ -10,7 +10,7 @@ from app.routers.auth import require_signed_in_user
 
 router = APIRouter(
     prefix="/topics",
-    tags=["Topics"]
+    tags=["Konular"]
 )
 
 metadata = MetaData()

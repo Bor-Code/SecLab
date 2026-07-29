@@ -11,7 +11,7 @@ export default function Footer() {
         {workspaceLabel}
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        Demo environment
+        Demo ortamı
       </Typography>
     </Stack>
   );

@@ -211,9 +211,9 @@ export default function UserDashboardPage() {
             <Stack spacing={1}>
               <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
                 <Chip label="SecLab Workspace" color="primary" variant="outlined" />
-                <Chip label={status === 'live' ? 'Real DB data' : status === 'cached' ? 'Cached DB data' : status === 'loading' ? 'Loading data' : 'Demo fallback'} />
+                <Chip label={status === 'live' ? 'Gerçek DB verisi' : status === 'cached' ? 'Cached DB data' : status === 'loading' ? 'Loading data' : 'Demo fallback'} />
               </Stack>
-              <Typography variant="h2">Welcome, {userName}</Typography>
+              <Typography variant="h2">Hoş geldin, {userName}</Typography>
               <Typography color="text.secondary">{userEmail}</Typography>
               <Typography fontWeight={700}>Your workspace is connected to live learning records.</Typography>
             </Stack>
@@ -226,13 +226,13 @@ export default function UserDashboardPage() {
 
           <Box className="seclab-quick-actions">
             <Button component={RouterLink} to="/user/topics" variant="contained">
-              New Topic
+              Konu Oluştur
             </Button>
             <Button component={RouterLink} to="/user/learning-logs" variant="outlined">
-              New Log
+              Register Ekle
             </Button>
             <Button component={RouterLink} to="/user/resources" variant="outlined">
-              Add Resource
+              Kaynak Ekle
             </Button>
             <Button component={RouterLink} to="/user/profile" variant="outlined">
               Profile
@@ -242,19 +242,19 @@ export default function UserDashboardPage() {
       </Paper>
 
       <Box className="seclab-metric-grid">
-        <MetricCard label="Topics" value={workspace.counts.topics} helper="Created subjects" progress={workspace.counts.topics * 25} />
-        <MetricCard label="Learning logs" value={workspace.counts.learning_logs} helper="Study records" progress={workspace.counts.learning_logs * 25} />
-        <MetricCard label="Resources" value={workspace.counts.resources} helper="Saved references" progress={workspace.counts.resources * 25} />
-        <MetricCard label="Progress score" value={`${workspace.progress_score}%`} helper="Workspace coverage" progress={workspace.progress_score} />
+        <MetricCard label="Konular" value={workspace.counts.topics} helper="Oluşturulan konular" progress={workspace.counts.topics * 25} />
+        <MetricCard label="LearningLogs" value={workspace.counts.learning_logs} helper="Çalışma kayıtları" progress={workspace.counts.learning_logs * 25} />
+        <MetricCard label="Resources" value={workspace.counts.resources} helper="Kaydedilen kaynaklar" progress={workspace.counts.resources * 25} />
+        <MetricCard label="İlerleme puanı" value={`${workspace.progress_score}%`} helper="Workspace coverage" progress={workspace.progress_score} />
       </Box>
 
       <Box className="seclab-two-col">
         <Paper className="seclab-panel">
-          <Typography variant="h4">Today / This Week</Typography>
+          <Typography variant="h4">Bugün / Bu Hafta</Typography>
           <Divider sx={{ my: 2 }} />
-          <DetailRow label="Total records" value={totalRecords} />
-          <DetailRow label="Active study days" value={activeDays} />
-          <DetailRow label="Last study date" value={workspace.latest_learning_log?.study_date} />
+          <DetailRow label="Toplam kayıt" value={totalRecords} />
+          <DetailRow label="Aktif çalışma günleri" value={activeDays} />
+          <DetailRow label="Son çalışma tarihi" value={workspace.latest_learning_log?.study_date} />
           <DetailRow label="Latest focus" value={workspace.latest_topic?.name} />
         </Paper>
 
@@ -274,13 +274,13 @@ export default function UserDashboardPage() {
 
       <Box className="seclab-module-grid">
         <ModuleCard
-          title="My Progress"
+          title="MyProgress"
           description="Learning momentum, completion score, and current workspace health."
           path="/user/progress"
           meta={`${workspace.progress_score}%`}
         />
         <ModuleCard
-          title="Study Plan"
+          title="StudyPlan"
           description="Use your latest topic and log data to keep the next study step clear."
           path="/user/study-plan"
           meta="Plan"
@@ -325,14 +325,14 @@ export default function UserDashboardPage() {
         </Paper>
 
         <Paper className="seclab-panel">
-          <Typography variant="h4">Latest Records</Typography>
+          <Typography variant="h4">Son Registerlar</Typography>
           <Divider sx={{ my: 2 }} />
-          <DetailRow label="Latest topic" value={workspace.latest_topic?.name} />
+          <DetailRow label="Son konu" value={workspace.latest_topic?.name} />
           <DetailRow label="Topic description" value={workspace.latest_topic?.description} />
-          <DetailRow label="Latest log" value={workspace.latest_learning_log?.title} />
-          <DetailRow label="Latest resource" value={workspace.latest_resource?.title} />
+          <DetailRow label="Son kayıt" value={workspace.latest_learning_log?.title} />
+          <DetailRow label="Son kaynak" value={workspace.latest_resource?.title} />
           <Button sx={{ mt: 2 }} variant="contained" onClick={loadData}>
-            Refresh Data
+            Veriyi Yenile
           </Button>
         </Paper>
       </Box>

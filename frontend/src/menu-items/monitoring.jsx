@@ -1,4 +1,4 @@
-﻿// assets
+// assets
 import { HeartOutlined, HistoryOutlined } from '@ant-design/icons';
 
 // icons

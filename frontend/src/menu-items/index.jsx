@@ -10,7 +10,7 @@ const userWorkspace = {
   children: [
     {
       id: 'user-workspace',
-      title: 'My Workspace',
+      title: 'MyWorkspace',
       type: 'item',
       url: '/user',
       icon: DashboardOutlined,
@@ -18,7 +18,7 @@ const userWorkspace = {
     },
     {
       id: 'user-topics',
-      title: 'Topics',
+      title: 'Konular',
       type: 'item',
       url: '/user/topics',
       icon: BookOutlined,
@@ -26,7 +26,7 @@ const userWorkspace = {
     },
     {
       id: 'user-learning-logs',
-      title: 'Learning Logs',
+      title: 'LearningLogs',
       type: 'item',
       url: '/user/learning-logs',
       icon: ReadOutlined,
@@ -43,7 +43,7 @@ const userWorkspace = {
     
         {
           id: 'user-progress',
-          title: 'My Progress',
+          title: 'MyProgress',
           type: 'item',
           url: '/user/progress',
           icon: BarChartOutlined
@@ -51,7 +51,7 @@ const userWorkspace = {
 
         {
           id: 'user-study-plan',
-          title: 'Study Plan',
+          title: 'StudyPlan',
           type: 'item',
           url: '/user/study-plan',
           icon: CalendarOutlined
@@ -74,7 +74,7 @@ const userWorkspace = {
         },
 {
       id: 'user-profile',
-      title: 'Profilim',
+      title: 'Profile',
       type: 'item',
       url: '/user/profile',
       icon: UserOutlined,

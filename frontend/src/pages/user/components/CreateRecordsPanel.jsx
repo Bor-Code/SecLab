@@ -40,7 +40,7 @@ export default function CreateRecordsPanel({
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 12 }} sx={{ display: activeSection === 'topics' ? 'block' : 'none' }}>
-        <MainCard title="New Topic">
+        <MainCard title="Yeni Konu">
           <Stack component="form" spacing={2} onSubmit={handleCreateTopic}>
             <TextField
               label="Topic Name"
@@ -59,7 +59,7 @@ export default function CreateRecordsPanel({
               disabled={isSaving}
             />
             <Button type="submit" variant="contained" size="large" sx={{ py: 1.2, fontWeight: 700, borderRadius: 1.5 }} disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Create Topic'}
+              {isSaving ? 'Saving...' : 'Konu Oluştur'}
             </Button>
           </Stack>
         </MainCard>
