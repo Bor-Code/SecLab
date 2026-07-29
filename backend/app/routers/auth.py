@@ -1,241 +1,301 @@
 import os
-import hashlib
-import hmac
-import secrets
 import re
-from datetime import datetime, timedelta
-from fastapi import APIRouter, HTTPException, status, Depends, Header
-from pydantic import BaseModel, Field
-from sqlalchemy import insert, select, update
-from sqlalchemy.exc import SQLAlchemyError
-from jose import jwt, JWTError
-from app.database import engine
-from app.activity import record_activity
-from app.routers.users import users_table
+import secrets
+from datetime import datetime, timedelta, timezone
 
-router = APIRouter(
-    prefix="/auth",
-    tags=["Auth"]
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from pydantic import BaseModel, EmailStr, Field
+from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, insert, select, update
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.activity import record_activity
+from app.database import engine
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+metadata = MetaData()
+
+users_table = Table(
+    "users",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("username", String(50), nullable=False),
+    Column("email", String(255), nullable=False, unique=True),
+    Column("password_hash", String(255), nullable=True),
+    Column("role", String(20), nullable=False, default="user"),
+    Column("email_verified", Integer, nullable=False, default=0),
+    Column("email_verification_token", String(128), nullable=True),
+    Column("created_at", DateTime, default=lambda: datetime.now(timezone.utc)),
 )
 
-JWT_SECRET = os.getenv("SECLAB_JWT_SECRET", "seclab_super_secret_jwt_key_2026_change_in_production")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+security = HTTPBearer(auto_error=False)
+
+JWT_SECRET = os.getenv("SECLAB_JWT_SECRET", "dev-secret")
 JWT_ALGORITHM = "HS256"
-TOKEN_EXPIRE_MINUTES = int(os.getenv("SECLAB_TOKEN_EXPIRE_MINUTES", "60"))
+ACCESS_TOKEN_MINUTES = 60
 
-
-EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
-
-def is_valid_email(value: str) -> bool:
-    return bool(EMAIL_PATTERN.match(value.strip().lower()))
-
-def validate_password_strength(password: str) -> None:
-    if len(password) < 8:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password must be at least 8 characters"
-        )
 
 class RegisterRequest(BaseModel):
-    username: str = Field(..., min_length=1, max_length=50)
-    email: str = Field(..., min_length=1, max_length=255)
-    password: str = Field(..., min_length=1, max_length=255)
+    username: str = Field(..., min_length=2, max_length=50)
+    email: EmailStr
+    password: str = Field(..., min_length=5, max_length=128)
+
 
 class LoginRequest(BaseModel):
-    email: str = Field(..., min_length=1, max_length=255)
-    password: str = Field(..., min_length=1, max_length=255)
+    email: EmailStr
+    password: str = Field(..., min_length=1, max_length=128)
 
 
-class ChangePasswordRequest(BaseModel):
-    current_password: str = Field(..., min_length=1, max_length=255)
-    new_password: str = Field(..., min_length=8, max_length=255)
+class EmailVerificationRequest(BaseModel):
+    token: str = Field(..., min_length=10, max_length=128)
 
-class UpdateProfileRequest(BaseModel):
-    username: str | None = Field(None, min_length=1, max_length=50)
-    email: str | None = Field(None, min_length=1, max_length=255)
 
-class ProfileResponse(BaseModel):
+class ProfileUpdate(BaseModel):
+    username: str | None = Field(None, min_length=2, max_length=50)
+    email: EmailStr | None = None
+
+
+class UserRead(BaseModel):
     id: int
     username: str
     email: str
     role: str
-    created_at: datetime
+    created_at: datetime | None = None
 
-    class Config:
-        from_attributes = True
 
-class AuthUserResponse(BaseModel):
+class AuthResponse(BaseModel):
     id: int
     username: str
     email: str
     role: str
-    created_at: datetime
     access_token: str
     token_type: str = "bearer"
-    expires_at: str
+    expires_at: datetime
+    email_verified: int | None = None
+    demo_verification_token: str | None = None
 
-    class Config:
-        from_attributes = True
+
+def ensure_auth_columns(connection):
+    connection.exec_driver_sql("ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255)")
+    connection.exec_driver_sql("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'user'")
+    connection.exec_driver_sql("ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified INTEGER NOT NULL DEFAULT 0")
+    connection.exec_driver_sql("ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_token VARCHAR(128)")
+
+
+def normalize_email(email: str) -> str:
+    return email.strip().lower()
+
+
+def validate_email(email: str):
+    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid email address")
+
+
+def validate_password_strength(password: str):
+    if len(password) < 5:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Password must be at least 5 characters")
+
 
 def hash_password(password: str) -> str:
-    salt = secrets.token_hex(16)
-    password_hash = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), 100000).hex()
-    return f"pbkdf2_sha256${salt}${password_hash}"
+    return pwd_context.hash(password)
 
-def verify_password(password: str, stored_hash: str | None) -> bool:
-    if not stored_hash:
+
+def verify_password(password: str, password_hash: str | None) -> bool:
+    if not password_hash:
         return False
+    return pwd_context.verify(password, password_hash)
 
-    try:
-        algorithm, salt, expected_hash = stored_hash.split("$")
-        if algorithm != "pbkdf2_sha256":
-            return False
 
-        password_hash = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), 100000).hex()
-        return hmac.compare_digest(password_hash, expected_hash)
-    except Exception:
-        return False
-
-def create_access_token(user_dict: dict) -> tuple[str, datetime]:
-    expire = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRE_MINUTES)
-    to_encode = {
-        "sub": str(user_dict["id"]),
-        "email": user_dict["email"],
-        "role": user_dict["role"],
-        "exp": expire
+def create_access_token(user: dict) -> tuple[str, datetime]:
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_MINUTES)
+    payload = {
+        "sub": str(user["id"]),
+        "email": user["email"],
+        "role": user["role"],
+        "exp": expires_at,
     }
-    encoded_jwt = jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
-    return encoded_jwt, expire
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM), expires_at
 
-def decode_access_token(token: str) -> dict:
+
+def create_access_response(user: dict) -> dict:
+    token, expires_at = create_access_token(user)
+    return {
+        "id": user["id"],
+        "username": user["username"],
+        "email": user["email"],
+        "role": user["role"],
+        "access_token": token,
+        "token_type": "bearer",
+        "expires_at": expires_at,
+        "email_verified": user.get("email_verified", 0),
+    }
+
+
+def require_signed_in_user(credentials: HTTPAuthorizationCredentials | None = Depends(security)) -> dict:
+    if not credentials:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
+
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        return payload
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials"
-        )
+        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_id = int(payload["sub"])
+    except (JWTError, KeyError, ValueError):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication token")
 
-def get_current_user(authorization: str = Header(None)) -> dict:
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing or invalid authentication token"
-        )
-    token = authorization.split(" ")[1]
-    payload = decode_access_token(token)
-    user_id = int(payload.get("sub"))
-
-    with engine.begin() as connection:
-        query = select(users_table).where(users_table.c.id == user_id)
-        user = connection.execute(query).mappings().first()
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found"
-            )
-        return dict(user)
-
-def require_signed_in_user(current_user: dict = Depends(get_current_user)) -> dict:
-    return current_user
-
-def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
-    if current_user.get("role") != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin privileges required"
-        )
-    return current_user
-
-@router.post("/register", response_model=AuthUserResponse, status_code=status.HTTP_201_CREATED)
-def register_user(payload: RegisterRequest):
     try:
-        norm_email = payload.email.strip().lower()
-        norm_username = payload.username.strip()
-
-        if not norm_username:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username cannot be empty")
-
-        if not is_valid_email(norm_email):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format")
-
-        validate_password_strength(payload.password)
-
         with engine.begin() as connection:
-            check_query = select(users_table).where(users_table.c.email == norm_email)
-            existing = connection.execute(check_query).first()
-            if existing:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="Email already registered"
-                )
+            ensure_auth_columns(connection)
+            query = select(users_table).where(users_table.c.id == user_id)
+            user = connection.execute(query).mappings().first()
 
-            hashed = hash_password(payload.password)
+            if not user:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+
+            return dict(user)
+    except HTTPException:
+        raise
+    except SQLAlchemyError as error:
+        print(f"Database error in require_signed_in_user: {error}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+
+
+def require_admin_user(current_user: dict = Depends(require_signed_in_user)) -> dict:
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return current_user
+
+
+@router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
+def register(payload: RegisterRequest):
+    norm_email = normalize_email(payload.email)
+    validate_email(norm_email)
+    validate_password_strength(payload.password)
+
+    try:
+        with engine.begin() as connection:
+            ensure_auth_columns(connection)
+
+            existing_query = select(users_table).where(users_table.c.email == norm_email)
+            existing_user = connection.execute(existing_query).mappings().first()
+
+            if existing_user:
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+
+            password_hash = hash_password(payload.password)
+            verification_token = secrets.token_urlsafe(32)
+
             insert_query = (
                 insert(users_table)
                 .values(
-                    username=norm_username,
+                    username=payload.username.strip(),
                     email=norm_email,
                     role="user",
-                    password_hash=hashed
+                    password_hash=password_hash,
+                    email_verified=0,
+                    email_verification_token=verification_token,
                 )
                 .returning(
                     users_table.c.id,
                     users_table.c.username,
                     users_table.c.email,
                     users_table.c.role,
-                    users_table.c.created_at
+                    users_table.c.email_verified,
                 )
             )
-            result = connection.execute(insert_query)
-            new_user = dict(result.mappings().one())
 
-            token, expire = create_access_token(new_user)
-            new_user["access_token"] = token
-            new_user["token_type"] = "bearer"
-            new_user["expires_at"] = expire.isoformat()
-            return new_user
+            created_user = connection.execute(insert_query).mappings().first()
+            record_activity("auth.register", "New user registered", f"{created_user['email']} created an account.")
+
+            response = create_access_response(dict(created_user))
+            response["demo_verification_token"] = verification_token
+            return response
     except HTTPException:
         raise
-    except SQLAlchemyError as e:
-        print(f"Database error during register: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Authentication service unavailable"
-        )
+    except SQLAlchemyError as error:
+        print(f"Database error in register: {error}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
 
 
-@router.get("/me", response_model=ProfileResponse)
-def get_my_profile(current_user: dict = Depends(require_signed_in_user)):
-    return current_user
+@router.post("/verify-email")
+def verify_email(payload: EmailVerificationRequest):
+    try:
+        with engine.begin() as connection:
+            ensure_auth_columns(connection)
+
+            query = select(users_table).where(users_table.c.email_verification_token == payload.token)
+            user = connection.execute(query).mappings().first()
+
+            if not user:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Verification token not found")
+
+            update_query = (
+                update(users_table)
+                .where(users_table.c.id == user["id"])
+                .values(email_verified=1, email_verification_token=None)
+            )
+            connection.execute(update_query)
+
+            record_activity("auth.verify_email", "Email verified", f"{user['email']} verified email address.")
+            return {"message": "Email verified successfully"}
+    except HTTPException:
+        raise
+    except SQLAlchemyError as error:
+        print(f"Database error in verify_email: {error}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
 
 
-@router.patch("/me", response_model=ProfileResponse)
-def update_my_profile(payload: UpdateProfileRequest, current_user: dict = Depends(require_signed_in_user)):
-    update_data = {}
+@router.post("/login", response_model=AuthResponse)
+def login(payload: LoginRequest):
+    norm_email = normalize_email(payload.email)
 
-    if payload.username is not None:
-        username = payload.username.strip()
-        if not username:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username cannot be empty")
-        update_data["username"] = username
+    try:
+        with engine.begin() as connection:
+            ensure_auth_columns(connection)
 
-    if payload.email is not None:
-        email = payload.email.strip().lower()
-        if not is_valid_email(email):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format")
-        update_data["email"] = email
+            query = select(users_table).where(users_table.c.email == norm_email)
+            user = connection.execute(query).mappings().first()
+
+            if not user or not verify_password(payload.password, user["password_hash"]):
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+
+            record_activity("auth.login", "User signed in", f"{user['email']} signed in.")
+            return create_access_response(dict(user))
+    except HTTPException:
+        raise
+    except SQLAlchemyError as error:
+        print(f"Database error in login: {error}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+
+
+@router.patch("/me", response_model=UserRead)
+def update_current_user(payload: ProfileUpdate, current_user: dict = Depends(require_signed_in_user)):
+    update_data = payload.model_dump(exclude_unset=True)
 
     if not update_data:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields provided for update")
 
+    if "username" in update_data:
+        update_data["username"] = update_data["username"].strip()
+
+    if "email" in update_data:
+        update_data["email"] = normalize_email(update_data["email"])
+        validate_email(update_data["email"])
+
     try:
         with engine.begin() as connection:
-            if "email" in update_data:
-                existing_query = select(users_table).where(users_table.c.email == update_data["email"])
-                existing = connection.execute(existing_query).mappings().first()
+            ensure_auth_columns(connection)
 
-                if existing and existing["id"] != current_user["id"]:
+            if "email" in update_data:
+                existing_query = select(users_table).where(
+                    users_table.c.email == update_data["email"],
+                    users_table.c.id != current_user["id"],
+                )
+                existing_user = connection.execute(existing_query).mappings().first()
+
+                if existing_user:
                     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
             update_query = (
@@ -247,108 +307,19 @@ def update_my_profile(payload: UpdateProfileRequest, current_user: dict = Depend
                     users_table.c.username,
                     users_table.c.email,
                     users_table.c.role,
-                    users_table.c.created_at
+                    users_table.c.created_at,
                 )
             )
-            updated = connection.execute(update_query).mappings().first()
 
-            if not updated:
+            updated_user = connection.execute(update_query).mappings().first()
+
+            if not updated_user:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-            return dict(updated)
+            record_activity("profile.update", "Profile updated", f"{updated_user['email']} updated profile details.")
+            return dict(updated_user)
     except HTTPException:
         raise
-    except SQLAlchemyError as e:
-        print(f"Database error during profile update: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Authentication service unavailable"
-        )
-
-
-@router.patch("/password")
-def change_password(payload: ChangePasswordRequest, current_user: dict = Depends(require_signed_in_user)):
-    validate_password_strength(payload.new_password)
-
-    if payload.current_password == payload.new_password:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="New password must be different from current password"
-        )
-
-    stored_hash = current_user.get("password_hash")
-    if not verify_password(payload.current_password, stored_hash):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Current password is incorrect"
-        )
-
-    try:
-        new_hash = hash_password(payload.new_password)
-        with engine.begin() as connection:
-            update_query = (
-                update(users_table)
-                .where(users_table.c.id == current_user["id"])
-                .values(password_hash=new_hash)
-            )
-            connection.execute(update_query)
-
-        return {"message": "Password changed successfully"}
-    except SQLAlchemyError as e:
-        print(f"Database error during password change: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Authentication service unavailable"
-        )
-
-
-@router.post("/login", response_model=AuthUserResponse)
-def login_user(payload: LoginRequest):
-    try:
-        norm_email = payload.email.strip().lower()
-
-        with engine.begin() as connection:
-            query = select(users_table).where(users_table.c.email == norm_email)
-            result = connection.execute(query)
-            user = result.mappings().first()
-
-            if user is None:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid email or password"
-                )
-
-            user_dict = dict(user)
-            stored_hash = user_dict.get("password_hash")
-            
-            if not stored_hash and user_dict["role"] == "admin":
-                admin_password = os.getenv("SECLAB_ADMIN_PASSWORD")
-                if admin_password and payload.password == admin_password:
-                    new_hash = hash_password(payload.password)
-                    update_query = (
-                        update(users_table)
-                        .where(users_table.c.id == user_dict["id"])
-                        .values(password_hash=new_hash)
-                    )
-                    connection.execute(update_query)
-                    user_dict["password_hash"] = new_hash
-
-            if not verify_password(payload.password, user_dict.get("password_hash")):
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid email or password"
-                )
-
-            token, expire = create_access_token(user_dict)
-            user_dict["access_token"] = token
-            user_dict["token_type"] = "bearer"
-            user_dict["expires_at"] = expire.isoformat()
-            return user_dict
-    except HTTPException:
-        raise
-    except SQLAlchemyError as e:
-        print(f"Database error during login: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Authentication service unavailable"
-        )
+    except SQLAlchemyError as error:
+        print(f"Database error in update_current_user: {error}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
