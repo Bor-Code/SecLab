@@ -27,6 +27,9 @@ import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 
 export default function AuthLogin({ isDemo = false }) {
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(null);
+  const [resetToken, setResetToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = React.useState(false);
   const [loginError, setLoginError] = React.useState(null);
 
