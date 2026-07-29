@@ -1,201 +1,77 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import Alert from '@mui/material/Alert';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Divider from '@mui/material/Divider';
+import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-import MainCard from 'components/MainCard';
-import { changePassword, updateMyProfile } from 'api/seclab';
-
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 export default function UserProfilePage() {
-  const storedUsername = localStorage.getItem('seclab-username') || localStorage.getItem('seclab-user-username') || 'SecLab User';
-  const storedEmail = localStorage.getItem('seclab-user-email') || 'Signed in';
+  const [avatar, setAvatar] = useState(localStorage.getItem('seclab-user-avatar') || '');
+  const [username, setUsername] = useState(localStorage.getItem('seclab-user-username') || 'Kullanici 1');
+  const [email, setEmail] = useState(localStorage.getItem('seclab-user-email') || 'deneme2@gmail.com');
   const role = localStorage.getItem('seclab-user-role') || 'user';
-  const emailVerified = localStorage.getItem('seclab-email-verified') === '1';
-  const mustChangePassword = localStorage.getItem('seclab-must-change-password') === '1';
 
-  const [username, setUsername] = useState(storedUsername);
-  const [email, setEmail] = useState(storedEmail);
+  useEffect(() => {
+    localStorage.setItem('seclab-user-username', username);
+    localStorage.setItem('seclab-user-email', email);
+  }, [username, email]);
 
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const handleAvatarUpload = (event) => {
+    const file = event.target.files?.[0];
 
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
-  const [isProfileSaving, setIsProfileSaving] = useState(false);
-  const [isPasswordSaving, setIsPasswordSaving] = useState(false);
-
-  async function handleProfileSubmit(event) {
-    event.preventDefault();
-    setMessage(null);
-    setError(null);
-
-    const trimmedUsername = username.trim();
-    const trimmedEmail = email.trim().toLowerCase();
-
-    if (!trimmedUsername) {
-      setError('Username is required.');
+    if (!file) {
       return;
     }
 
-    if (!emailPattern.test(trimmedEmail)) {
-      setError('Enter a valid email address.');
-      return;
-    }
+    const reader = new FileReader();
 
-    try {
-      setIsProfileSaving(true);
+    reader.onload = () => {
+      const result = String(reader.result || '');
+      setAvatar(result);
+      localStorage.setItem('seclab-user-avatar', result);
+    };
 
-      const updatedUser = await updateMyProfile({
-        username: trimmedUsername,
-        email: trimmedEmail
-      });
-
-      localStorage.setItem('seclab-username', updatedUser.username);
-      localStorage.setItem('seclab-user-username', updatedUser.username);
-      localStorage.setItem('seclab-user-email', updatedUser.email);
-
-      setUsername(updatedUser.username);
-      setEmail(updatedUser.email);
-      setMessage('Profile updated successfully.');
-    } catch (profileError) {
-      console.error('Profile update failed:', profileError);
-      setError(profileError.message || 'Profile update failed.');
-    } finally {
-      setIsProfileSaving(false);
-    }
-  }
-
-  async function handlePasswordSubmit(event) {
-    event.preventDefault();
-    setMessage(null);
-    setError(null);
-
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      setError('Fill all password fields.');
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      setError('New password must be at least 8 characters.');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError('New password and confirmation do not match.');
-      return;
-    }
-
-    try {
-      setIsPasswordSaving(true);
-      await changePassword({
-        current_password: currentPassword,
-        new_password: newPassword
-      });
-
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setMessage('Password updated successfully.');
-    } catch (changeError) {
-      console.error('Password update failed:', changeError);
-      setError('Password update failed. Check your current password.');
-    } finally {
-      setIsPasswordSaving(false);
-    }
-  }
+    reader.readAsDataURL(file);
+  };
 
   return (
-    <Stack spacing={3}>
-      <MainCard title="My Profile">
-        <Stack spacing={2}>
-          <Typography variant="h4">{username}</Typography>
-          <Typography variant="body1" color="text.secondary">
-            {email}
-          </Typography>
-          <Stack direction="row" spacing={1}>
-            <Chip label={`Role: ${role}`} color="primary" variant="outlined" />
-            <Chip label="{mustChangePassword ? 'Temporary password active' : emailVerified ? 'Email verified' : 'Email not verified'}" variant="outlined" />
+    <Box className="seclab-dashboard-page">
+      <Paper className="seclab-hero-card">
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} sx={{ alignItems: 'center' }}>
+          <Avatar src={avatar} sx={{ width: 96, height: 96, border: '4px solid #bfdbfe' }}>
+            {username.slice(0, 1)}
+          </Avatar>
+
+          <Stack spacing={1} sx={{ flex: 1 }}>
+            <Typography variant="h2">Profile</Typography>
+            <Typography color="text.secondary">Manage your local SecLab profile picture and account display details.</Typography>
+            <Stack direction="row" spacing={1}>
+              <Button variant="contained" component="label">
+                Upload Avatar
+                <input hidden accept="image/*" type="file" onChange={handleAvatarUpload} />
+              </Button>
+              <Button variant="outlined" onClick={() => window.location.reload()}>
+                Refresh Header
+              </Button>
+            </Stack>
           </Stack>
         </Stack>
-      </MainCard>
+      </Paper>
 
-      {message && <Alert severity="success" onClose={() => setMessage(null)}>{message}</Alert>}
-      {error && <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>}
-
-      <MainCard title="Account Information">
-        <Stack component="form" spacing={2} onSubmit={handleProfileSubmit}>
-          <Typography variant="body1" color="text.secondary">
-            Update your display name and email address.
+      <Paper className="seclab-panel">
+        <Stack spacing={2}>
+          <Typography variant="h4">Account Details</Typography>
+          <TextField label="Username" value={username} onChange={(event) => setUsername(event.target.value)} />
+          <TextField label="Email" value={email} onChange={(event) => setEmail(event.target.value)} />
+          <TextField label="Role" value={role} disabled />
+          <Typography color="text.secondary">
+            Avatar is stored locally for demo use. Backend avatar persistence can be added in the next pass.
           </Typography>
-
-          <Divider />
-
-          <TextField
-            label="Username"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            fullWidth
-          />
-
-          <TextField
-            label="Email Address"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            fullWidth
-          />
-
-          <Button type="submit" variant="contained" disabled={isProfileSaving} sx={{ py: 1.25 }}>
-            {isProfileSaving ? 'Saving...' : 'Save Profile'}
-          </Button>
         </Stack>
-      </MainCard>
-
-      <MainCard title="Password Reset">
-        <Stack component="form" spacing={2} onSubmit={handlePasswordSubmit}>
-          <Typography variant="body1" color="text.secondary">
-            Update your account password when you know your current password.
-          </Typography>
-
-          <Divider />
-
-          <TextField
-            label="Current password"
-            type="password"
-            value={currentPassword}
-            onChange={(event) => setCurrentPassword(event.target.value)}
-            fullWidth
-          />
-
-          <TextField
-            label="New password"
-            type="password"
-            value={newPassword}
-            onChange={(event) => setNewPassword(event.target.value)}
-            fullWidth
-          />
-
-          <TextField
-            label="Confirm new password"
-            type="password"
-            value={confirmPassword}
-            onChange={(event) => setConfirmPassword(event.target.value)}
-            fullWidth
-          />
-
-          <Button type="submit" variant="contained" disabled={isPasswordSaving} sx={{ py: 1.25 }}>
-            {isPasswordSaving ? 'Saving...' : 'Reset Password'}
-          </Button>
-        </Stack>
-      </MainCard>
-    </Stack>
+      </Paper>
+    </Box>
   );
 }

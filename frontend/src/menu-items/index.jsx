@@ -1,13 +1,7 @@
 import dashboard from './dashboard';
 import records from './records';
 import monitoring from './monitoring';
-import {
-  DashboardOutlined,
-  BookOutlined,
-  ReadOutlined,
-  LinkOutlined,
-  UserOutlined
-} from '@ant-design/icons';
+import { BarChartOutlined, BookOutlined, CalendarOutlined, DashboardOutlined, FileTextOutlined, HistoryOutlined, LinkOutlined, ReadOutlined, UserOutlined } from '@ant-design/icons';
 
 const userWorkspace = {
   id: 'group-user-workspace',
@@ -46,7 +40,39 @@ const userWorkspace = {
       icon: LinkOutlined,
       breadcrumbs: false
     },
-    {
+    
+        {
+          id: 'user-progress',
+          title: 'My Progress',
+          type: 'item',
+          url: '/user/progress',
+          icon: BarChartOutlined
+        },
+
+        {
+          id: 'user-study-plan',
+          title: 'Study Plan',
+          type: 'item',
+          url: '/user/study-plan',
+          icon: CalendarOutlined
+        },
+
+        {
+          id: 'user-notes',
+          title: 'Notes',
+          type: 'item',
+          url: '/user/notes',
+          icon: FileTextOutlined
+        },
+
+        {
+          id: 'user-activity',
+          title: 'Activity',
+          type: 'item',
+          url: '/user/activity',
+          icon: HistoryOutlined
+        },
+{
       id: 'user-profile',
       title: 'Profilim',
       type: 'item',
