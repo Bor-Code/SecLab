@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.routers import auth, dashboard, health, learning_logs, resources, topics, users
+from app.activity import ensure_activity_table
 
 app = FastAPI()
 
@@ -62,3 +63,6 @@ app.include_router(resources.router)
 @app.get("/")
 def read_root():
     return {"message": "Hello World"}
+@app.on_event("startup")
+def startup_event():
+    ensure_activity_table()
