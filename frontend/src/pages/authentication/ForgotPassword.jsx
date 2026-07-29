@@ -158,7 +158,7 @@ export default function ForgotPassword() {
                 fullWidth
               />
               <FormHelperText>
-                Demo ortam?nda token ekranda g?sterilir. Ger?ek sistemde bu token e-posta ile g?nderilir.
+                In demo mode, the reset token is shown on screen. In production, this token will be sent by email.
               </FormHelperText>
             </Stack>
 
