@@ -508,3 +508,56 @@ def reset_password(payload: ResetPasswordRequest):
         print(f"Database error in reset_password: {error}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
 
+# Compatibility auth helpers used by protected routers.
+from fastapi import Depends as _SecLabDepends
+from fastapi import HTTPException as _SecLabHTTPException
+from fastapi import status as _SecLabStatus
+from fastapi.security import HTTPBearer as _SecLabHTTPBearer
+from fastapi.security import HTTPAuthorizationCredentials as _SecLabHTTPAuthorizationCredentials
+from jose import jwt as _seclab_jwt
+from sqlalchemy import select as _seclab_select
+from sqlalchemy.exc import SQLAlchemyError as _SecLabSQLAlchemyError
+
+_seclab_security = _SecLabHTTPBearer(auto_error=False)
+
+
+def get_current_user(credentials: _SecLabHTTPAuthorizationCredentials | None = _SecLabDepends(_seclab_security)) -> dict:
+    if credentials is None:
+        raise _SecLabHTTPException(status_code=_SecLabStatus.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+    try:
+        payload = _seclab_jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_id = int(payload.get("sub"))
+    except Exception:
+        raise _SecLabHTTPException(status_code=_SecLabStatus.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+
+    try:
+        with engine.begin() as connection:
+            ensure_auth_columns(connection)
+            query = _seclab_select(users_table).where(users_table.c.id == user_id)
+            user = connection.execute(query).mappings().first()
+
+            if not user:
+                raise _SecLabHTTPException(status_code=_SecLabStatus.HTTP_401_UNAUTHORIZED, detail="User not found")
+
+            return dict(user)
+    except _SecLabHTTPException:
+        raise
+    except _SecLabSQLAlchemyError as error:
+        print(f"Database error in get_current_user: {error}")
+        raise _SecLabHTTPException(
+            status_code=_SecLabStatus.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service unavailable",
+        )
+
+
+def require_signed_in_user(current_user: dict = _SecLabDepends(get_current_user)) -> dict:
+    return current_user
+
+
+def require_admin(current_user: dict = _SecLabDepends(get_current_user)) -> dict:
+    if current_user.get("role") != "admin":
+        raise _SecLabHTTPException(status_code=_SecLabStatus.HTTP_403_FORBIDDEN, detail="Admin access required")
+
+    return current_user
+
