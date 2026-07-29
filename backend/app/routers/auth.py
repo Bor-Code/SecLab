@@ -55,6 +55,11 @@ class EmailVerificationRequest(BaseModel):
     token: str = Field(..., min_length=10, max_length=128)
 
 
+class PasswordChangeRequest(BaseModel):
+    current_password: str = Field(..., min_length=1, max_length=128)
+    new_password: str = Field(..., min_length=5, max_length=128)
+
+
 class ProfileUpdate(BaseModel):
     username: str | None = Field(None, min_length=2, max_length=50)
     email: EmailStr | None = None
@@ -327,3 +332,39 @@ def update_current_user(payload: ProfileUpdate, current_user: dict = Depends(req
     except SQLAlchemyError as error:
         print(f"Database error in update_current_user: {error}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+
+@router.post("/change-password")
+def change_password(payload: PasswordChangeRequest, current_user: dict = Depends(require_signed_in_user)):
+    validate_password_strength(payload.new_password)
+
+    try:
+        with engine.begin() as connection:
+            ensure_auth_columns(connection)
+
+            query = select(users_table).where(users_table.c.id == current_user["id"])
+            user = connection.execute(query).mappings().first()
+
+            if not user:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+            if not verify_password(payload.current_password, user["password_hash"]):
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect")
+
+            update_query = (
+                update(users_table)
+                .where(users_table.c.id == current_user["id"])
+                .values(
+                    password_hash=hash_password(payload.new_password),
+                    must_change_password=0,
+                )
+            )
+            connection.execute(update_query)
+
+            record_activity("profile.password", "Password changed", f"{user['email']} changed account password.")
+            return {"message": "Password updated successfully"}
+    except HTTPException:
+        raise
+    except SQLAlchemyError as error:
+        print(f"Database error in change_password: {error}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service unavailable")
+
