@@ -1,12 +1,9 @@
-import { useState } from 'react';
-import PropTypes from 'prop-types';
-
-import Box from '@mui/material/Box';
+﻿import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-
+import Box from '@mui/material/Box';
 import MainCard from 'components/MainCard';
 
 export default function TopicManager({
@@ -18,98 +15,71 @@ export default function TopicManager({
   setEditTopicDescription,
   isSaving,
   handleStartEditTopic,
-  handleİptalEditTopic,
+  handleCancelEditTopic,
   handleUpdateTopic,
-  handleSilTopic
+  handleDeleteTopic
 }) {
-  const [search, setSearch] = useState('');
-
-  const filteredKonular = topics.filter((topic) => {
-    const query = search.trim().toLowerCase();
-
-    if (!query) return true;
-
-    return [topic.name, topic.description]
-      .filter(Boolean)
-      .some((value) => value.toLowerCase().includes(query));
-  });
-
   return (
-    <MainCard id="topics" title="My Konular" sx={{ scrollMarginTop: 96 }}>
-      <Stack spacing={2}>
-        <TextField
-          label="Konu ara"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          fullWidth
-        />
-
-        {topics.length === 0 ? (
-          <Typography variant="body1" color="text.secondary">
-            No topics yet. Create your first topic above to start organizing your learning journey.
-          </Typography>
-        ) : filteredKonular.length === 0 ? (
-          <Typography variant="body1" color="text.secondary">
-            No topics match your search.
-          </Typography>
-        ) : (
-          <Stack spacing={2}>
-            {filteredKonular.map((topic) => (
-              <Box key={topic.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                {editingTopicId === topic.id ? (
-                  <Stack component="form" spacing={2} onSubmit={(event) => handleUpdateTopic(event, topic.id)}>
-                    <TextField
-                      label="Topic name"
-                      value={editTopicName}
-                      onChange={(event) => setEditTopicName(event.target.value)}
-                      fullWidth
-                      disabled={isSaving}
-                    />
-                    <TextField
-                      label="Description"
-                      value={editTopicDescription}
-                      onChange={(event) => setEditTopicDescription(event.target.value)}
-                      fullWidth
-                      multiline
-                      minRows={2}
-                      disabled={isSaving}
-                    />
-                    <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
-                      <Button variant="outlined" size="small" onClick={handleİptalEditTopic} disabled={isSaving}>
-                        İptal
-                      </Button>
-                      <Button type="submit" variant="contained" size="small" disabled={isSaving}>
-                        Save
-                      </Button>
-                    </Stack>
+    <MainCard title="My Topics">
+      {topics.length === 0 ? (
+        <Typography variant="body2" color="text.secondary">
+          No topics yet. Create your first topic above to start organizing your learning journey.
+        </Typography>
+      ) : (
+        <Stack spacing={2}>
+          {topics.map((topic) => (
+            <Box key={topic.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+              {editingTopicId === topic.id ? (
+                <Stack component="form" spacing={2} onSubmit={(e) => handleUpdateTopic(e, topic.id)}>
+                  <TextField
+                    label="Topic name"
+                    value={editTopicName}
+                    onChange={(e) => setEditTopicName(e.target.value)}
+                    fullWidth
+                    disabled={isSaving}
+                  />
+                  <TextField
+                    label="Description"
+                    value={editTopicDescription}
+                    onChange={(e) => setEditTopicDescription(e.target.value)}
+                    fullWidth
+                    multiline
+                    minRows={2}
+                    disabled={isSaving}
+                  />
+                  <Stack direction="row" spacing={1}>
+                    <Button type="submit" variant="contained" size="small" disabled={isSaving}>
+                      Save
+                    </Button>
+                    <Button variant="outlined" size="small" onClick={handleCancelEditTopic} disabled={isSaving}>
+                      Cancel
+                    </Button>
                   </Stack>
-                ) : (
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: 'space-between' }}>
-                    <Stack spacing={0.5}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        {topic.name}
+                </Stack>
+              ) : (
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Stack spacing={0.5}>
+                    <Typography variant="subtitle1">{topic.name}</Typography>
+                    {topic.description && (
+                      <Typography variant="body2" color="text.secondary">
+                        {topic.description}
                       </Typography>
-                      {topic.description && (
-                        <Typography variant="body2" color="text.secondary">
-                          {topic.description}
-                        </Typography>
-                      )}
-                    </Stack>
-                    <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
-                      <Button variant="outlined" size="small" sx={{ minWidth: 72 }} onClick={() => handleStartEditTopic(topic)} disabled={isSaving}>
-                        Edit
-                      </Button>
-                      <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleSilTopic(topic.id)} disabled={isSaving}>
-                        Sil
-                      </Button>
-                    </Stack>
+                    )}
                   </Stack>
-                )}
-              </Box>
-            ))}
-          </Stack>
-        )}
-      </Stack>
+                  <Stack direction="row" spacing={1}>
+                    <Button variant="outlined" size="small" onClick={() => handleStartEditTopic(topic)} disabled={isSaving}>
+                      Edit
+                    </Button>
+                    <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteTopic(topic.id)} disabled={isSaving}>
+                      Delete
+                    </Button>
+                  </Stack>
+                </Stack>
+              )}
+            </Box>
+          ))}
+        </Stack>
+      )}
     </MainCard>
   );
 }
@@ -123,7 +93,7 @@ TopicManager.propTypes = {
   setEditTopicDescription: PropTypes.func.isRequired,
   isSaving: PropTypes.bool.isRequired,
   handleStartEditTopic: PropTypes.func.isRequired,
-  handleİptalEditTopic: PropTypes.func.isRequired,
+  handleCancelEditTopic: PropTypes.func.isRequired,
   handleUpdateTopic: PropTypes.func.isRequired,
-  handleSilTopic: PropTypes.func.isRequired
+  handleDeleteTopic: PropTypes.func.isRequired
 };

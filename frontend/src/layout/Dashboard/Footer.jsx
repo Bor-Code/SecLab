@@ -2,16 +2,13 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 export default function Footer() {
-  const role = localStorage.getItem('seclab-user-role') || 'user';
-  const workspaceLabel = role === 'admin' ? 'SecLab admin workspace' : 'SecLab user workspace';
-
   return (
     <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
-      <Typography variant="body2" color="text.secondary">
-        {workspaceLabel}
+      <Typography variant="caption" color="text.secondary">
+        SecLab admin workspace
       </Typography>
-      <Typography variant="body2" color="text.secondary">
-        Demo ortamı
+      <Typography variant="caption" color="text.secondary">
+        Demo environment
       </Typography>
     </Stack>
   );

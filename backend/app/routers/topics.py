@@ -1,16 +1,15 @@
-from datetime import datetime
+﻿from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import Table, Column, Integer, String, Text, DateTime, insert, select, update, delete
 from sqlalchemy.exc import SQLAlchemyError
 from app.database import engine
-from app.activity import record_activity
 from sqlalchemy import MetaData
 from app.routers.auth import require_signed_in_user
 
 router = APIRouter(
     prefix="/topics",
-    tags=["Konular"]
+    tags=["Topics"]
 )
 
 metadata = MetaData()
@@ -129,7 +128,6 @@ def delete_topic(topic_id: int, current_user: dict = Depends(require_signed_in_u
 
             delete_query = delete(topics_table).where(topics_table.c.id == topic_id)
             connection.execute(delete_query)
-            record_activity("topic.delete", "Topic deleted\", f\"Topic id {topic_id} was deleted.")
             return None
     except HTTPException:
         raise

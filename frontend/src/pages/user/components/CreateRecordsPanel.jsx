@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+﻿import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -10,7 +10,6 @@ import InputLabel from '@mui/material/InputLabel';
 import MainCard from 'components/MainCard';
 
 export default function CreateRecordsPanel({
-  activeSection,
   topics,
   isSaving,
   newTopicName,
@@ -39,11 +38,11 @@ export default function CreateRecordsPanel({
 }) {
   return (
     <Grid container spacing={3}>
-      <Grid size={{ xs: 12 }} sx={{ display: activeSection === 'topics' ? 'block' : 'none' }}>
-        <MainCard title="Yeni Konu">
+      <Grid size={{ xs: 12, md: 4 }}>
+        <MainCard title="Create Topic">
           <Stack component="form" spacing={2} onSubmit={handleCreateTopic}>
             <TextField
-              label="Topic Name"
+              label="Topic name"
               value={newTopicName}
               onChange={(event) => setNewTopicName(event.target.value)}
               fullWidth
@@ -58,22 +57,22 @@ export default function CreateRecordsPanel({
               minRows={2}
               disabled={isSaving}
             />
-            <Button type="submit" variant="contained" size="large" sx={{ py: 1.2, fontWeight: 700, borderRadius: 1.5 }} disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Konu Oluştur'}
+            <Button type="submit" variant="contained" disabled={isSaving}>
+              {isSaving ? 'Saving...' : 'Create Topic'}
             </Button>
           </Stack>
         </MainCard>
       </Grid>
 
-      <Grid size={{ xs: 12 }} sx={{ display: activeSection === 'learning-logs' ? 'block' : 'none' }}>
-        <MainCard title="New Learning Log">
+      <Grid size={{ xs: 12, md: 4 }}>
+        <MainCard title="Create Learning Log">
           <Stack component="form" spacing={2} onSubmit={handleCreateLearningLog}>
             <FormControl fullWidth>
               <InputLabel id="log-topic-label">Select Topic</InputLabel>
               <Select
                 labelId="log-topic-label"
                 value={logTopicId}
-                label="Topic"
+                label="Select Topic"
                 onChange={(e) => setLogTopicId(e.target.value)}
                 disabled={isSaving}
               >
@@ -100,22 +99,22 @@ export default function CreateRecordsPanel({
               minRows={2}
               disabled={isSaving}
             />
-            <Button type="submit" variant="contained" size="large" sx={{ py: 1.2, fontWeight: 700, borderRadius: 1.5 }} disabled={isSaving || topics.length === 0}>
+            <Button type="submit" variant="contained" disabled={isSaving || topics.length === 0}>
               {isSaving ? 'Saving...' : 'Create Log'}
             </Button>
           </Stack>
         </MainCard>
       </Grid>
 
-      <Grid size={{ xs: 12 }} sx={{ display: activeSection === 'resources' ? 'block' : 'none' }}>
-        <MainCard title="New Resource">
+      <Grid size={{ xs: 12, md: 4 }}>
+        <MainCard title="Create Resource">
           <Stack component="form" spacing={2} onSubmit={handleCreateResource}>
             <FormControl fullWidth>
               <InputLabel id="resource-topic-label">Select Topic</InputLabel>
               <Select
                 labelId="resource-topic-label"
                 value={resourceTopicId}
-                label="Topic"
+                label="Select Topic"
                 onChange={(e) => setResourceTopicId(e.target.value)}
                 disabled={isSaving}
               >
@@ -141,13 +140,13 @@ export default function CreateRecordsPanel({
               disabled={isSaving}
             />
             <TextField
-              label="Type"
+              label="Resource Type"
               value={resourceType}
               onChange={(event) => setResourceType(event.target.value)}
               fullWidth
               disabled={isSaving}
             />
-            <Button type="submit" variant="contained" size="large" sx={{ py: 1.2, fontWeight: 700, borderRadius: 1.5 }} disabled={isSaving || topics.length === 0}>
+            <Button type="submit" variant="contained" disabled={isSaving || topics.length === 0}>
               {isSaving ? 'Saving...' : 'Create Resource'}
             </Button>
           </Stack>

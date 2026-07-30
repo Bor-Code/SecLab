@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+﻿import PropTypes from 'prop-types';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import MainCard from 'components/MainCard';
@@ -7,12 +7,12 @@ export default function SummaryCards({ topicsCount, learningLogsCount, resources
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 12, md: 4 }}>
-        <MainCard title="Konular">
+        <MainCard title="Topics">
           <Typography variant="h3">{topicsCount}</Typography>
         </MainCard>
       </Grid>
       <Grid size={{ xs: 12, md: 4 }}>
-        <MainCard title="LearningLogs">
+        <MainCard title="Learning Logs">
           <Typography variant="h3">{learningLogsCount}</Typography>
         </MainCard>
       </Grid>

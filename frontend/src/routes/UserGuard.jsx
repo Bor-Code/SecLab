@@ -6,14 +6,14 @@ export default function UserGuard() {
   const expiresAt = localStorage.getItem('seclab-token-expires-at');
   const userId = localStorage.getItem('seclab-user-id');
   const role = localStorage.getItem('seclab-user-role');
-  const allowedRols = ['user', 'admin'];
+  const allowedRoles = ['user', 'admin'];
 
   if (expiresAt && new Date().getTime() > Number(expiresAt)) {
     localStorage.clear();
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (!token || !userId || !allowedRols.includes(role)) {
+  if (!token || !userId || !allowedRoles.includes(role)) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

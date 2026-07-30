@@ -1,19 +1,4 @@
-function clearSecLabSession() {
-  localStorage.removeItem('seclab-access-token');
-  localStorage.removeItem('seclab-token-expires-at');
-  localStorage.removeItem('seclab-user-id');
-  localStorage.removeItem('seclab-user-role');
-  localStorage.removeItem('seclab-user-username');
-  localStorage.removeItem('seclab-user-email');
-  localStorage.removeItem('seclab-admin-auth');
-  localStorage.removeItem('seclab-admin-role');
-}
-
-function redirectToLogin() {
-  const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
-  window.location.assign(`${baseUrl}/login`);
-}
-const API_BASE_URL = 'http://127.0.0.1:8000';
+﻿const API_BASE_URL = 'http://127.0.0.1:8000';
 
 export type User = {
   id: number;
@@ -125,16 +110,6 @@ export type LoginPayload = {
   password: string;
 };
 
-export type ChangeŞifrePayload = {
-  current_password: string;
-  new_password: string;
-};
-
-export type ProfileUpdatePayload = {
-  username?: string;
-  email?: string;
-};
-
 export type TopicFilters = {
   user_id?: number;
   search?: string;
@@ -192,25 +167,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     headers,
   });
 
-  if (response.status === 401) {
-    clearSecLabSession();
-    redirectToLogin();
-    throw new Error('Session expired. Please log in again.');
-  }
-
   if (!response.ok) {
-    let message = `Request failed: ${path}`;
-
-    try {
-      const errorBody = await response.json();
-      if (typeof errorBody?.detail === 'string') {
-        message = errorBody.detail;
-      }
-    } catch {
-      message = `Request failed: ${path}`;
-    }
-
-    throw new Error(message);
+    throw new Error(`Request failed: ${path}`);
   }
 
   if (response.status === 204) {
@@ -251,24 +209,6 @@ export function loginUser(payload: LoginPayload) {
   });
 }
 
-export function changeŞifre(payload: ChangeŞifrePayload) {
-  return request<{ message: string }>('/auth/password', {
-    method: 'PATCH',
-    body: JSON.stringify(payload),
-  });
-}
-
-export function fetchMyProfile() {
-  return request<User>('/auth/me');
-}
-
-export function updateMyProfile(payload: ProfileUpdatePayload) {
-  return request<User>('/auth/me', {
-    method: 'PATCH',
-    body: JSON.stringify(payload),
-  });
-}
-
 export function fetchUsers() {
   return request<User[]>('/users');
 }
@@ -293,7 +233,7 @@ export async function deleteUser(userId: number) {
   });
 }
 
-export function fetchKonular(params?: TopicFilters) {
+export function fetchTopics(params?: TopicFilters) {
   const queryString = buildQueryString(params);
   return request<Topic[]>(`/topics${queryString}`);
 }
@@ -378,36 +318,4 @@ export function fetchDashboardRecentActivity() {
 
 export function fetchHealthStatus() {
   return request<HealthStatus>('/health');
-}
-
-export function verifyEmail(token: string) {
-  return request('/auth/verify-email', {
-    method: 'POST',
-    body: JSON.stringify({ token })
-  });
-}
-
-export function forgotPassword(email: string) {
-  return request('/auth/forgot-password', {
-    method: 'POST',
-    body: JSON.stringify({ email })
-  });
-}
-
-export function resetPassword(payload: { token: string; new_password: string }) {
-  return request('/auth/reset-password', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
-}
-
-
-export function resetUserŞifre(userId: number) {
-  return request(`/users/${userId}/reset-password`, {
-    method: 'POST'
-  });
-}
-
-export function fetchCurrentUser() {
-  return request('/auth/me');
 }

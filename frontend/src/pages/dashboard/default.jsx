@@ -108,13 +108,13 @@ export default function DashboardDefault() {
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
         <AnalyticEcommerce
-          title="Konular"
+          title="Topics"
           count={isSummaryLoading ? '...' : String(dashboardSummary?.topics_count ?? dashboardSummary?.topics ?? 0)}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
         <AnalyticEcommerce
-          title="LearningLogs"
+          title="Learning Logs"
           count={isSummaryLoading ? '...' : String(dashboardSummary?.learning_logs_count ?? dashboardSummary?.learning_logs ?? 0)}
         />
       </Grid>
@@ -143,13 +143,13 @@ export default function DashboardDefault() {
             </ListItem>
             <ListItem divider>
               <ListItemText 
-                primary={<Typography variant="subtitle1">Konular</Typography>} 
+                primary={<Typography variant="subtitle1">Topics</Typography>} 
                 secondary="Organize learning domains and categorize core focus areas." 
               />
             </ListItem>
             <ListItem divider>
               <ListItemText 
-                primary={<Typography variant="subtitle1">LearningLogs</Typography>} 
+                primary={<Typography variant="subtitle1">Learning Logs</Typography>} 
                 secondary="Track daily progress and record detailed study notes." 
               />
             </ListItem>

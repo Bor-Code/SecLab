@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types';
-import { useEffect, useRef, useState } from 'react';
+﻿import PropTypes from 'prop-types';
+import { useRef, useState } from 'react';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -28,7 +28,6 @@ import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
 import SettingOutlined from '@ant-design/icons/SettingOutlined';
 import UserOutlined from '@ant-design/icons/UserOutlined';
 import avatar1 from 'assets/images/users/avatar-1.png';
-import { fetchCurrentUser } from 'api/seclab';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -45,48 +44,14 @@ function a11yProps(index) {
   };
 }
 
-const getStoredAvatar = () => localStorage.getItem('seclab-user-avatar') || '';
-
 export default function Profile() {
   const theme = useTheme();
 
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const username = localStorage.getItem('seclab-username') || localStorage.getItem('seclab-user-username') || 'SecLab User';
+  const username = localStorage.getItem('seclab-username') || 'SecLab User';
   const email = localStorage.getItem('seclab-user-email') || 'Signed in';
   const role = localStorage.getItem('seclab-user-role') || 'user';
-  const roleLabel = role === 'admin' ? 'Admin' : 'User';
-  useEffect(() => {
-    const token = localStorage.getItem('seclab-access-token');
-
-    if (!token) {
-      return;
-    }
-
-    fetchCurrentUser()
-      .then((currentUser) => {
-        localStorage.setItem('seclab-user-id', String(currentUser.id));
-        localStorage.setItem('seclab-user-username', currentUser.username || '');
-        localStorage.setItem('seclab-user-email', currentUser.email || '');
-        localStorage.setItem('seclab-user-role', currentUser.role || 'user');
-
-        if (currentUser.email_verified !== undefined && currentUser.email_verified !== null) {
-          localStorage.setItem('seclab-email-verified', String(currentUser.email_verified));
-        }
-
-        if (currentUser.must_change_password !== undefined && currentUser.must_change_password !== null) {
-          localStorage.setItem('seclab-must-change-password', String(currentUser.must_change_password));
-        }
-
-        setUsername(currentUser.username || 'SecLab User');
-        setEmail(currentUser.email || 'Signed in');
-        setRol(currentUser.role || 'user');
-      })
-      .catch(() => {
-        // Header bilgisi kritik de?il; guard zaten yetkisiz oturumu login'e al?yor.
-      });
-  }, []);
-
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
@@ -97,8 +62,6 @@ export default function Profile() {
     }
     setOpen(false);
   };
-
-  const displayRol = role === 'admin' ? 'Admin' : 'User';
 
   const handleLogout = () => {
     localStorage.clear();
@@ -127,7 +90,7 @@ export default function Profile() {
           aria-haspopup="true"
           onClick={handleToggle}
         >
-          <Avatar alt="profile user" src={getStoredAvatar()} size="sm" sx={{ '&:hover': { outline: '1px solid', outlineColor: 'primary.main' } }} />
+          <Avatar alt="profile user" src={avatar1} size="sm" sx={{ '&:hover': { outline: '1px solid', outlineColor: 'primary.main' } }} />
         </ButtonBase>
       </Tooltip>
       <Popper
@@ -156,11 +119,11 @@ export default function Profile() {
                   <CardContent sx={{ px: 2.5, pt: 3 }}>
                     <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
                       <Stack direction="row" sx={{ gap: 1.25, alignItems: 'center' }}>
-                        <Avatar alt="profile user" src={getStoredAvatar()} sx={{ width: 32, height: 32 }} />
+                        <Avatar alt="profile user" src={avatar1} sx={{ width: 32, height: 32 }} />
                         <Stack>
                           <Typography variant="h6">{username}</Typography>
                           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            {email} Â· {roleLabel}
+                            {email} · {role}
                           </Typography>
                         </Stack>
                       </Stack>
@@ -203,7 +166,7 @@ export default function Profile() {
                           }
                         }}
                         icon={<SettingOutlined />}
-                        label="Workspace"
+                        label="Setting"
                         {...a11yProps(1)}
                       />
                     </Tabs>
@@ -225,3 +188,4 @@ export default function Profile() {
 }
 
 TabPanel.propTypes = { children: PropTypes.node, value: PropTypes.number, index: PropTypes.number, other: PropTypes.any };
+
