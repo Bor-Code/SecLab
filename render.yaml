@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: seclab-api
+    runtime: python
+    branch: main
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECLAB_JWT_SECRET
+        sync: false
+      - key: SECLAB_CORS_ORIGINS
+        sync: false
+      - key: SECLAB_TOKEN_EXPIRE_MINUTES
+        value: "60"
+      - key: SECLAB_RESET_TOKEN_EXPIRE_MINUTES
+        value: "15"
