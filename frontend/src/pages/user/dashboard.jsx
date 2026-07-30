@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
@@ -22,6 +22,8 @@ import CreateRecordsPanel from './components/CreateRecordsPanel';
 import TopicManager from './components/TopicManager';
 import LearningLogList from './components/LearningLogList';
 import ResourceList from './components/ResourceList';
+import ProductivityPanel from './components/ProductivityPanel';
+import InsightsPanel from './components/InsightsPanel';
 
 export default function UserDashboardPage() {
   const userId = Number(localStorage.getItem('seclab-user-id'));
@@ -42,7 +44,7 @@ export default function UserDashboardPage() {
   const [editTopicName, setEditTopicName] = useState('');
   const [editTopicDescription, setEditTopicDescription] = useState('');
 
-  // Learning Log Create states
+  // Öğrenme Kaydı Create states
   const [logTopicId, setLogTopicId] = useState('');
   const [logTitle, setLogTitle] = useState('');
   const [logNotes, setLogNotes] = useState('');
@@ -77,7 +79,7 @@ export default function UserDashboardPage() {
       setResources(resourcesData);
     } catch (loadError) {
       console.error('Failed to load user dashboard:', loadError);
-      setError('Could not load your learning data.');
+      setError('Öğrenme verileriniz yüklenemedi.');
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +96,7 @@ export default function UserDashboardPage() {
     const trimmedDescription = newTopicDescription.trim();
 
     if (!trimmedName) {
-      setError('Topic name is required.');
+      setError('Konu Adı is required.');
       return;
     }
 
@@ -113,7 +115,7 @@ export default function UserDashboardPage() {
       await loadUserData();
     } catch (createError) {
       console.error('Failed to create topic:', createError);
-      setError('Could not create topic.');
+      setError('Konu oluşturulamadı.');
     } finally {
       setIsSaving(false);
     }
@@ -123,13 +125,13 @@ export default function UserDashboardPage() {
     event.preventDefault();
 
     if (!logTopicId) {
-      setError('Please select a topic for the learning log.');
+      setError('Öğrenme kaydı için bir konu seçin.');
       return;
     }
 
     const trimmedTitle = logTitle.trim();
     if (!trimmedTitle) {
-      setError('Learning log title is required.');
+      setError('Öğrenme kaydı başlığı zorunludur.');
       return;
     }
 
@@ -150,7 +152,7 @@ export default function UserDashboardPage() {
       await loadUserData();
     } catch (createError) {
       console.error('Failed to create learning log:', createError);
-      setError('Could not create learning log.');
+      setError('Öğrenme kaydı oluşturulamadı.');
     } finally {
       setIsSaving(false);
     }
@@ -160,14 +162,14 @@ export default function UserDashboardPage() {
     event.preventDefault();
 
     if (!resourceTopicId) {
-      setError('Please select a topic for the resource.');
+      setError('Kaynak için bir konu seçin.');
       return;
     }
 
     const trimmedTitle = resourceTitle.trim();
     const trimmedUrl = resourceUrl.trim();
     if (!trimmedTitle || !trimmedUrl) {
-      setError('Resource title and URL are required.');
+      setError('Kaynak başlığı ve URL alanı zorunludur.');
       return;
     }
 
@@ -192,7 +194,7 @@ export default function UserDashboardPage() {
       await loadUserData();
     } catch (createError) {
       console.error('Failed to create resource:', createError);
-      setError('Could not create resource.');
+      setError('Kaynak oluşturulamadı.');
     } finally {
       setIsSaving(false);
     }
@@ -216,7 +218,7 @@ export default function UserDashboardPage() {
     const trimmedDescription = editTopicDescription.trim();
 
     if (!trimmedName) {
-      setError('Topic name is required.');
+      setError('Konu Adı is required.');
       return;
     }
 
@@ -233,14 +235,14 @@ export default function UserDashboardPage() {
       await loadUserData();
     } catch (updateError) {
       console.error('Failed to update topic:', updateError);
-      setError('Could not update topic.');
+      setError('Konu güncellenemedi.');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteTopic = async (topicId) => {
-    if (!window.confirm('Are you sure you want to delete this topic?')) {
+    if (!window.confirm('Bu konuyu silmek istediğinize emin misiniz?')) {
       return;
     }
 
@@ -252,14 +254,14 @@ export default function UserDashboardPage() {
       await loadUserData();
     } catch (deleteError) {
       console.error('Failed to delete topic:', deleteError);
-      setError('Could not delete topic. Ensure no dependent logs or resources exist.');
+      setError('Konu silinemedi. Konuya bağlı kayıt veya kaynak bulunmadığından emin olun.');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteLearningLog = async (logId) => {
-    if (!window.confirm('Are you sure you want to delete this learning log?')) {
+    if (!window.confirm('Bu öğrenme kaydını silmek istediğinize emin misiniz?')) {
       return;
     }
 
@@ -271,14 +273,14 @@ export default function UserDashboardPage() {
       await loadUserData();
     } catch (deleteError) {
       console.error('Failed to delete learning log:', deleteError);
-      setError('Could not delete learning log.');
+      setError('Öğrenme kaydı silinemedi.');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteResource = async (resourceId) => {
-    if (!window.confirm('Are you sure you want to delete this resource?')) {
+    if (!window.confirm('Bu kaynağı silmek istediğinize emin misiniz?')) {
       return;
     }
 
@@ -290,7 +292,7 @@ export default function UserDashboardPage() {
       await loadUserData();
     } catch (deleteError) {
       console.error('Failed to delete resource:', deleteError);
-      setError('Could not delete resource.');
+      setError('Kaynak silinemedi.');
     } finally {
       setIsSaving(false);
     }
@@ -298,19 +300,25 @@ export default function UserDashboardPage() {
 
   if (isLoading) {
     return (
-      <MainCard title="My Learning Workspace">
+      <MainCard title="Öğrenme Çalışma Alanım">
         <CircularProgress size={24} />
       </MainCard>
     );
   }
 
-  const displayName = username || email || 'User';
+  const displayName = username || email || 'Kullanıcı';
 
   return (
     <Stack spacing={3}>
-      <MainCard title="My Learning Workspace">
+      <ProductivityPanel />
+      <InsightsPanel
+        topics={topics}
+        learningLogs={learningLogs}
+        resources={resources}
+      />
+      <MainCard title="Öğrenme Çalışma Alanım">
         <Typography variant="body2">
-          Signed in as <strong>{displayName}</strong> {email && `(${email})`} &bull; Role: {role}
+          Oturum açık as <strong>{displayName}</strong> {email && `(${email})`} &bull; Rol: {role}
         </Typography>
       </MainCard>
 
