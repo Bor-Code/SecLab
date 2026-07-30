@@ -26,13 +26,13 @@ export default function UserResourcesPage() {
       const topicsData = await topicsResponse.json().catch(() => []);
 
       if (!resourcesResponse.ok) {
-        throw new Error(resourcesData?.detail || 'Resources could not be loaded.');
+        throw new Error(resourcesData?.detail || 'Kaynaklar yüklenemedi.');
       }
 
       setResources(Array.isArray(resourcesData) ? resourcesData : []);
       setKonular(Array.isArray(topicsData) ? topicsData : []);
     } catch (loadError) {
-      setError(loadError.message || 'Resources could not be loaded.');
+      setError(loadError.message || 'Kaynaklar yüklenemedi.');
       setResources([]);
       setKonular([]);
     }

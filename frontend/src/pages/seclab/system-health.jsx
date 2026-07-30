@@ -23,7 +23,7 @@ export default function SystemHealthPage() {
       setHealthStatus(data);
     } catch (error) {
       console.error('Failed to load health status:', error);
-      setErrorMessage('Backend unavailable or health check failed.');
+      setErrorMessage('Backend kullanılamıyor veya sistem kontrolü başarısız oldu.');
     } finally {
       setIsLoading(false);
     }
@@ -34,7 +34,7 @@ export default function SystemHealthPage() {
   }, []);
 
   return (
-    <MainCard title="System Health">
+    <MainCard title="Sistem Durumu">
       <Typography variant="body2" sx={{ mb: 3 }}>
         Monitor the current operational status of the SecLab API and Database.
       </Typography>

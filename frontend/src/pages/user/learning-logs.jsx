@@ -26,13 +26,13 @@ export default function UserLearningLogsPage() {
       const topicsData = await topicsResponse.json().catch(() => []);
 
       if (!logsResponse.ok) {
-        throw new Error(logsData?.detail || 'LearningLogs could not be loaded.');
+        throw new Error(logsData?.detail || 'Öğrenme kayıtları yüklenemedi.');
       }
 
       setLearningLogs(Array.isArray(logsData) ? logsData : []);
       setKonular(Array.isArray(topicsData) ? topicsData : []);
     } catch (loadError) {
-      setError(loadError.message || 'LearningLogs could not be loaded.');
+      setError(loadError.message || 'Öğrenme kayıtları yüklenemedi.');
       setLearningLogs([]);
       setKonular([]);
     }

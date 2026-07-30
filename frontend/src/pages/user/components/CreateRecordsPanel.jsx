@@ -39,17 +39,17 @@ export default function CreateRecordsPanel({
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 12, md: 4 }}>
-        <MainCard title="Create Topic">
+        <MainCard title="Konu Oluştur">
           <Stack component="form" spacing={2} onSubmit={handleCreateTopic}>
             <TextField
-              label="Topic name"
+              label="Konu Adı"
               value={newTopicName}
               onChange={(event) => setNewTopicName(event.target.value)}
               fullWidth
               disabled={isSaving}
             />
             <TextField
-              label="Description"
+              label="Açıklama"
               value={newTopicDescription}
               onChange={(event) => setNewTopicDescription(event.target.value)}
               fullWidth
@@ -58,21 +58,21 @@ export default function CreateRecordsPanel({
               disabled={isSaving}
             />
             <Button type="submit" variant="contained" disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Create Topic'}
+              {isSaving ? 'Kaydediliyor...' : 'Konu Oluştur'}
             </Button>
           </Stack>
         </MainCard>
       </Grid>
 
       <Grid size={{ xs: 12, md: 4 }}>
-        <MainCard title="Create Learning Log">
+        <MainCard title="Öğrenme Kaydı Oluştur">
           <Stack component="form" spacing={2} onSubmit={handleCreateLearningLog}>
             <FormControl fullWidth>
-              <InputLabel id="log-topic-label">Select Topic</InputLabel>
+              <InputLabel id="log-topic-label">Konu Seçin</InputLabel>
               <Select
                 labelId="log-topic-label"
                 value={logTopicId}
-                label="Select Topic"
+                label="Konu Seçin"
                 onChange={(e) => setLogTopicId(e.target.value)}
                 disabled={isSaving}
               >
@@ -84,14 +84,14 @@ export default function CreateRecordsPanel({
               </Select>
             </FormControl>
             <TextField
-              label="Log Title"
+              label="Kayıt Başlığı"
               value={logTitle}
               onChange={(event) => setLogTitle(event.target.value)}
               fullWidth
               disabled={isSaving}
             />
             <TextField
-              label="Notes"
+              label="Notlar"
               value={logNotes}
               onChange={(event) => setLogNotes(event.target.value)}
               fullWidth
@@ -100,21 +100,21 @@ export default function CreateRecordsPanel({
               disabled={isSaving}
             />
             <Button type="submit" variant="contained" disabled={isSaving || topics.length === 0}>
-              {isSaving ? 'Saving...' : 'Create Log'}
+              {isSaving ? 'Kaydediliyor...' : 'Create Log'}
             </Button>
           </Stack>
         </MainCard>
       </Grid>
 
       <Grid size={{ xs: 12, md: 4 }}>
-        <MainCard title="Create Resource">
+        <MainCard title="Kaynak Oluştur">
           <Stack component="form" spacing={2} onSubmit={handleCreateResource}>
             <FormControl fullWidth>
-              <InputLabel id="resource-topic-label">Select Topic</InputLabel>
+              <InputLabel id="resource-topic-label">Konu Seçin</InputLabel>
               <Select
                 labelId="resource-topic-label"
                 value={resourceTopicId}
-                label="Select Topic"
+                label="Konu Seçin"
                 onChange={(e) => setResourceTopicId(e.target.value)}
                 disabled={isSaving}
               >
@@ -126,7 +126,7 @@ export default function CreateRecordsPanel({
               </Select>
             </FormControl>
             <TextField
-              label="Resource Title"
+              label="Kaynak Başlığı"
               value={resourceTitle}
               onChange={(event) => setResourceTitle(event.target.value)}
               fullWidth
@@ -140,14 +140,14 @@ export default function CreateRecordsPanel({
               disabled={isSaving}
             />
             <TextField
-              label="Resource Type"
+              label="Kaynak Türü"
               value={resourceType}
               onChange={(event) => setResourceType(event.target.value)}
               fullWidth
               disabled={isSaving}
             />
             <Button type="submit" variant="contained" disabled={isSaving || topics.length === 0}>
-              {isSaving ? 'Saving...' : 'Create Resource'}
+              {isSaving ? 'Kaydediliyor...' : 'Kaynak Oluştur'}
             </Button>
           </Stack>
         </MainCard>

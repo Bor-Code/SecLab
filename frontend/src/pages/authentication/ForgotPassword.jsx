@@ -83,23 +83,23 @@ export default function ForgotPassword() {
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(data?.detail || 'Could not reset password.');
+        throw new Error(data?.detail || 'Şifre sıfırlanamadı.');
       }
 
       setNewPassword('');
-      setMessage('Şifre reset successfully. You can now log in.');
+      setMessage('Şifre başarıyla sıfırlandı. Şimdi giriş yapabilirsiniz.');
     } catch (resetError) {
-      setError(resetError.message || 'Şifre reset failed.');
+      setError(resetError.message || 'Şifre sıfırlama işlemi başarısız oldu.');
     } finally {
       setIsResetting(false);
     }
   };
 
   return (
-    <AuthShell title="Recover access quickly" description="Generate a demo reset token and set a new password without leaving the SecLab auth flow.">
+    <AuthShell title="Hesabınıza Yeniden Erişin" description="SecLab giriş akışından ayrılmadan demo sıfırlama kodu oluşturun ve yeni şifrenizi belirleyin.">
       <Stack spacing={3}>
         <Stack spacing={1}>
-          <Typography variant="h3">Reset Şifre</Typography>
+          <Typography variant="h3">Şifreyi Sıfırla</Typography>
           <Typography variant="body1" color="text.secondary">
             Enter your account email to create a reset token.
           </Typography>
@@ -114,7 +114,7 @@ export default function ForgotPassword() {
 
         <Stack component="form" spacing={2.25} onSubmit={handleRequestReset}>
           <Stack sx={{ gap: 1 }}>
-            <InputLabel htmlFor="reset-email">Account email</InputLabel>
+            <InputLabel htmlFor="reset-email">Hesap E-postası</InputLabel>
             <OutlinedInput
               id="reset-email"
               type="email"
@@ -137,14 +137,14 @@ export default function ForgotPassword() {
 
             <Stack component="form" spacing={2.25} onSubmit={handleResetPassword}>
               <Stack spacing={0.75}>
-                <Typography variant="h5">Finish password reset</Typography>
+                <Typography variant="h5">Şifre Sıfırlamayı Tamamla</Typography>
                 <Typography variant="body2" color="text.secondary">
                   Demo mode shows the token on screen. Production should send it by email.
                 </Typography>
               </Stack>
 
               <Stack sx={{ gap: 1 }}>
-                <InputLabel htmlFor="reset-token">Demo reset token</InputLabel>
+                <InputLabel htmlFor="reset-token">Demo Sıfırlama Kodu</InputLabel>
                 <OutlinedInput
                   id="reset-token"
                   value={resetToken}
@@ -156,27 +156,27 @@ export default function ForgotPassword() {
               </Stack>
 
               <Stack sx={{ gap: 1 }}>
-                <InputLabel htmlFor="new-password">New password</InputLabel>
+                <InputLabel htmlFor="new-password">Yeni Şifre</InputLabel>
                 <OutlinedInput
                   id="new-password"
                   type="password"
                   value={newPassword}
                   onChange={(event) => setNewPassword(event.target.value)}
-                  placeholder="New password"
+                  placeholder="Yeni Şifre"
                   fullWidth
                   autoComplete="new-password"
                 />
               </Stack>
 
               <Button disabled={isResetting} fullWidth size="large" type="submit" variant="contained">
-                Reset Şifre
+                Şifreyi Sıfırla
               </Button>
             </Stack>
           </>
         )}
 
         <Typography variant="body2" color="text.secondary">
-          Remembered your password?{' '}
+          Şifrenizi hatırladınız mı?{' '}
           <Link component={RouterLink} to="/login">
             Logine dön
           </Link>

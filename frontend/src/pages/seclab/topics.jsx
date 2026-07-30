@@ -21,7 +21,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
 import MainCard from 'components/MainCard';
-import { createTopic, deleteTopic, fetchKonular, fetchUsers, updateTopic } from 'api/seclab';
+import { createTopic, deleteTopic, fetchTopics, fetchUsers, updateTopic } from 'api/seclab';
 
 export default function KonularPage() {
   const [topics, setKonular] = useState([]);
@@ -49,12 +49,12 @@ export default function KonularPage() {
     setErrorMessage(null);
 
     try {
-      const [topicsData, usersData] = await Promise.all([fetchKonular(), fetchUsers()]);
+      const [topicsData, usersData] = await Promise.all([fetchTopics(), fetchUsers()]);
       setKonular(topicsData);
       setUsers(usersData);
     } catch (error) {
       console.error('Failed to load topics page:', error);
-      setErrorMessage('Failed to load topics page data.');
+      setErrorMessage('Konu sayfası verileri yüklenemedi.');
     } finally {
       setIsLoading(false);
     }
@@ -87,9 +87,9 @@ export default function KonularPage() {
       setName('');
       setDescription('');
       setTopicSearch('');
-      setMessage('Topic created successfully.');
+      setMessage('Konu başarıyla oluşturuldu.');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+      setErrorMessage(error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu.');
     } finally {
       setIsCreating(false);
     }
@@ -121,9 +121,9 @@ export default function KonularPage() {
 
       setKonular((prevKonular) => prevKonular.map((topic) => (topic.id === updatedTopic.id ? updatedTopic : topic)));
       cancelEditingTopic();
-      setMessage('Topic updated successfully.');
+      setMessage('Konu başarıyla güncellendi.');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+      setErrorMessage(error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu.');
     }
   }
 
@@ -144,10 +144,10 @@ export default function KonularPage() {
     try {
       await deleteTopic(deleteTargetTopic.id);
       setKonular((prevKonular) => prevKonular.filter((topic) => topic.id !== deleteTargetTopic.id));
-      setMessage('Topic deleted successfully.');
+      setMessage('Konu başarıyla silindi.');
       closeSilDialog();
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+      setErrorMessage(error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu.');
       closeSilDialog();
     } finally {
       setIsDeleting(false);
@@ -172,14 +172,14 @@ export default function KonularPage() {
         <form onSubmit={handleUpdateTopic}>
           <Grid container spacing={2} sx={{ mb: 4 }} alignItems="center">
             <Grid item xs={12} sm={5}>
-              <TextField fullWidth label="Topic name" value={editingName} onChange={(event) => setEditingName(event.target.value)} required />
+              <TextField fullWidth label="Konu Adı" value={editingName} onChange={(event) => setEditingName(event.target.value)} required />
             </Grid>
             <Grid item xs={12} sm={5}>
-              <TextField fullWidth label="Description" value={editingDescription} onChange={(event) => setEditingDescription(event.target.value)} />
+              <TextField fullWidth label="Açıklama" value={editingDescription} onChange={(event) => setEditingDescription(event.target.value)} />
             </Grid>
             <Grid item xs={12} sm={2}>
               <Stack direction="row" spacing={1}>
-                <Button type="submit" variant="contained" fullWidth>Save</Button>
+                <Button type="submit" variant="contained" fullWidth>Kaydet</Button>
                 <Button variant="outlined" fullWidth onClick={cancelEditingTopic}>İptal</Button>
               </Stack>
             </Grid>
@@ -189,21 +189,21 @@ export default function KonularPage() {
         <form onSubmit={handleCreateTopic}>
           <Grid container spacing={2} sx={{ mb: 4 }} alignItems="center">
             <Grid item xs={12} sm={3}>
-              <TextField select fullWidth label="User" value={userId} onChange={(event) => setUserId(event.target.value)} required>
+              <TextField select fullWidth label="Kullanıcı" value={userId} onChange={(event) => setUserId(event.target.value)} required>
                 {users.map((user) => (
                   <MenuItem key={user.id} value={user.id}>{user.username}</MenuItem>
                 ))}
               </TextField>
             </Grid>
             <Grid item xs={12} sm={3}>
-              <TextField fullWidth label="Topic name" value={name} onChange={(event) => setName(event.target.value)} required />
+              <TextField fullWidth label="Konu Adı" value={name} onChange={(event) => setName(event.target.value)} required />
             </Grid>
             <Grid item xs={12} sm={4}>
-              <TextField fullWidth label="Description" value={description} onChange={(event) => setDescription(event.target.value)} />
+              <TextField fullWidth label="Açıklama" value={description} onChange={(event) => setDescription(event.target.value)} />
             </Grid>
             <Grid item xs={12} sm={2}>
               <Button type="submit" variant="contained" disabled={isCreating || users.length === 0} fullWidth>
-                {isCreating ? 'Creating...' : 'Create topic'}
+                {isCreating ? 'Oluşturuluyor...' : 'Konu Oluştur'}
               </Button>
             </Grid>
           </Grid>
@@ -217,18 +217,18 @@ export default function KonularPage() {
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell>User</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Description</TableCell>
+              <TableCell>Kullanıcı</TableCell>
+              <TableCell>Ad</TableCell>
+              <TableCell>Açıklama</TableCell>
               <TableCell>Oluşturulma Tarihi</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell align="right">İşlemler</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={6} align="center">Loading topics...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} align="center">Konular yükleniyor...</TableCell></TableRow>
             ) : filteredKonular.length === 0 ? (
-              <TableRow><TableCell colSpan={6} align="center">No topics found.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} align="center">Konu bulunamadı.</TableCell></TableRow>
             ) : (
               filteredKonular.map((topic) => (
                 <TableRow key={topic.id} hover>
@@ -239,7 +239,7 @@ export default function KonularPage() {
                   <TableCell>{new Date(topic.created_at).toLocaleString('tr-TR')}</TableCell>
                   <TableCell align="right">
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
-                      <Button size="small" variant="outlined" onClick={() => startEditingTopic(topic)}>Edit</Button>
+                      <Button size="small" variant="outlined" onClick={() => startEditingTopic(topic)}>Düzenle</Button>
                       <Button size="small" variant="outlined" color="error" onClick={() => openSilDialog(topic)}>Sil</Button>
                     </Stack>
                   </TableCell>
@@ -251,10 +251,10 @@ export default function KonularPage() {
       </TableContainer>
 
       <Dialog open={deleteTargetTopic !== null} onClose={closeSilDialog}>
-        <DialogTitle>Sil topic</DialogTitle>
+        <DialogTitle>Konuyu Sil</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this topic? This action cannot be undone.
+            Bu konuyu silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -262,7 +262,7 @@ export default function KonularPage() {
             İptal
           </Button>
           <Button onClick={confirmSilTopic} color="error" variant="contained" disabled={isDeleting}>
-            {isDeleting ? 'Deleting...' : 'Sil'}
+            {isDeleting ? 'Siliniyor...' : 'Sil'}
           </Button>
         </DialogActions>
       </Dialog>

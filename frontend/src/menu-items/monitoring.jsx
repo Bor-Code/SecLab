@@ -16,7 +16,7 @@ const monitoring = {
   children: [
     {
       id: 'system-health',
-      title: 'System Health',
+      title: 'Sistem Durumu',
       type: 'item',
       url: '/admin/system-health',
       icon: icons.HeartOutlined,
@@ -24,7 +24,7 @@ const monitoring = {
     },
     {
       id: 'recent-activity',
-      title: 'Recent Activity',
+      title: 'Son Aktiviteler',
       type: 'item',
       url: '/admin/recent-activity',
       icon: icons.HistoryOutlined,
@@ -32,7 +32,7 @@ const monitoring = {
     },
     {
       id: 'data-browser',
-      title: 'Data Browser',
+      title: 'Veri Tarayıcısı',
       type: 'item',
       url: '/admin/data-browser',
       icon: icons.HistoryOutlined,
