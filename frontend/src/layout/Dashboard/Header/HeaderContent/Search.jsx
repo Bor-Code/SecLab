@@ -11,13 +11,13 @@ import Typography from '@mui/material/Typography';
 const items = [
   { label: 'MyWorkspace', path: '/user' },
   { label: 'Konular', path: '/user/topics' },
-  { label: 'LearningLogs', path: '/user/learning-logs' },
-  { label: 'Resources', path: '/user/resources' },
-  { label: 'MyProgress', path: '/user/progress' },
-  { label: 'StudyPlan', path: '/user/study-plan' },
-  { label: 'Notes', path: '/user/notes' },
-  { label: 'Activity', path: '/user/activity' },
-  { label: 'Profile', path: '/user/profile' }
+  { label: 'Öğrenme Kayıtları', path: '/user/learning-logs' },
+  { label: 'Kaynaklar', path: '/user/resources' },
+  { label: 'İlerlemem', path: '/user/progress' },
+  { label: 'Çalışma Planı', path: '/user/study-plan' },
+  { label: 'Notlar', path: '/user/notes' },
+  { label: 'Aktivite', path: '/user/activity' },
+  { label: 'Profil', path: '/user/profile' }
 ];
 
 export default function Search() {

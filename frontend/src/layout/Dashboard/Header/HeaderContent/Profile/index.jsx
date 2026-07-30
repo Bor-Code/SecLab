@@ -1,5 +1,5 @@
 ﻿import PropTypes from 'prop-types';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -49,9 +49,42 @@ export default function Profile() {
 
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const username = localStorage.getItem('seclab-username') || 'SecLab User';
-  const email = localStorage.getItem('seclab-user-email') || 'Signed in';
+  const username = localStorage.getItem('seclab-user-username') || 'SecLab User';
+  const email = localStorage.getItem('seclab-user-email') || 'Oturum açık';
   const role = localStorage.getItem('seclab-user-role') || 'user';
+  const [avatar, setAvatar] = useState(
+    () => localStorage.getItem('seclab-user-avatar') || avatar1
+  );
+
+  useEffect(() => {
+    function handleAvatarUpdated(event) {
+      setAvatar(
+        event.detail ||
+          localStorage.getItem('seclab-user-avatar') ||
+          avatar1
+      );
+    }
+
+    function handleAvatarStorage(event) {
+      if (event.key === 'seclab-user-avatar') {
+        setAvatar(event.newValue || avatar1);
+      }
+    }
+
+    window.addEventListener(
+      'seclab-user-avatar-updated',
+      handleAvatarUpdated
+    );
+    window.addEventListener('storage', handleAvatarStorage);
+
+    return () => {
+      window.removeEventListener(
+        'seclab-user-avatar-updated',
+        handleAvatarUpdated
+      );
+      window.removeEventListener('storage', handleAvatarStorage);
+    };
+  }, []);
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
@@ -77,7 +110,7 @@ export default function Profile() {
 
   return (
     <Box sx={{ flexShrink: 0, ml: 'auto' }}>
-      <Tooltip title="Profile" disableInteractive>
+      <Tooltip title="Profil" disableInteractive>
         <ButtonBase
           sx={(theme) => ({
             p: 0.25,
@@ -90,7 +123,7 @@ export default function Profile() {
           aria-haspopup="true"
           onClick={handleToggle}
         >
-          <Avatar alt="profile user" src={avatar1} size="sm" sx={{ '&:hover': { outline: '1px solid', outlineColor: 'primary.main' } }} />
+          <Avatar alt="profile user" src={avatar} size="sm" sx={{ '&:hover': { outline: '1px solid', outlineColor: 'primary.main' } }} />
         </ButtonBase>
       </Tooltip>
       <Popper
@@ -119,7 +152,7 @@ export default function Profile() {
                   <CardContent sx={{ px: 2.5, pt: 3 }}>
                     <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
                       <Stack direction="row" sx={{ gap: 1.25, alignItems: 'center' }}>
-                        <Avatar alt="profile user" src={avatar1} sx={{ width: 32, height: 32 }} />
+                        <Avatar alt="profile user" src={avatar} sx={{ width: 32, height: 32 }} />
                         <Stack>
                           <Typography variant="h6">{username}</Typography>
                           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -127,7 +160,7 @@ export default function Profile() {
                           </Typography>
                         </Stack>
                       </Stack>
-                      <Tooltip title="Logout">
+                      <Tooltip title="Çıkış Yap">
                         <IconButton size="large" sx={{ color: 'text.primary' }} onClick={handleLogout}>
                           <LogoutOutlined />
                         </IconButton>
@@ -150,7 +183,7 @@ export default function Profile() {
                           }
                         }}
                         icon={<UserOutlined />}
-                        label="Profile"
+                        label="Profil"
                         {...a11yProps(0)}
                       />
                       <Tab

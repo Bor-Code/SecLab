@@ -334,3 +334,202 @@ header .MuiToolbar-root::before,
   content: none !important;
   display: none !important;
 }
+
+/* SecLab productivity visual polish */
+
+/* Cards */
+main .MuiCard-root,
+main .MuiPaper-root:not(.MuiAppBar-root),
+.seclab-panel,
+.seclab-record-item {
+  border-radius: 18px !important;
+  border: 1px solid rgba(148, 163, 184, 0.24) !important;
+  box-shadow:
+    0 18px 45px rgba(15, 23, 42, 0.10),
+    0 3px 10px rgba(15, 23, 42, 0.05) !important;
+}
+
+.seclab-record-item {
+  padding: 18px !important;
+  gap: 18px !important;
+  background: rgba(255, 255, 255, 0.88);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.seclab-record-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(22, 119, 255, 0.32) !important;
+  box-shadow:
+    0 22px 52px rgba(15, 23, 42, 0.13),
+    0 4px 12px rgba(22, 119, 255, 0.08) !important;
+}
+
+.seclab-record-layout {
+  min-width: 0;
+}
+
+.seclab-record-layout > .MuiStack-root:first-child,
+.seclab-record-item > .MuiStack-root:first-child {
+  min-width: 0;
+  flex: 1 1 220px;
+}
+
+.seclab-record-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Buttons */
+main .MuiButton-root,
+.MuiDialog-root .MuiButton-root {
+  min-width: 92px;
+  min-height: 40px;
+  padding: 8px 18px;
+  border-radius: 11px !important;
+  flex-shrink: 0;
+  font-weight: 700;
+  text-transform: none;
+  box-shadow: 0 7px 18px rgba(15, 23, 42, 0.08);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+main .MuiButton-root:hover,
+.MuiDialog-root .MuiButton-root:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 11px 24px rgba(15, 23, 42, 0.13);
+}
+
+main .MuiButton-outlinedError {
+  background: rgba(254, 242, 242, 0.74);
+}
+
+main a {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Slightly gray and separated top bar */
+header,
+.MuiAppBar-root {
+  background: rgba(241, 245, 249, 0.94) !important;
+  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.11) !important;
+}
+
+header .MuiToolbar-root,
+.MuiAppBar-root .MuiToolbar-root {
+  width: 100%;
+}
+
+header a[title="GitHub profilini aç"],
+.MuiAppBar-root a[title="GitHub profilini aç"] {
+  margin-left: auto !important;
+}
+
+/* Animated network background */
+#root {
+  position: relative;
+  min-height: 100vh;
+  isolation: isolate;
+}
+
+#root::before,
+#root::after {
+  content: "";
+  position: fixed;
+  inset: -12%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+#root::before {
+  background-image:
+    radial-gradient(circle at 8% 18%, rgba(22, 119, 255, 0.48) 0 2px, transparent 3px),
+    radial-gradient(circle at 22% 42%, rgba(34, 211, 238, 0.42) 0 2px, transparent 3px),
+    radial-gradient(circle at 38% 15%, rgba(22, 119, 255, 0.38) 0 2px, transparent 3px),
+    radial-gradient(circle at 52% 64%, rgba(34, 211, 238, 0.42) 0 2px, transparent 3px),
+    radial-gradient(circle at 68% 26%, rgba(22, 119, 255, 0.42) 0 2px, transparent 3px),
+    radial-gradient(circle at 82% 72%, rgba(34, 211, 238, 0.40) 0 2px, transparent 3px),
+    radial-gradient(circle at 94% 38%, rgba(22, 119, 255, 0.42) 0 2px, transparent 3px);
+  background-size:
+    310px 290px,
+    370px 340px,
+    420px 360px,
+    460px 390px,
+    520px 430px,
+    580px 470px,
+    650px 520px;
+  opacity: 0.30;
+  animation: seclab-node-drift 24s ease-in-out infinite alternate;
+}
+
+#root::after {
+  background-image:
+    linear-gradient(27deg, transparent 49.72%, rgba(22, 119, 255, 0.11) 49.86%, rgba(22, 119, 255, 0.11) 50.14%, transparent 50.28%),
+    linear-gradient(151deg, transparent 49.72%, rgba(34, 211, 238, 0.10) 49.86%, rgba(34, 211, 238, 0.10) 50.14%, transparent 50.28%);
+  background-size: 260px 220px, 340px 300px;
+  opacity: 0.34;
+  animation: seclab-line-drift 32s linear infinite;
+}
+
+main,
+.MuiBox-root[role="main"] {
+  background:
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.13), transparent 32%),
+    linear-gradient(180deg, rgba(248, 250, 252, 0.91), rgba(238, 243, 248, 0.91)) !important;
+  backdrop-filter: blur(1px);
+}
+
+@keyframes seclab-node-drift {
+  0% {
+    transform: translate3d(-1.5%, -1%, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(1.5%, 1%, 0) scale(1.025);
+  }
+
+  100% {
+    transform: translate3d(2.5%, -1.5%, 0) scale(1.04);
+  }
+}
+
+@keyframes seclab-line-drift {
+  from {
+    transform: translate3d(-3%, -2%, 0);
+  }
+
+  to {
+    transform: translate3d(3%, 2%, 0);
+  }
+}
+
+@media (max-width: 600px) {
+  .seclab-record-item {
+    align-items: stretch !important;
+  }
+
+  .seclab-record-item > .MuiButton-root {
+    align-self: flex-end;
+  }
+
+  .seclab-record-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #root::before,
+  #root::after,
+  .seclab-record-item,
+  main .MuiButton-root {
+    animation: none !important;
+    transition: none !important;
+  }
+}

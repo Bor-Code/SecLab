@@ -32,6 +32,11 @@ export default function UserProfilePage() {
       const result = String(reader.result || '');
       setAvatar(result);
       localStorage.setItem('seclab-user-avatar', result);
+      window.dispatchEvent(
+        new CustomEvent('seclab-user-avatar-updated', {
+          detail: result
+        })
+      );
     };
 
     reader.readAsDataURL(file);
@@ -46,15 +51,15 @@ export default function UserProfilePage() {
           </Avatar>
 
           <Stack spacing={1} sx={{ flex: 1 }}>
-            <Typography variant="h2">Profile</Typography>
-            <Typography color="text.secondary">Manage your local SecLab profile picture and account display details.</Typography>
+            <Typography variant="h2">Profil</Typography>
+            <Typography color="text.secondary">SecLab profil resminizi ve hesap bilgilerinizi yönetin.</Typography>
             <Stack direction="row" spacing={1}>
               <Button variant="contained" component="label">
-                Upload Avatar
+                Avatar Yükle
                 <input hidden accept="image/*" type="file" onChange={handleAvatarUpload} />
               </Button>
               <Button variant="outlined" onClick={() => window.location.reload()}>
-                Refresh Header
+                Üst Barı Yenile
               </Button>
             </Stack>
           </Stack>
@@ -64,11 +69,11 @@ export default function UserProfilePage() {
       <Paper className="seclab-panel">
         <Stack spacing={2}>
           <Typography variant="h4">Account Details</Typography>
-          <TextField label="Username" value={username} onChange={(event) => setUsername(event.target.value)} />
-          <TextField label="Email" value={email} onChange={(event) => setEmail(event.target.value)} />
+          <TextField label="Kullanıcı Adı" value={username} onChange={(event) => setUsername(event.target.value)} />
+          <TextField label="E-posta" value={email} onChange={(event) => setEmail(event.target.value)} />
           <TextField label="Rol" value={role} disabled />
           <Typography color="text.secondary">
-            Avatar is stored locally for demo use. Backend avatar persistence can be added in the next pass.
+            Avatar demo amacıyla yerel olarak saklanır.
           </Typography>
         </Stack>
       </Paper>

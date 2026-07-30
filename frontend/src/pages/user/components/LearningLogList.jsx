@@ -6,19 +6,20 @@ import MainCard from 'components/MainCard';
 
 export default function LearningLogList({ learningLogs, isSaving, handleDeleteLearningLog }) {
   return (
-    <MainCard title="Learning Logs">
+    <MainCard title="Öğrenme Kayıtları">
       {learningLogs.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
-          No learning logs yet. Select a topic and add your first study note above.
+          Henüz öğrenme kaydı yok. Bir konu seçerek ilk çalışma notunuzu ekleyin.
         </Typography>
       ) : (
         <Stack spacing={1}>
           {learningLogs.map((log) => (
             <Stack
               key={log.id}
-              direction="row"
+              className="seclab-record-item"
+              direction={{ xs: 'column', sm: 'row' }}
               justifyContent="space-between"
-              alignItems="center"
+              alignItems={{ xs: 'stretch', sm: 'center' }}
               sx={{ p: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}
             >
               <Stack spacing={0.5}>
