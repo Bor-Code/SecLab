@@ -10,7 +10,7 @@ from app.routers.auth import require_signed_in_user
 
 router = APIRouter(
     prefix="/learning-logs",
-    tags=["LearningLogs"]
+    tags=["Öğrenme Kayıtları"]
 )
 
 metadata = MetaData()
@@ -65,12 +65,12 @@ def get_learning_logs(user_id: int | None = Query(None), current_user: dict = De
             return [dict(row) for row in result.mappings()]
     except SQLAlchemyError as e:
         print(f"Database error in get_learning_logs: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 @router.post("", response_model=LearningLogRead, status_code=status.HTTP_201_CREATED)
 def create_learning_log(payload: LearningLogCreate, current_user: dict = Depends(require_signed_in_user)):
     if current_user["role"] != "admin" and payload.user_id != current_user["id"]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Yetkisiz eri?im")
 
     try:
         with engine.begin() as connection:
@@ -89,7 +89,7 @@ def create_learning_log(payload: LearningLogCreate, current_user: dict = Depends
             return dict(result.mappings().one())
     except SQLAlchemyError as e:
         print(f"Database error in create_learning_log: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 @router.patch("/{log_id}", response_model=LearningLogRead)
 def update_learning_log(log_id: int, payload: LearningLogUpdate, current_user: dict = Depends(require_signed_in_user)):
@@ -104,10 +104,10 @@ def update_learning_log(log_id: int, payload: LearningLogUpdate, current_user: d
             existing = connection.execute(existing_query).mappings().first()
 
             if not existing:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Learning log not found")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="??renme kayd? bulunamad?")
 
             if current_user["role"] != "admin" and existing["user_id"] != current_user["id"]:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Yetkisiz eri?im")
 
             update_query = (
                 update(learning_logs_table)
@@ -125,13 +125,13 @@ def update_learning_log(log_id: int, payload: LearningLogUpdate, current_user: d
             )
 
             updated = connection.execute(update_query).mappings().first()
-            record_activity("learning_log.update", "Learning log updated", f"Learning log '{updated['title']}' was updated.")
+            record_activity("learning_log.update", "??renme kayd? g?ncellendi", f"??renme kayd? '{updated['title']}' g?ncellendi.")
             return dict(updated)
     except HTTPException:
         raise
     except SQLAlchemyError as e:
         print(f"Database error in update_learning_log: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 @router.delete("/{log_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_learning_log(log_id: int, current_user: dict = Depends(require_signed_in_user)):
@@ -140,19 +140,19 @@ def delete_learning_log(log_id: int, current_user: dict = Depends(require_signed
             check_query = select(learning_logs_table).where(learning_logs_table.c.id == log_id)
             log = connection.execute(check_query).mappings().first()
             if not log:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Learning log not found")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="??renme kayd? bulunamad?")
 
             if current_user["role"] != "admin" and log["user_id"] != current_user["id"]:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Yetkisiz eri?im")
 
             delete_query = delete(learning_logs_table).where(learning_logs_table.c.id == log_id)
             connection.execute(delete_query)
-            record_activity("learning_log.delete", "Learning log deleted\", f\"Learning log id {log_id} was deleted.")
+            record_activity("learning_log.delete", "??renme kayd? silindi", f"??renme kayd? id {log_id} silindi.")
             return None
     except HTTPException:
         raise
     except SQLAlchemyError as e:
         print(f"Database error in delete_learning_log: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 

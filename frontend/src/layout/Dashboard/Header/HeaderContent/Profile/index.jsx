@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -49,13 +50,19 @@ const getStoredAvatar = () => localStorage.getItem('seclab-user-avatar') || '';
 
 export default function Profile() {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const username = localStorage.getItem('seclab-username') || localStorage.getItem('seclab-user-username') || 'SecLab User';
-  const email = localStorage.getItem('seclab-user-email') || 'Signed in';
-  const role = localStorage.getItem('seclab-user-role') || 'user';
-  const roleLabel = role === 'admin' ? 'Admin' : 'User';
+
+  const [username, setUsername] = useState(
+    localStorage.getItem('seclab-username') || localStorage.getItem('seclab-user-username') || t('common.defaultUser')
+  );
+  const [email, setEmail] = useState(localStorage.getItem('seclab-user-email') || t('common.signedIn'));
+  const [role, setRole] = useState(localStorage.getItem('seclab-user-role') || 'user');
+
+  const roleLabel = role === 'admin' ? 'Y?netici' : 'Kullan?c?';
+
   useEffect(() => {
     const token = localStorage.getItem('seclab-access-token');
 
@@ -78,12 +85,12 @@ export default function Profile() {
           localStorage.setItem('seclab-must-change-password', String(currentUser.must_change_password));
         }
 
-        setUsername(currentUser.username || 'SecLab User');
-        setEmail(currentUser.email || 'Signed in');
-        setRol(currentUser.role || 'user');
+        setUsername(currentUser.username || t('common.defaultUser'));
+        setEmail(currentUser.email || t('common.signedIn'));
+        setRole(currentUser.role || 'user');
       })
       .catch(() => {
-        // Header bilgisi kritik de?il; guard zaten yetkisiz oturumu login'e al?yor.
+        // Header bilgisi kritik degil; guard zaten yetkisiz oturumu login'e aliyor.
       });
   }, []);
 
@@ -97,8 +104,6 @@ export default function Profile() {
     }
     setOpen(false);
   };
-
-  const displayRol = role === 'admin' ? 'Admin' : 'User';
 
   const handleLogout = () => {
     localStorage.clear();
@@ -114,20 +119,20 @@ export default function Profile() {
 
   return (
     <Box sx={{ flexShrink: 0, ml: 'auto' }}>
-      <Tooltip title="Profile" disableInteractive>
+      <Tooltip title={t('common.profile')} disableInteractive>
         <ButtonBase
           sx={(theme) => ({
             p: 0.25,
             borderRadius: 1,
             '&:focus-visible': { outline: `2px solid ${theme.vars.palette.secondary.dark}`, outlineOffset: 2 }
           })}
-          aria-label="open profile"
+          aria-label="profil men?s?n? a?"
           ref={anchorRef}
           aria-controls={open ? 'profile-grow' : undefined}
           aria-haspopup="true"
           onClick={handleToggle}
         >
-          <Avatar alt="profile user" src={getStoredAvatar()} size="sm" sx={{ '&:hover': { outline: '1px solid', outlineColor: 'primary.main' } }} />
+          <Avatar alt="profil kullan?c?s?" src={getStoredAvatar()} size="sm" sx={{ '&:hover': { outline: '1px solid', outlineColor: 'primary.main' } }} />
         </ButtonBase>
       </Tooltip>
       <Popper
@@ -156,15 +161,15 @@ export default function Profile() {
                   <CardContent sx={{ px: 2.5, pt: 3 }}>
                     <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
                       <Stack direction="row" sx={{ gap: 1.25, alignItems: 'center' }}>
-                        <Avatar alt="profile user" src={getStoredAvatar()} sx={{ width: 32, height: 32 }} />
+                        <Avatar alt="profil kullan?c?s?" src={getStoredAvatar()} sx={{ width: 32, height: 32 }} />
                         <Stack>
                           <Typography variant="h6">{username}</Typography>
                           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            {email} Â· {roleLabel}
+                            {email} · {roleLabel}
                           </Typography>
                         </Stack>
                       </Stack>
-                      <Tooltip title="Logout">
+                      <Tooltip title={t('common.logout')}>
                         <IconButton size="large" sx={{ color: 'text.primary' }} onClick={handleLogout}>
                           <LogoutOutlined />
                         </IconButton>
@@ -173,7 +178,7 @@ export default function Profile() {
                   </CardContent>
 
                   <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                    <Tabs variant="fullWidth" value={value} onChange={handleChange} aria-label="profile tabs">
+                    <Tabs variant="fullWidth" value={value} onChange={handleChange} aria-label="profil sekmeleri">
                       <Tab
                         sx={{
                           display: 'flex',
@@ -187,7 +192,7 @@ export default function Profile() {
                           }
                         }}
                         icon={<UserOutlined />}
-                        label="Profile"
+                        label={t('common.profile')}
                         {...a11yProps(0)}
                       />
                       <Tab
@@ -203,7 +208,7 @@ export default function Profile() {
                           }
                         }}
                         icon={<SettingOutlined />}
-                        label="Workspace"
+                        label={t('common.workspace')}
                         {...a11yProps(1)}
                       />
                     </Tabs>

@@ -1,5 +1,5 @@
 import WorkspaceDataPage from './components/WorkspaceDataPage';
 
-export default function UserActivity() {
+export default function UserAktivite() {
   return <WorkspaceDataPage type="activity" />;
 }

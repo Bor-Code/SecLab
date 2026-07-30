@@ -1,0 +1,11 @@
+﻿{
+  "common": {
+    "search": "Ara",
+    "profile": "Profilim",
+    "logout": "Çıkış Yap",
+    "settings": "Ayarlar",
+    "workspace": "Çalışma Alanı",
+    "signedIn": "Oturum açık",
+    "defaultUser": "SecLab Kullanıcısı"
+  }
+}

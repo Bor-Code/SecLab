@@ -60,12 +60,12 @@ def get_topics(user_id: int | None = Query(None), current_user: dict = Depends(r
             return [dict(row) for row in result.mappings()]
     except SQLAlchemyError as e:
         print(f"Database error in get_topics: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 @router.post("", response_model=TopicRead, status_code=status.HTTP_201_CREATED)
 def create_topic(payload: TopicCreate, current_user: dict = Depends(require_signed_in_user)):
     if current_user["role"] != "admin" and payload.user_id != current_user["id"]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Yetkisiz eri?im")
 
     try:
         with engine.begin() as connection:
@@ -78,7 +78,7 @@ def create_topic(payload: TopicCreate, current_user: dict = Depends(require_sign
             return dict(result.mappings().one())
     except SQLAlchemyError as e:
         print(f"Database error in create_topic: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 @router.patch("/{topic_id}", response_model=TopicRead)
 def update_topic(topic_id: int, payload: TopicUpdate, current_user: dict = Depends(require_signed_in_user)):
@@ -87,10 +87,10 @@ def update_topic(topic_id: int, payload: TopicUpdate, current_user: dict = Depen
             check_query = select(topics_table).where(topics_table.c.id == topic_id)
             topic = connection.execute(check_query).mappings().first()
             if not topic:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Topic not found")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Konu bulunamadı")
 
             if current_user["role"] != "admin" and topic["user_id"] != current_user["id"]:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Yetkisiz eri?im")
 
             update_data = {}
             if payload.name is not None:
@@ -99,7 +99,7 @@ def update_topic(topic_id: int, payload: TopicUpdate, current_user: dict = Depen
                 update_data["description"] = payload.description
 
             if not update_data:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="G?ncelleme i?in alan g?nderilmedi")
 
             update_query = (
                 update(topics_table)
@@ -113,7 +113,7 @@ def update_topic(topic_id: int, payload: TopicUpdate, current_user: dict = Depen
         raise
     except SQLAlchemyError as e:
         print(f"Database error in update_topic: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 @router.delete("/{topic_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_topic(topic_id: int, current_user: dict = Depends(require_signed_in_user)):
@@ -122,20 +122,20 @@ def delete_topic(topic_id: int, current_user: dict = Depends(require_signed_in_u
             check_query = select(topics_table).where(topics_table.c.id == topic_id)
             topic = connection.execute(check_query).mappings().first()
             if not topic:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Topic not found")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Konu bulunamadı")
 
             if current_user["role"] != "admin" and topic["user_id"] != current_user["id"]:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Yetkisiz eri?im")
 
             delete_query = delete(topics_table).where(topics_table.c.id == topic_id)
             connection.execute(delete_query)
-            record_activity("topic.delete", "Topic deleted\", f\"Topic id {topic_id} was deleted.")
+            record_activity("topic.delete", "Konu silindi", f"Konu id {topic_id} silindi.")
             return None
     except HTTPException:
         raise
     except SQLAlchemyError as e:
         print(f"Database error in delete_topic: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 
 

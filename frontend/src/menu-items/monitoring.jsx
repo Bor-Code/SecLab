@@ -11,12 +11,12 @@ const icons = {
 
 const monitoring = {
   id: 'group-monitoring',
-  title: 'Monitoring',
+  title: '?zleme',
   type: 'group',
   children: [
     {
       id: 'system-health',
-      title: 'System Health',
+      title: 'Sistem Sa?l???',
       type: 'item',
       url: '/admin/system-health',
       icon: icons.HeartOutlined,
@@ -24,7 +24,7 @@ const monitoring = {
     },
     {
       id: 'recent-activity',
-      title: 'Recent Activity',
+      title: 'Son Aktiviteler',
       type: 'item',
       url: '/admin/recent-activity',
       icon: icons.HistoryOutlined,
@@ -32,7 +32,7 @@ const monitoring = {
     },
     {
       id: 'data-browser',
-      title: 'Data Browser',
+      title: 'Veri Taray?c?',
       type: 'item',
       url: '/admin/data-browser',
       icon: icons.HistoryOutlined,

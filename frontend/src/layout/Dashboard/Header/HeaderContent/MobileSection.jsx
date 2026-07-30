@@ -24,7 +24,7 @@ export default function MobileSection() {
   const anchorRef = useRef(null);
 
   const handleToggle = () => {
-    setOpen((prevOpen) => !prevOpen);
+    setOpen((previousOpen) => !previousOpen);
   };
 
   const handleClose = (event) => {
@@ -35,13 +35,13 @@ export default function MobileSection() {
     setOpen(false);
   };
 
-  const prevOpen = useRef(open);
+  const previousOpen = useRef(open);
   useEffect(() => {
-    if (prevOpen.current === true && open === false) {
+    if (previousOpen.current === true && open === false) {
       anchorRef.current.focus();
     }
 
-    prevOpen.current = open;
+    previousOpen.current = open;
   }, [open]);
 
   return (
@@ -52,7 +52,7 @@ export default function MobileSection() {
             color: 'text.primary',
             bgcolor: open ? 'grey.300' : 'grey.100'
           })}
-          aria-label="open more menu"
+          aria-label="Diğer seçenekler menüsünü aç"
           ref={anchorRef}
           aria-controls={open ? 'menu-list-grow' : undefined}
           aria-haspopup="true"

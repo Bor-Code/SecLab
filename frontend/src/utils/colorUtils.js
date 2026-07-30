@@ -63,6 +63,6 @@ export function withAlpha(color, opacity) {
     return color.replace(/(--[a-zA-Z0-9-]+)(.*)\)/, `$1Channel$2)`).replace(/^var\((.+)\)$/, `rgba(var($1) / ${opacity})`);
   }
 
-  // Fallback
+  // Geçici veri
   return color;
 }

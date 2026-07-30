@@ -8,10 +8,10 @@ const DashboardDefault = Loadable(lazy(() => import('pages/dashboard/default')))
 
 const UsersPage = Loadable(lazy(() => import('pages/seclab/users')));
 const KonularPage = Loadable(lazy(() => import('pages/seclab/topics')));
-const LearningLogsPage = Loadable(lazy(() => import('pages/seclab/learning-logs')));
-const ResourcesPage = Loadable(lazy(() => import('pages/seclab/resources')));
+const OgrenmeKayitlariPage = Loadable(lazy(() => import('pages/seclab/learning-logs')));
+const KaynaklarPage = Loadable(lazy(() => import('pages/seclab/resources')));
 const SystemHealthPage = Loadable(lazy(() => import('pages/seclab/system-health')));
-const RecentActivityPage = Loadable(lazy(() => import('pages/seclab/recent-activity')));
+const RecentAktivitePage = Loadable(lazy(() => import('pages/seclab/recent-activity')));
 const DataBrowserPage = Loadable(lazy(() => import('pages/seclab/data-browser')));
 
 const MainRoutes = {
@@ -44,11 +44,11 @@ const MainRoutes = {
         },
         {
           path: 'learning-logs',
-          element: <LearningLogsPage />
+          element: <OgrenmeKayitlariPage />
         },
         {
           path: 'resources',
-          element: <ResourcesPage />
+          element: <KaynaklarPage />
         },
         {
           path: 'system-health',
@@ -56,7 +56,7 @@ const MainRoutes = {
         },
         {
           path: 'recent-activity',
-          element: <RecentActivityPage />
+          element: <RecentAktivitePage />
         },
         {
           path: 'data-browser',

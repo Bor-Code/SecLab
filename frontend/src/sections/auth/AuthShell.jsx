@@ -6,7 +6,7 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-export default function AuthShell({ children, eyebrow = 'SecLab Workspace', title = 'Work securely. Learn clearly.', description }) {
+export default function AuthShell({ children, eyebrow = 'SecLab Çalışma Alanı', title = 'Güvenle çalışın. Net biçimde öğrenin.', description }) {
   return (
     <>
       <GlobalStyles
@@ -138,11 +138,11 @@ export default function AuthShell({ children, eyebrow = 'SecLab Workspace', titl
               </Typography>
 
               <Typography variant="h5" sx={{ color: 'rgba(255,255,255,0.88)', fontWeight: 400, lineHeight: 1.55 }}>
-                {description || 'Manage authentication, users, topics, learning logs, and resources from one focused SecLab workspace.'}
+                {description || 'Kimlik doğrulama, kullanıcı, konu, öğrenme kaydı ve kaynak işlemlerini tek bir SecLab çalışma alanından yönetin.'}
               </Typography>
 
               <Stack direction="row" spacing={1.25} sx={{ flexWrap: 'wrap', pt: 1 }}>
-                {['Authentication', 'Workspace', 'Records'].map((item) => (
+                {['Kimlik Doğrulama', 'Çalışma Alanı', 'Kayıtlar'].map((item) => (
                   <Box
                     key={item}
                     sx={{

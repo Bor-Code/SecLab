@@ -19,8 +19,8 @@ import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
 // ==============================|| NAVIGATION - LIST ITEM ||============================== //
 
 export default function NavItem({ item, level, isParents = false, setSelectedID }) {
-  const { menuMaster } = useGetMenuMaster();
-  const drawerOpen = menuMaster.isDashboardDrawerOpened;
+  const { menuMaster } = useGetMenuMaster() || {};
+  const drawerAç = (menuMaster?.isDashboardDrawerOpened ?? true);
 
   const downLG = useMediaQuery((theme) => theme.breakpoints.down('lg'));
 
@@ -41,7 +41,7 @@ export default function NavItem({ item, level, isParents = false, setSelectedID 
   const itemIcon = item.icon ? (
     <Icon
       style={{
-        fontSize: drawerOpen ? '1rem' : '1.25rem',
+        fontSize: drawerAç ? '1rem' : '1.25rem',
         ...(isParents && { fontSize: 20, stroke: '1.5' })
       }}
     />
@@ -66,9 +66,9 @@ export default function NavItem({ item, level, isParents = false, setSelectedID 
           selected={isSelected}
           sx={(theme) => ({
             zIndex: 1201,
-            pl: drawerOpen ? `${level * 28}px` : 1.5,
-            py: !drawerOpen && level === 1 ? 1.25 : 1,
-            ...(drawerOpen && {
+            pl: drawerAç ? `${level * 28}px` : 1.5,
+            py: !drawerAç && level === 1 ? 1.25 : 1,
+            ...(drawerAç && {
               '&:hover': { bgcolor: 'primary.lighter' },
               '&.Mui-selected': {
                 bgcolor: 'primary.lighter',
@@ -78,7 +78,7 @@ export default function NavItem({ item, level, isParents = false, setSelectedID 
                 '&:hover': { color: iconSelectedColor, bgcolor: 'primary.lighter' }
               }
             }),
-            ...(!drawerOpen && {
+            ...(!drawerAç && {
               '&:hover': { bgcolor: 'transparent' },
               '&.Mui-selected': { '&:hover': { bgcolor: 'transparent' }, bgcolor: 'transparent' }
             })
@@ -90,7 +90,7 @@ export default function NavItem({ item, level, isParents = false, setSelectedID 
               sx={(theme) => ({
                 minWidth: 28,
                 color: isSelected ? iconSelectedColor : textColor,
-                ...(!drawerOpen && {
+                ...(!drawerAç && {
                   borderRadius: 1.5,
                   width: 36,
                   height: 36,
@@ -98,7 +98,7 @@ export default function NavItem({ item, level, isParents = false, setSelectedID 
                   justifyContent: 'center',
                   '&:hover': { bgcolor: 'secondary.lighter' }
                 }),
-                ...(!drawerOpen &&
+                ...(!drawerAç &&
                   isSelected && {
                     bgcolor: 'primary.lighter',
                     '&:hover': { bgcolor: 'primary.lighter' }
@@ -108,7 +108,7 @@ export default function NavItem({ item, level, isParents = false, setSelectedID 
               {itemIcon}
             </ListItemIcon>
           )}
-          {(drawerOpen || (!drawerOpen && level !== 1)) && (
+          {(drawerAç || (!drawerAç && level !== 1)) && (
             <ListItemText
               primary={
                 <Typography variant="h6" sx={{ color: isSelected ? iconSelectedColor : textColor }}>
@@ -117,7 +117,7 @@ export default function NavItem({ item, level, isParents = false, setSelectedID 
               }
             />
           )}
-          {(drawerOpen || (!drawerOpen && level !== 1)) && item.chip && (
+          {(drawerAç || (!drawerAç && level !== 1)) && item.chip && (
             <Chip
               color={item.chip.color}
               variant={item.chip.variant}
@@ -127,7 +127,7 @@ export default function NavItem({ item, level, isParents = false, setSelectedID 
             />
           )}
         </ListItemButton>
-        {(drawerOpen || (!drawerOpen && level !== 1)) &&
+        {(drawerAç || (!drawerAç && level !== 1)) &&
           item?.actions &&
           item?.actions.map((action, index) => {
             const ActionIcon = action.icon;

@@ -23,26 +23,35 @@ import DialogTitle from '@mui/material/DialogTitle';
 
 import MainCard from 'components/MainCard';
 import { fetchUsers, createUser, updateUser, deleteUser,
-  resetUserŞifre } from 'api/seclab';
+  resetUserPassword } from 'api/seclab';
+
+const ROLE_LABELS = {
+  user: 'Kullanıcı',
+  admin: 'Yönetici'
+};
+
+function formatRole(role) {
+  return ROLE_LABELS[role] || role || '-';
+}
 
 export default function UsersPage() {
   const currentUserId = Number(localStorage.getItem('seclab-user-id') || 0);
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRol] = useState('user');
+  const [role, setRole] = useState('user');
   
   const [editingUserId, setEditingUserId] = useState(null);
   const [editingUsername, setEditingUsername] = useState('');
   const [editingEmail, setEditingEmail] = useState('');
-  const [editingRol, setEditingRol] = useState('user');
+  const [editingRole, setEditingRole] = useState('user');
 
   const [userSearch, setUserSearch] = useState('');
   
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const [deleteTargetUser, setSilTargetUser] = useState(null);
+  const [deleteTargetUser, setDeleteTargetUser] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -57,7 +66,7 @@ export default function UsersPage() {
       setUsers(data);
     } catch (error) {
       console.error('Failed to load users:', error);
-      setErrorMessage('Failed to load users.');
+      setErrorMessage('Kullanıcılar yüklenemedi.');
     } finally {
       setIsLoading(false);
     }
@@ -78,12 +87,12 @@ export default function UsersPage() {
       setUsers((prevUsers) => [...prevUsers, createdUser]);
       setUsername('');
       setEmail('');
-      setRol('user');
+      setRole('user');
       setUserSearch('');
       setPage(0);
-      setMessage('User created successfully.');
+      setMessage('Kullanıcı başarıyla oluşturuldu.');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+      setErrorMessage(error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu.');
     } finally {
       setIsCreating(false);
     }
@@ -93,7 +102,7 @@ export default function UsersPage() {
     setEditingUserId(user.id);
     setEditingUsername(user.username);
     setEditingEmail(user.email);
-    setEditingRol(user.role || 'user');
+    setEditingRole(user.role || 'user');
     setMessage(null);
     setErrorMessage(null);
   }
@@ -102,7 +111,7 @@ export default function UsersPage() {
     setEditingUserId(null);
     setEditingUsername('');
     setEditingEmail('');
-    setEditingRol('user');
+    setEditingRole('user');
   }
 
   async function handleUpdateUser(event) {
@@ -113,58 +122,58 @@ export default function UsersPage() {
       const updatedUser = await updateUser(editingUserId, {
         username: editingUsername,
         email: editingEmail,
-        role: editingRol,
+        role: editingRole,
       });
       setUsers((prevUsers) =>
         prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u))
       );
       cancelEditingUser();
-      setMessage('User updated successfully.');
+      setMessage('Kullanıcı başarıyla güncellendi.');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+      setErrorMessage(error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu.');
     }
   }
 
-  function openSilDialog(user) {
-    setSilTargetUser(user);
+  function openDeleteDialog(user) {
+    setDeleteTargetUser(user);
     setMessage(null);
     setErrorMessage(null);
   }
 
-  function closeSilDialog() {
-    setSilTargetUser(null);
+  function closeDeleteDialog() {
+    setDeleteTargetUser(null);
       setEditingUserId(null);
   }
 
 
 
-  async function handleResetUserŞifre(user) {
-    if (!window.confirm(`Reset password for ${user.email}?`)) {
+  async function handleResetUserPassword(user) {
+    if (!window.confirm(`${user.email} kullanıcısının şifresi sıfırlansın mı?`)) {
       return;
     }
 
     try {
       setErrorMessage(null);
-      const response = await resetUserŞifre(user.id);
-      setSuccessMessage(`Temporary password: ${response.temporary_password}`);
+      const response = await resetUserPassword(user.id);
+      setMessage(`Geçici şifre: ${response.temporary_password}`);
     } catch (error) {
       console.error('Failed to reset user password:', error);
-      setErrorMessage(error.message || 'Could not reset user password.');
+      setErrorMessage(error.message || 'Kullanıcı şifresi sıfırlanamadı.');
     }
   }
 
-  async function confirmSilUser() {
+  async function confirmDeleteUser() {
     if (!deleteTargetUser) return;
     
     setIsDeleting(true);
     try {
       await deleteUser(deleteTargetUser.id);
       setUsers((prevUsers) => prevUsers.filter((u) => u.id !== deleteTargetUser.id));
-      setMessage('User deleted successfully.');
-      closeSilDialog();
+      setMessage('Kullanıcı başarıyla silindi.');
+      closeDeleteDialog();
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
-      closeSilDialog();
+      setErrorMessage(error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu.');
+      closeDeleteDialog();
     } finally {
       setIsDeleting(false);
     }
@@ -189,9 +198,9 @@ export default function UsersPage() {
   const paginatedUsers = filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <MainCard title="Users">
+    <MainCard title="Kullanıcılar">
       <Typography variant="body2" sx={{ mb: 3 }}>
-        Create and manage application users. Use the form below to add a new user to the system.
+        Uygulama kullanıcılarını oluşturun ve yönetin. Sisteme yeni kullanıcı eklemek için aşağıdaki formu kullanın.
       </Typography>
 
       {message && (
@@ -212,7 +221,7 @@ export default function UsersPage() {
             <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
-                label="Username"
+                label="Kullanıcı Adı"
                 value={editingUsername}
                 onChange={(e) => setEditingUsername(e.target.value)}
                 required
@@ -222,7 +231,7 @@ export default function UsersPage() {
               <TextField
                 fullWidth
                 type="email"
-                label="Email"
+                label="E-posta"
                 value={editingEmail}
                 onChange={(e) => setEditingEmail(e.target.value)}
                 required
@@ -233,12 +242,12 @@ export default function UsersPage() {
                 select
                 fullWidth
                 label="Rol"
-                value={editingRol}
-                onChange={(e) => setEditingRol(e.target.value)}
+                value={editingRole}
+                onChange={(e) => setEditingRole(e.target.value)}
                 required
               >
-                <MenuItem value="user">User</MenuItem>
-                <MenuItem value="admin">Admin</MenuItem>
+                <MenuItem value="user">Kullanıcı</MenuItem>
+                <MenuItem value="admin">Yönetici</MenuItem>
               </TextField>
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -249,7 +258,7 @@ export default function UsersPage() {
                   fullWidth
                   sx={{ height: '41px' }}
                 >
-                  Save changes
+                  Değişiklikleri Kaydet
                 </Button>
                 <Button
                   variant="outlined"
@@ -269,7 +278,7 @@ export default function UsersPage() {
             <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
-                label="Username"
+                label="Kullanıcı Adı"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -279,7 +288,7 @@ export default function UsersPage() {
               <TextField
                 fullWidth
                 type="email"
-                label="Email"
+                label="E-posta"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -291,11 +300,11 @@ export default function UsersPage() {
                 fullWidth
                 label="Rol"
                 value={role}
-                onChange={(e) => setRol(e.target.value)}
+                onChange={(e) => setRole(e.target.value)}
                 required
               >
-                <MenuItem value="user">User</MenuItem>
-                <MenuItem value="admin">Admin</MenuItem>
+                <MenuItem value="user">Kullanıcı</MenuItem>
+                <MenuItem value="admin">Yönetici</MenuItem>
               </TextField>
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -306,7 +315,7 @@ export default function UsersPage() {
                 fullWidth
                 sx={{ height: '41px' }}
               >
-                {isCreating ? 'Creating...' : 'Create user'}
+                {isCreating ? 'Oluşturuluyor...' : 'Kullanıcı Oluştur'}
               </Button>
             </Grid>
           </Grid>
@@ -315,13 +324,13 @@ export default function UsersPage() {
 
       <TextField
         fullWidth
-        label="User ara"
+        label="Kullanıcı ara"
         value={userSearch}
         onChange={(e) => {
           setUserSearch(e.target.value);
           setPage(0);
         }}
-        placeholder="Search by username, email, or role"
+        placeholder="Kullanıcı adı, e-posta veya role göre ara"
         sx={{ mb: 3 }}
       />
 
@@ -330,24 +339,24 @@ export default function UsersPage() {
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell>Username</TableCell>
-              <TableCell>Email</TableCell>
+              <TableCell>Kullanıcı Adı</TableCell>
+              <TableCell>E-posta</TableCell>
               <TableCell>Rol</TableCell>
               <TableCell>Oluşturulma Tarihi</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell align="right">İşlemler</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} align="center">
-                  Loading users...
+                  Kullanıcılar yükleniyor...
                 </TableCell>
               </TableRow>
             ) : paginatedUsers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} align="center">
-                  No users found.
+                  Kullanıcı bulunamadı.
                 </TableCell>
               </TableRow>
             ) : (
@@ -356,7 +365,7 @@ export default function UsersPage() {
                   <TableCell>{user.id}</TableCell>
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell sx={{ textTransform: 'capitalize' }}>{user.role}</TableCell>
+                  <TableCell sx={{ textTransform: 'capitalize' }}>{formatRole(user.role)}</TableCell>
                   <TableCell>{new Date(user.created_at).toLocaleString('tr-TR')}</TableCell>
                   <TableCell align="right">
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
@@ -365,13 +374,13 @@ export default function UsersPage() {
                         variant="outlined"
                         onClick={() => startEditingUser(user)}
                       >
-                        Edit
+                        Düzenle
                       </Button>
                       <Button
                         size="small"
                         variant="outlined"
                         color="error"
-                        disabled={user.role === "admin"} onClick={() => openSilDialog(user)}
+                        disabled={user.role === "admin"} onClick={() => openDeleteDialog(user)}
                       >
                         Sil
                       </Button>
@@ -385,6 +394,9 @@ export default function UsersPage() {
         <TablePagination
           rowsPerPageOptions={[10, 25, 50]}
           component="div"
+          labelRowsPerPage="Sayfa başına satır:"
+          labelDisplayedRows={({ from, to, count }) => from + '-' + to + ' / ' + count}
+          getItemAriaLabel={(type) => (type === 'next' ? 'Sonraki sayfa' : 'Önceki sayfa')}
           count={filteredUsers.length}
           rowsPerPage={rowsPerPage}
           page={page}
@@ -393,19 +405,19 @@ export default function UsersPage() {
         />
       </TableContainer>
 
-      <Dialog open={deleteTargetUser !== null} onClose={closeSilDialog}>
-        <DialogTitle>Sil user</DialogTitle>
+      <Dialog open={deleteTargetUser !== null} onClose={closeDeleteDialog}>
+        <DialogTitle>Kullanıcıyı Sil</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this user? This action cannot be undone.
+            Bu kullanıcıyı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeSilDialog} color="primary" disabled={isDeleting}>
+          <Button onClick={closeDeleteDialog} color="primary" disabled={isDeleting}>
             İptal
           </Button>
-          <Button onClick={confirmSilUser} color="error" variant="contained" disabled={isDeleting}>
-            {isDeleting ? 'Deleting...' : 'Sil'}
+          <Button onClick={confirmDeleteUser} color="error" variant="contained" disabled={isDeleting}>
+            {isDeleting ? 'Siliniyor...' : 'Sil'}
           </Button>
         </DialogActions>
       </Dialog>

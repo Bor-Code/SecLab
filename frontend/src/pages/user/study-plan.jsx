@@ -1,5 +1,5 @@
 import WorkspaceDataPage from './components/WorkspaceDataPage';
 
-export default function UserStudyPlan() {
+export default function UserCalismaPlani() {
   return <WorkspaceDataPage type="plan" />;
 }

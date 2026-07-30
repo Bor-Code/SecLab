@@ -130,7 +130,7 @@ export type ChangeŞifrePayload = {
   new_password: string;
 };
 
-export type ProfileUpdatePayload = {
+export type ProfilimUpdatePayload = {
   username?: string;
   email?: string;
 };
@@ -225,7 +225,7 @@ function buildQueryString(params?: QueryParams) {
     return '';
   }
 
-  const searchParams = new URLSearchParams();
+  const searchParams = new URLAraParams();
 
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== null && value !== '') {
@@ -258,11 +258,11 @@ export function changeŞifre(payload: ChangeŞifrePayload) {
   });
 }
 
-export function fetchMyProfile() {
+export function fetchMyProfilim() {
   return request<User>('/auth/me');
 }
 
-export function updateMyProfile(payload: ProfileUpdatePayload) {
+export function updateMyProfilim(payload: ProfilimUpdatePayload) {
   return request<User>('/auth/me', {
     method: 'PATCH',
     body: JSON.stringify(payload),
@@ -293,7 +293,7 @@ export async function deleteUser(userId: number) {
   });
 }
 
-export function fetchKonular(params?: TopicFilters) {
+export function fetchTopics(params?: TopicFilters) {
   const queryString = buildQueryString(params);
   return request<Topic[]>(`/topics${queryString}`);
 }
@@ -402,7 +402,7 @@ export function resetPassword(payload: { token: string; new_password: string }) 
 }
 
 
-export function resetUserŞifre(userId: number) {
+export function resetUserPassword(userId: number) {
   return request(`/users/${userId}/reset-password`, {
     method: 'POST'
   });

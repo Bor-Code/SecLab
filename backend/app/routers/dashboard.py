@@ -32,7 +32,7 @@ def get_dashboard_summary(admin: dict = Depends(require_admin)):
             }
     except SQLAlchemyError as e:
         print(f"Database error in dashboard summary: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 @router.get("/recent-activity")
 def get_recent_activity(admin: dict = Depends(require_admin)):
@@ -120,7 +120,7 @@ def get_user_workspace(current_user: dict = Depends(require_signed_in_user)):
                 rows.append({
                     "id": f"log-{latest_log['id']}",
                     "type": "learning_log",
-                    "title": "Latest learning log",
+                    "title": "Son öğrenme kaydı",
                     "description": latest_log["title"],
                     "created_at": latest_log["created_at"],
                     "read": False,

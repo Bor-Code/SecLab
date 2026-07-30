@@ -9,21 +9,21 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 const items = [
-  { label: 'MyWorkspace', path: '/user' },
+  { label: 'Çalışma Alanım', path: '/user' },
   { label: 'Konular', path: '/user/topics' },
-  { label: 'LearningLogs', path: '/user/learning-logs' },
-  { label: 'Resources', path: '/user/resources' },
-  { label: 'MyProgress', path: '/user/progress' },
-  { label: 'StudyPlan', path: '/user/study-plan' },
-  { label: 'Notes', path: '/user/notes' },
-  { label: 'Activity', path: '/user/activity' },
-  { label: 'Profile', path: '/user/profile' }
+  { label: 'Öğrenme Kayıtları', path: '/user/learning-logs' },
+  { label: 'Kaynaklar', path: '/user/resources' },
+  { label: 'İlerlemem', path: '/user/progress' },
+  { label: 'Çalışma Planı', path: '/user/study-plan' },
+  { label: 'Notlar', path: '/user/notes' },
+  { label: 'Aktivite', path: '/user/activity' },
+  { label: 'Profilim', path: '/user/profile' }
 ];
 
-export default function Search() {
+export default function Ara() {
   const navigate = useNavigate();
   const [value, setValue] = useState('');
-  const [open, setOpen] = useState(false);
+  const [open, setAç] = useState(false);
 
   const results = useMemo(() => {
     const query = value.trim().toLowerCase();
@@ -37,7 +37,7 @@ export default function Search() {
 
   const goTo = (path) => {
     setValue('');
-    setOpen(false);
+    setAç(false);
     navigate(path);
   };
 
@@ -47,10 +47,10 @@ export default function Search() {
         size="small"
         fullWidth
         value={value}
-        onFocus={() => setOpen(true)}
+        onFocus={() => setAç(true)}
         onChange={(event) => {
           setValue(event.target.value);
-          setOpen(true);
+          setAç(true);
         }}
         onKeyDown={(event) => {
           if (event.key === 'Enter' && results[0]) {
@@ -58,7 +58,7 @@ export default function Search() {
           }
 
           if (event.key === 'Escape') {
-            setOpen(false);
+            setAç(false);
           }
         }}
         placeholder="Çalışma alanında ara"

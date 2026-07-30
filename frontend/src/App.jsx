@@ -1,4 +1,4 @@
-﻿import 'assets/styles/seclab-shell.css';
+import 'assets/styles/seclab-shell.css';
 import { RouterProvider } from 'react-router-dom';
 
 // project imports

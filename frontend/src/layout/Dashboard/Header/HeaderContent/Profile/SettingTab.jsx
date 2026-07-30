@@ -4,12 +4,12 @@ import Typography from '@mui/material/Typography';
 export default function SettingTab() {
   return (
     <Stack sx={{ gap: 1.25, p: 2 }}>
-      <Typography variant="subtitle1">Workspace Access</Typography>
+      <Typography variant="subtitle1">Çalışma Alanı Erişimi</Typography>
       <Typography variant="body2" color="text.secondary">
-        Your SecLab workspace is linked to this account.
+        SecLab çalışma alanın bu hesaba bağlı.
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        Use the sidebar to manage topics, learning logs, resources, progress, notes, and activity.
+        Konuları, öğrenme kayıtlarını, kaynakları, ilerlemeyi, notları ve aktiviteleri sol menüden yönet.
       </Typography>
     </Stack>
   );

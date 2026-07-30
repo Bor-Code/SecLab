@@ -86,7 +86,7 @@ def get_users(admin: dict = Depends(require_admin_user)):
             return [dict(row) for row in result.mappings()]
     except SQLAlchemyError as e:
         print(f"Database error in get_users: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 @router.get("/{user_id}", response_model=UserRead)
 def get_user(user_id: int):
@@ -107,7 +107,7 @@ def get_user(user_id: int):
         raise
     except SQLAlchemyError as e:
         print(f"Database error in get_user: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 @router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 def create_user(payload: UserCreate, admin: dict = Depends(require_admin_user)):
@@ -135,7 +135,7 @@ def create_user(payload: UserCreate, admin: dict = Depends(require_admin_user)):
             return dict(result.mappings().one())
     except SQLAlchemyError as e:
         print(f"Database error in create_user: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 @router.patch("/{user_id}", response_model=UserRead)
 def update_user(user_id: int, payload: UserUpdate, admin: dict = Depends(require_admin_user)):
@@ -149,7 +149,7 @@ def update_user(user_id: int, payload: UserUpdate, admin: dict = Depends(require
             update_data["role"] = validate_role(payload.role)
 
         if not update_data:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="G?ncelleme i?in alan g?nderilmedi")
 
         with engine.begin() as connection:
             existing_query = select(users_table).where(users_table.c.id == user_id)
@@ -188,7 +188,7 @@ def update_user(user_id: int, payload: UserUpdate, admin: dict = Depends(require
         raise
     except SQLAlchemyError as e:
         print(f"Database error in update_user: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 
 
@@ -217,16 +217,16 @@ def reset_user_password(user_id: int, current_user: dict = Depends(require_admin
             )
             connection.execute(update_query)
 
-            record_activity("users.reset_password", "User password reset", f"{existing_user['email']} received a temporary password.")
+            record_activity("users.reset_password", "Kullanıcı şifresi sıfırlandı", f"{existing_user['email']} geçici şifre aldı.")
             return {
-                "message": "Temporary password generated",
+                "message": "Geçici şifre oluşturuldu",
                 "temporary_password": temporary_password,
             }
     except HTTPException:
         raise
     except SQLAlchemyError as error:
         print(f"Database error in reset_user_password: {error}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(user_id: int, admin: dict = Depends(require_admin_user)):
@@ -258,6 +258,6 @@ def delete_user(user_id: int, admin: dict = Depends(require_admin_user)):
         raise
     except SQLAlchemyError as e:
         print(f"Database error in delete_user: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database service unavailable")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Veritaban? servisi kullan?lam?yor")
 
 

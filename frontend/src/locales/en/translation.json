@@ -1,0 +1,11 @@
+﻿{
+  "common": {
+    "search": "Search",
+    "profile": "My Profile",
+    "logout": "Logout",
+    "settings": "Settings",
+    "workspace": "Workspace",
+    "signedIn": "Signed in",
+    "defaultUser": "SecLab User"
+  }
+}

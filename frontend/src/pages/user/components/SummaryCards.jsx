@@ -12,12 +12,12 @@ export default function SummaryCards({ topicsCount, learningLogsCount, resources
         </MainCard>
       </Grid>
       <Grid size={{ xs: 12, md: 4 }}>
-        <MainCard title="LearningLogs">
+        <MainCard title="Öğrenme Kayıtları">
           <Typography variant="h3">{learningLogsCount}</Typography>
         </MainCard>
       </Grid>
       <Grid size={{ xs: 12, md: 4 }}>
-        <MainCard title="Resources">
+        <MainCard title="Kaynaklar">
           <Typography variant="h3">{resourcesCount}</Typography>
         </MainCard>
       </Grid>

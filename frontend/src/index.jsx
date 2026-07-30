@@ -1,4 +1,4 @@
-import { createRoot } from 'react-dom/client';
+﻿import { createRoot } from 'react-dom/client';
 
 // scroll bar
 import 'simplebar-react/dist/simplebar.min.css';
@@ -15,6 +15,7 @@ import '@fontsource/public-sans/700.css';
 import App from './App';
 import { ConfigProvider } from 'contexts/ConfigContext';
 import reportWebVitals from './reportWebVitals';
+import './i18n';
 
 const container = document.getElementById('root');
 const root = createRoot(container);

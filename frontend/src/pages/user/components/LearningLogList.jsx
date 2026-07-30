@@ -17,9 +17,9 @@ export default function LearningLogList({
   setEditLogTitle,
   setEditLogNotes,
   handleStartEditLearningLog,
-  handleİptalEditLearningLog,
+  handleCancelEditLearningLog,
   handleUpdateLearningLog,
-  handleSilLearningLog
+  handleDeleteLearningLog
 }) {
   const [search, setSearch] = useState('');
 
@@ -34,10 +34,10 @@ export default function LearningLogList({
   });
 
   return (
-    <MainCard id="learning-logs" title="LearningLogs" sx={{ scrollMarginTop: 96 }}>
+    <MainCard id="learning-logs" title="Öğrenme Kayıtları" sx={{ scrollMarginTop: 96 }}>
       <Stack spacing={2}>
         <TextField
-          label="Search learning logs"
+          label="Öğrenme kayıtlarında ara"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           fullWidth
@@ -45,11 +45,11 @@ export default function LearningLogList({
 
         {learningLogs.length === 0 ? (
           <Typography variant="body1" color="text.secondary">
-            No learning logs yet. Select a topic and add your first study note above.
+            Henüz öğrenme kaydı yok. Bir konu seçip ilk çalışma notunuzu ekleyin.
           </Typography>
         ) : filteredLogs.length === 0 ? (
           <Typography variant="body1" color="text.secondary">
-            No learning logs match your search.
+            Aramanızla eşleşen öğrenme kaydı bulunamadı.
           </Typography>
         ) : (
           <Stack spacing={1.5}>
@@ -57,14 +57,14 @@ export default function LearningLogList({
               <Stack key={log.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                 {editingLogId === log.id ? (
                   <Stack component="form" spacing={1.5} onSubmit={(event) => handleUpdateLearningLog(event, log.id)}>
-                    <TextField label="Title" value={editLogTitle} onChange={(event) => setEditLogTitle(event.target.value)} fullWidth />
-                    <TextField label="Notes" value={editLogNotes} onChange={(event) => setEditLogNotes(event.target.value)} fullWidth multiline minRows={2} />
+                    <TextField label="Başlık" value={editLogTitle} onChange={(event) => setEditLogTitle(event.target.value)} fullWidth />
+                    <TextField label="Notlar" value={editLogNotes} onChange={(event) => setEditLogNotes(event.target.value)} fullWidth multiline minRows={2} />
                     <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
-                      <Button variant="outlined" onClick={handleİptalEditLearningLog} disabled={isSaving}>
+                      <Button variant="outlined" onClick={handleCancelEditLearningLog} disabled={isSaving}>
                         İptal
                       </Button>
                       <Button variant="contained" type="submit" disabled={isSaving}>
-                        Save
+                        Kaydet
                       </Button>
                     </Stack>
                   </Stack>
@@ -82,9 +82,9 @@ export default function LearningLogList({
                     </Stack>
                     <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
                       <Button variant="outlined" size="small" sx={{ minWidth: 72 }} onClick={() => handleStartEditLearningLog(log)} disabled={isSaving}>
-                        Edit
+                        Düzenle
                       </Button>
-                      <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleSilLearningLog(log.id)} disabled={isSaving}>
+                      <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleDeleteLearningLog(log.id)} disabled={isSaving}>
                         Sil
                       </Button>
                     </Stack>
@@ -108,7 +108,7 @@ LearningLogList.propTypes = {
   setEditLogTitle: PropTypes.func.isRequired,
   setEditLogNotes: PropTypes.func.isRequired,
   handleStartEditLearningLog: PropTypes.func.isRequired,
-  handleİptalEditLearningLog: PropTypes.func.isRequired,
+  handleCancelEditLearningLog: PropTypes.func.isRequired,
   handleUpdateLearningLog: PropTypes.func.isRequired,
-  handleSilLearningLog: PropTypes.func.isRequired
+  handleDeleteLearningLog: PropTypes.func.isRequired
 };

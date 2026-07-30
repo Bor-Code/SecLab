@@ -14,12 +14,29 @@ import Alert from '@mui/material/Alert';
 import Link from '@mui/material/Link';
 
 import MainCard from 'components/MainCard';
-import { fetchUsers, fetchKonular, fetchLearningLogs, fetchResources } from 'api/seclab';
+import { fetchUsers, fetchTopics, fetchLearningLogs, fetchResources } from 'api/seclab';
+
+const roleLabels = {
+  admin: 'Yönetici',
+  user: 'Kullanıcı'
+};
+
+const resourceTypeLabels = {
+  documentation: 'Dokümantasyon',
+  tool: 'Araç',
+  article: 'Makale',
+  video: 'Video',
+  other: 'Diğer'
+};
+
+function formatMappedValue(value, labels) {
+  return labels[value] || value || '-';
+}
 
 export default function DataBrowserPage() {
   const [tabIndex, setTabIndex] = useState(0);
   const [users, setUsers] = useState([]);
-  const [topics, setKonular] = useState([]);
+  const [topics, setTopics] = useState([]);
   const [logs, setLogs] = useState([]);
   const [resources, setResources] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,19 +45,19 @@ export default function DataBrowserPage() {
   async function loadData() {
     setIsLoading(true);
     try {
-      const [fUsers, fKonular, fLogs, fResources] = await Promise.all([
+      const [fUsers, fTopics, fLogs, fResources] = await Promise.all([
         fetchUsers(),
-        fetchKonular(),
+        fetchTopics(),
         fetchLearningLogs(),
         fetchResources()
       ]);
       setUsers(fUsers);
-      setKonular(fKonular);
+      setTopics(fTopics);
       setLogs(fLogs);
       setResources(fResources);
     } catch (error) {
       console.error('Failed to load database records:', error);
-      setErrorMessage('Failed to load database records.');
+      setErrorMessage('Veritabanı kayıtları yüklenemedi.');
     } finally {
       setIsLoading(false);
     }
@@ -55,9 +72,9 @@ export default function DataBrowserPage() {
   };
 
   return (
-    <MainCard title="Data Browser">
+    <MainCard title="Veri Tarayıcısı">
       <Typography variant="body2" sx={{ mb: 3 }}>
-        Read-only database browser for inspecting core system tables.
+        Temel sistem tablolarını incelemek için salt okunur veritabanı tarayıcısı.
       </Typography>
 
       {errorMessage && (
@@ -67,11 +84,11 @@ export default function DataBrowserPage() {
       )}
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={tabIndex} onChange={handleTabChange} aria-label="data browser tables">
-          <Tab label={`Users (${users.length})`} />
+        <Tabs value={tabIndex} onChange={handleTabChange} aria-label="Veritabanı tabloları">
+          <Tab label={`Kullanıcılar (${users.length})`} />
           <Tab label={`Konular (${topics.length})`} />
-          <Tab label={`LearningLogs (${logs.length})`} />
-          <Tab label={`Resources (${resources.length})`} />
+          <Tab label={`Öğrenme Kayıtları (${logs.length})`} />
+          <Tab label={`Kaynaklar (${resources.length})`} />
         </Tabs>
       </Box>
 
@@ -82,8 +99,8 @@ export default function DataBrowserPage() {
             <TableHead>
               <TableRow>
                 <TableCell>ID</TableCell>
-                <TableCell>Username</TableCell>
-                <TableCell>Email</TableCell>
+                <TableCell>Kullanıcı Adı</TableCell>
+                <TableCell>E-posta</TableCell>
                 <TableCell>Rol</TableCell>
                 <TableCell>Oluşturulma Tarihi</TableCell>
               </TableRow>
@@ -91,11 +108,11 @@ export default function DataBrowserPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">Loading users...</TableCell>
+                  <TableCell colSpan={5} align="center">Kullanıcılar yükleniyor...</TableCell>
                 </TableRow>
               ) : users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">No users found.</TableCell>
+                  <TableCell colSpan={5} align="center">Kullanıcı bulunamadı.</TableCell>
                 </TableRow>
               ) : (
                 users.map((row) => (
@@ -103,7 +120,7 @@ export default function DataBrowserPage() {
                     <TableCell>{row.id}</TableCell>
                     <TableCell>{row.username}</TableCell>
                     <TableCell>{row.email}</TableCell>
-                    <TableCell sx={{ textTransform: 'capitalize' }}>{row.role}</TableCell>
+                    <TableCell sx={{ textTransform: 'capitalize' }}>{formatMappedValue(row.role, roleLabels)}</TableCell>
                     <TableCell>{new Date(row.created_at).toLocaleString('tr-TR')}</TableCell>
                   </TableRow>
                 ))
@@ -113,27 +130,27 @@ export default function DataBrowserPage() {
         </TableContainer>
       )}
 
-      {/* Konular Tab */}
+      {/* Topics Tab */}
       {tabIndex === 1 && (
         <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell>ID</TableCell>
-                <TableCell>User ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Description</TableCell>
+                <TableCell>Kullanıcı ID</TableCell>
+                <TableCell>Ad</TableCell>
+                <TableCell>Açıklama</TableCell>
                 <TableCell>Oluşturulma Tarihi</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">Loading topics...</TableCell>
+                  <TableCell colSpan={5} align="center">Konular yükleniyor...</TableCell>
                 </TableRow>
               ) : topics.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">No topics found.</TableCell>
+                  <TableCell colSpan={5} align="center">Konu bulunamadı.</TableCell>
                 </TableRow>
               ) : (
                 topics.map((row) => (
@@ -151,28 +168,28 @@ export default function DataBrowserPage() {
         </TableContainer>
       )}
 
-      {/* LearningLogs Tab */}
+      {/* Learning Logs Tab */}
       {tabIndex === 2 && (
         <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell>ID</TableCell>
-                <TableCell>User ID</TableCell>
-                <TableCell>Topic ID</TableCell>
-                <TableCell>Title</TableCell>
-                <TableCell>Study Date</TableCell>
+                <TableCell>Kullanıcı ID</TableCell>
+                <TableCell>Konu ID</TableCell>
+                <TableCell>Başlık</TableCell>
+                <TableCell>Çalışma Tarihi</TableCell>
                 <TableCell>Oluşturulma Tarihi</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">Loading learning logs...</TableCell>
+                  <TableCell colSpan={6} align="center">Öğrenme kayıtları yükleniyor...</TableCell>
                 </TableRow>
               ) : logs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">No learning logs found.</TableCell>
+                  <TableCell colSpan={6} align="center">Öğrenme kaydı bulunamadı.</TableCell>
                 </TableRow>
               ) : (
                 logs.map((row) => (
@@ -198,10 +215,10 @@ export default function DataBrowserPage() {
             <TableHead>
               <TableRow>
                 <TableCell>ID</TableCell>
-                <TableCell>User ID</TableCell>
-                <TableCell>Topic ID</TableCell>
-                <TableCell>Title</TableCell>
-                <TableCell>Type</TableCell>
+                <TableCell>Kullanıcı ID</TableCell>
+                <TableCell>Konu ID</TableCell>
+                <TableCell>Başlık</TableCell>
+                <TableCell>Tür</TableCell>
                 <TableCell>URL</TableCell>
                 <TableCell>Oluşturulma Tarihi</TableCell>
               </TableRow>
@@ -209,11 +226,11 @@ export default function DataBrowserPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">Loading resources...</TableCell>
+                  <TableCell colSpan={7} align="center">Kaynaklar yükleniyor...</TableCell>
                 </TableRow>
               ) : resources.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">No resources found.</TableCell>
+                  <TableCell colSpan={7} align="center">Kaynak bulunamadı.</TableCell>
                 </TableRow>
               ) : (
                 resources.map((row) => (
@@ -222,10 +239,10 @@ export default function DataBrowserPage() {
                     <TableCell>{row.user_id}</TableCell>
                     <TableCell>{row.topic_id}</TableCell>
                     <TableCell>{row.title}</TableCell>
-                    <TableCell sx={{ textTransform: 'capitalize' }}>{row.resource_type}</TableCell>
+                    <TableCell sx={{ textTransform: 'capitalize' }}>{formatMappedValue(row.resource_type, resourceTypeLabels)}</TableCell>
                     <TableCell>
                       <Link href={row.url} target="_blank" rel="noopener noreferrer">
-                        Open
+                        Aç
                       </Link>
                     </TableCell>
                     <TableCell>{new Date(row.created_at).toLocaleString('tr-TR')}</TableCell>

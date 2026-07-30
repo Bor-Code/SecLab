@@ -12,8 +12,8 @@ import { useGetMenuMaster } from 'api/menu';
 // ==============================|| NAVIGATION - LIST GROUP ||============================== //
 
 export default function NavGroup({ item }) {
-  const { menuMaster } = useGetMenuMaster();
-  const drawerOpen = menuMaster.isDashboardDrawerOpened;
+  const { menuMaster } = useGetMenuMaster() || {};
+  const drawerAç = (menuMaster?.isDashboardDrawerOpened ?? true);
 
   const navCollapse = item.children?.map((menuItem) => {
     switch (menuItem.type) {
@@ -38,7 +38,7 @@ export default function NavGroup({ item }) {
     <List
       subheader={
         item.title &&
-        drawerOpen && (
+        drawerAç && (
           <Box sx={{ pl: 3, mb: 1.5 }}>
             <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
               {item.title}
@@ -47,7 +47,7 @@ export default function NavGroup({ item }) {
           </Box>
         )
       }
-      sx={{ mb: drawerOpen ? 1.5 : 0, py: 0, zIndex: 0 }}
+      sx={{ mb: drawerAç ? 1.5 : 0, py: 0, zIndex: 0 }}
     >
       {navCollapse}
     </List>

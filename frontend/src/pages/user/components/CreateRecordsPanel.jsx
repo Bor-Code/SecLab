@@ -43,14 +43,14 @@ export default function CreateRecordsPanel({
         <MainCard title="Yeni Konu">
           <Stack component="form" spacing={2} onSubmit={handleCreateTopic}>
             <TextField
-              label="Topic Name"
+              label="Konu Adı"
               value={newTopicName}
               onChange={(event) => setNewTopicName(event.target.value)}
               fullWidth
               disabled={isSaving}
             />
             <TextField
-              label="Description"
+              label="Açıklama"
               value={newTopicDescription}
               onChange={(event) => setNewTopicDescription(event.target.value)}
               fullWidth
@@ -59,21 +59,21 @@ export default function CreateRecordsPanel({
               disabled={isSaving}
             />
             <Button type="submit" variant="contained" size="large" sx={{ py: 1.2, fontWeight: 700, borderRadius: 1.5 }} disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Konu Oluştur'}
+              {isSaving ? 'Kaydediliyor...' : 'Konu Oluştur'}
             </Button>
           </Stack>
         </MainCard>
       </Grid>
 
       <Grid size={{ xs: 12 }} sx={{ display: activeSection === 'learning-logs' ? 'block' : 'none' }}>
-        <MainCard title="New Learning Log">
+        <MainCard title="Yeni Öğrenme Kaydı">
           <Stack component="form" spacing={2} onSubmit={handleCreateLearningLog}>
             <FormControl fullWidth>
-              <InputLabel id="log-topic-label">Select Topic</InputLabel>
+              <InputLabel id="log-topic-label">Konu Seçin</InputLabel>
               <Select
                 labelId="log-topic-label"
                 value={logTopicId}
-                label="Topic"
+                label="Konu"
                 onChange={(e) => setLogTopicId(e.target.value)}
                 disabled={isSaving}
               >
@@ -85,14 +85,14 @@ export default function CreateRecordsPanel({
               </Select>
             </FormControl>
             <TextField
-              label="Log Title"
+              label="Kayıt Başlığı"
               value={logTitle}
               onChange={(event) => setLogTitle(event.target.value)}
               fullWidth
               disabled={isSaving}
             />
             <TextField
-              label="Notes"
+              label="Notlar"
               value={logNotes}
               onChange={(event) => setLogNotes(event.target.value)}
               fullWidth
@@ -101,21 +101,21 @@ export default function CreateRecordsPanel({
               disabled={isSaving}
             />
             <Button type="submit" variant="contained" size="large" sx={{ py: 1.2, fontWeight: 700, borderRadius: 1.5 }} disabled={isSaving || topics.length === 0}>
-              {isSaving ? 'Saving...' : 'Create Log'}
+              {isSaving ? 'Kaydediliyor...' : 'Kayıt Oluştur'}
             </Button>
           </Stack>
         </MainCard>
       </Grid>
 
       <Grid size={{ xs: 12 }} sx={{ display: activeSection === 'resources' ? 'block' : 'none' }}>
-        <MainCard title="New Resource">
+        <MainCard title="Yeni Kaynak">
           <Stack component="form" spacing={2} onSubmit={handleCreateResource}>
             <FormControl fullWidth>
-              <InputLabel id="resource-topic-label">Select Topic</InputLabel>
+              <InputLabel id="resource-topic-label">Konu Seçin</InputLabel>
               <Select
                 labelId="resource-topic-label"
                 value={resourceTopicId}
-                label="Topic"
+                label="Konu"
                 onChange={(e) => setResourceTopicId(e.target.value)}
                 disabled={isSaving}
               >
@@ -127,7 +127,7 @@ export default function CreateRecordsPanel({
               </Select>
             </FormControl>
             <TextField
-              label="Resource Title"
+              label="Kaynak Başlığı"
               value={resourceTitle}
               onChange={(event) => setResourceTitle(event.target.value)}
               fullWidth
@@ -141,14 +141,14 @@ export default function CreateRecordsPanel({
               disabled={isSaving}
             />
             <TextField
-              label="Type"
+              label="Tür"
               value={resourceType}
               onChange={(event) => setResourceType(event.target.value)}
               fullWidth
               disabled={isSaving}
             />
             <Button type="submit" variant="contained" size="large" sx={{ py: 1.2, fontWeight: 700, borderRadius: 1.5 }} disabled={isSaving || topics.length === 0}>
-              {isSaving ? 'Saving...' : 'Create Resource'}
+              {isSaving ? 'Kaydediliyor...' : 'Kaynak Oluştur'}
             </Button>
           </Stack>
         </MainCard>

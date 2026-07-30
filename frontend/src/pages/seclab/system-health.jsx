@@ -10,6 +10,17 @@ import Alert from '@mui/material/Alert';
 import MainCard from 'components/MainCard';
 import { fetchHealthStatus } from 'api/seclab';
 
+const statusLabels = {
+  ok: 'Normal',
+  degraded: 'Kısıtlı',
+  connected: 'Bağlı',
+  disconnected: 'Bağlantı yok'
+};
+
+function formatStatus(status) {
+  return statusLabels[status] || status;
+}
+
 export default function SystemHealthPage() {
   const [healthStatus, setHealthStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +34,7 @@ export default function SystemHealthPage() {
       setHealthStatus(data);
     } catch (error) {
       console.error('Failed to load health status:', error);
-      setErrorMessage('Backend unavailable or health check failed.');
+      setErrorMessage('Backend kullanılamıyor veya sağlık kontrolü başarısız oldu.');
     } finally {
       setIsLoading(false);
     }
@@ -34,9 +45,9 @@ export default function SystemHealthPage() {
   }, []);
 
   return (
-    <MainCard title="System Health">
+    <MainCard title="Sistem Sağlığı">
       <Typography variant="body2" sx={{ mb: 3 }}>
-        Monitor the current operational status of the SecLab API and Database.
+        SecLab API ve veritabanının mevcut çalışma durumunu izleyin.
       </Typography>
 
       {errorMessage && (
@@ -48,25 +59,25 @@ export default function SystemHealthPage() {
       {isLoading ? (
         <Box sx={{ p: 2 }}>
           <Typography variant="body2" color="textSecondary">
-            Loading system status...
+            Sistem durumu yükleniyor...
           </Typography>
         </Box>
       ) : healthStatus ? (
         <List sx={{ p: 0, '& .MuiListItem-root': { py: 2, px: 0 } }}>
           <ListItem divider>
-            <ListItemText primary="API Status" />
+            <ListItemText primary="API Durumu" />
             <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
-              {healthStatus.status}
+              {formatStatus(healthStatus.status)}
             </Typography>
           </ListItem>
           <ListItem divider>
-            <ListItemText primary="Database Status" />
+            <ListItemText primary="Veritabanı Durumu" />
             <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
-              {healthStatus.database}
+              {formatStatus(healthStatus.database)}
             </Typography>
           </ListItem>
           <ListItem>
-            <ListItemText primary="Last Checked" />
+            <ListItemText primary="Son Kontrol" />
             <Typography variant="subtitle1">
               {new Date(healthStatus.checked_at_utc).toLocaleString('tr-TR')}
             </Typography>

@@ -11,7 +11,7 @@ export function useLocalStorage(key, defaultValue) {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : defaultValue;
     } catch (err) {
-      console.warn(`Error reading localStorage key “${key}”:`, err);
+      console.warn(`Error reading localStorage key "${key}":`, err);
       return defaultValue;
     }
   };
@@ -23,7 +23,7 @@ export function useLocalStorage(key, defaultValue) {
     try {
       localStorage.setItem(key, JSON.stringify(state));
     } catch (err) {
-      console.warn(`Error setting localStorage key “${key}”:`, err);
+      console.warn(`Error setting localStorage key "${key}":`, err);
     }
   }, [key, state]);
 

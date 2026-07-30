@@ -18,13 +18,13 @@ export default function TopicManager({
   setEditTopicDescription,
   isSaving,
   handleStartEditTopic,
-  handleİptalEditTopic,
+  handleCancelEditTopic,
   handleUpdateTopic,
-  handleSilTopic
+  handleDeleteTopic
 }) {
   const [search, setSearch] = useState('');
 
-  const filteredKonular = topics.filter((topic) => {
+  const filteredTopics = topics.filter((topic) => {
     const query = search.trim().toLowerCase();
 
     if (!query) return true;
@@ -35,7 +35,7 @@ export default function TopicManager({
   });
 
   return (
-    <MainCard id="topics" title="My Konular" sx={{ scrollMarginTop: 96 }}>
+    <MainCard id="topics" title="Konularım" sx={{ scrollMarginTop: 96 }}>
       <Stack spacing={2}>
         <TextField
           label="Konu ara"
@@ -46,27 +46,27 @@ export default function TopicManager({
 
         {topics.length === 0 ? (
           <Typography variant="body1" color="text.secondary">
-            No topics yet. Create your first topic above to start organizing your learning journey.
+            Henüz konu yok. İlk konunu yukarıdan oluşturarak öğrenme düzenini başlat.
           </Typography>
-        ) : filteredKonular.length === 0 ? (
+        ) : filteredTopics.length === 0 ? (
           <Typography variant="body1" color="text.secondary">
-            No topics match your search.
+            Aramanızla eşleşen konu bulunamadı.
           </Typography>
         ) : (
           <Stack spacing={2}>
-            {filteredKonular.map((topic) => (
+            {filteredTopics.map((topic) => (
               <Box key={topic.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                 {editingTopicId === topic.id ? (
                   <Stack component="form" spacing={2} onSubmit={(event) => handleUpdateTopic(event, topic.id)}>
                     <TextField
-                      label="Topic name"
+                      label="Konu Adı"
                       value={editTopicName}
                       onChange={(event) => setEditTopicName(event.target.value)}
                       fullWidth
                       disabled={isSaving}
                     />
                     <TextField
-                      label="Description"
+                      label="Açıklama"
                       value={editTopicDescription}
                       onChange={(event) => setEditTopicDescription(event.target.value)}
                       fullWidth
@@ -75,11 +75,11 @@ export default function TopicManager({
                       disabled={isSaving}
                     />
                     <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
-                      <Button variant="outlined" size="small" onClick={handleİptalEditTopic} disabled={isSaving}>
+                      <Button variant="outlined" size="small" onClick={handleCancelEditTopic} disabled={isSaving}>
                         İptal
                       </Button>
                       <Button type="submit" variant="contained" size="small" disabled={isSaving}>
-                        Save
+                        Kaydet
                       </Button>
                     </Stack>
                   </Stack>
@@ -97,9 +97,9 @@ export default function TopicManager({
                     </Stack>
                     <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
                       <Button variant="outlined" size="small" sx={{ minWidth: 72 }} onClick={() => handleStartEditTopic(topic)} disabled={isSaving}>
-                        Edit
+                        Düzenle
                       </Button>
-                      <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleSilTopic(topic.id)} disabled={isSaving}>
+                      <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleDeleteTopic(topic.id)} disabled={isSaving}>
                         Sil
                       </Button>
                     </Stack>
@@ -123,7 +123,7 @@ TopicManager.propTypes = {
   setEditTopicDescription: PropTypes.func.isRequired,
   isSaving: PropTypes.bool.isRequired,
   handleStartEditTopic: PropTypes.func.isRequired,
-  handleİptalEditTopic: PropTypes.func.isRequired,
+  handleCancelEditTopic: PropTypes.func.isRequired,
   handleUpdateTopic: PropTypes.func.isRequired,
-  handleSilTopic: PropTypes.func.isRequired
+  handleDeleteTopic: PropTypes.func.isRequired
 };

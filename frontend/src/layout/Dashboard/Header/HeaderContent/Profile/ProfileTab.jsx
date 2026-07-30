@@ -9,15 +9,15 @@ import DashboardOutlined from '@ant-design/icons/DashboardOutlined';
 import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
 import UserOutlined from '@ant-design/icons/UserOutlined';
 
-export default function ProfileTab({ onLogout }) {
+export default function ProfilimTab({ onLogout }) {
   const username =
     localStorage.getItem('seclab-username') ||
     localStorage.getItem('seclab-user-username') ||
-    'SecLab User';
+    'SecLab Kullanıcısı';
 
-  const email = localStorage.getItem('seclab-user-email') || 'Signed in';
+  const email = localStorage.getItem('seclab-user-email') || 'Oturum açık';
   const role = localStorage.getItem('seclab-user-role') || 'user';
-  const roleLabel = role === 'admin' ? 'Admin' : 'User';
+  const roleLabel = role === 'admin' ? 'Y?netici' : 'Kullan?c?';
 
   return (
     <List component="nav" sx={{ p: 0, '& .MuiListItemIcon-root': { minWidth: 32 } }}>
@@ -32,19 +32,19 @@ export default function ProfileTab({ onLogout }) {
         <ListItemIcon>
           <DashboardOutlined />
         </ListItemIcon>
-        <ListItemText primary="Workspace" secondary="Konular, logs, and resources" />
+        <ListItemText primary="Çalışma Alanı" secondary="Konular, kay?tlar ve kaynaklar" />
       </ListItemButton>
 
       <ListItemButton onClick={onLogout}>
         <ListItemIcon>
           <LogoutOutlined />
         </ListItemIcon>
-        <ListItemText primary="Logout" />
+        <ListItemText primary="Çıkış Yap" />
       </ListItemButton>
     </List>
   );
 }
 
-ProfileTab.propTypes = {
+ProfilimTab.propTypes = {
   onLogout: PropTypes.func
 };

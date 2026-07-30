@@ -13,6 +13,7 @@ export default function UserProfilePage() {
   const [username, setUsername] = useState(localStorage.getItem('seclab-user-username') || 'Kullanici 1');
   const [email, setEmail] = useState(localStorage.getItem('seclab-user-email') || 'deneme2@gmail.com');
   const role = localStorage.getItem('seclab-user-role') || 'user';
+  const roleLabel = role === 'admin' ? 'Yönetici' : role === 'user' ? 'Kullanıcı' : role;
 
   useEffect(() => {
     localStorage.setItem('seclab-user-username', username);
@@ -46,15 +47,15 @@ export default function UserProfilePage() {
           </Avatar>
 
           <Stack spacing={1} sx={{ flex: 1 }}>
-            <Typography variant="h2">Profile</Typography>
-            <Typography color="text.secondary">Manage your local SecLab profile picture and account display details.</Typography>
+            <Typography variant="h2">Profilim</Typography>
+            <Typography color="text.secondary">Yerel SecLab profil fotoğrafınızı ve hesap görünüm bilgilerinizi yönetin.</Typography>
             <Stack direction="row" spacing={1}>
               <Button variant="contained" component="label">
-                Upload Avatar
+                Avatar Yükle
                 <input hidden accept="image/*" type="file" onChange={handleAvatarUpload} />
               </Button>
               <Button variant="outlined" onClick={() => window.location.reload()}>
-                Refresh Header
+                Üst Alanı Yenile
               </Button>
             </Stack>
           </Stack>
@@ -63,12 +64,12 @@ export default function UserProfilePage() {
 
       <Paper className="seclab-panel">
         <Stack spacing={2}>
-          <Typography variant="h4">Account Details</Typography>
-          <TextField label="Username" value={username} onChange={(event) => setUsername(event.target.value)} />
-          <TextField label="Email" value={email} onChange={(event) => setEmail(event.target.value)} />
-          <TextField label="Rol" value={role} disabled />
+          <Typography variant="h4">Hesap Bilgileri</Typography>
+          <TextField label="Kullanıcı Adı" value={username} onChange={(event) => setUsername(event.target.value)} />
+          <TextField label="E-posta" value={email} onChange={(event) => setEmail(event.target.value)} />
+          <TextField label="Rol" value={roleLabel} disabled />
           <Typography color="text.secondary">
-            Avatar is stored locally for demo use. Backend avatar persistence can be added in the next pass.
+            Avatar yalnızca demo amacıyla bu cihazda saklanır. Backend avatar desteği sonraki aşamada eklenebilir.
           </Typography>
         </Stack>
       </Paper>

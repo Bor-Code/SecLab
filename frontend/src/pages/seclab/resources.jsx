@@ -28,15 +28,28 @@ import {
   updateResource,
   deleteResource,
   fetchUsers,
-  fetchKonular
+  fetchTopics
 } from 'api/seclab';
 
 const RESOURCE_TYPES = ['documentation', 'video', 'article', 'course', 'tool', 'other'];
 
+const RESOURCE_TYPE_LABELS = {
+  documentation: 'Dokümantasyon',
+  video: 'Video',
+  article: 'Makale',
+  course: 'Kurs',
+  tool: 'Araç',
+  other: 'Diğer'
+};
+
+function formatResourceType(resourceType) {
+  return RESOURCE_TYPE_LABELS[resourceType] || resourceType || '-';
+}
+
 export default function ResourcesPage() {
   const [resources, setResources] = useState([]);
   const [users, setUsers] = useState([]);
-  const [topics, setKonular] = useState([]);
+  const [topics, setTopics] = useState([]);
 
   const [userId, setUserId] = useState('');
   const [topicId, setTopicId] = useState('');
@@ -51,7 +64,7 @@ export default function ResourcesPage() {
   const [editingResourceType, setEditingResourceType] = useState('documentation');
   const [editingNotes, setEditingNotes] = useState('');
 
-  const [deleteTargetResource, setSilTargetResource] = useState(null);
+  const [deleteTargetResource, setDeleteTargetResource] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [resourceSearch, setResourceSearch] = useState('');
@@ -64,17 +77,17 @@ export default function ResourcesPage() {
   async function loadData() {
     setIsLoading(true);
     try {
-      const [fetchedUsers, fetchedKonular, fetchedResources] = await Promise.all([
+      const [fetchedUsers, fetchedTopics, fetchedResources] = await Promise.all([
         fetchUsers(),
-        fetchKonular(),
+        fetchTopics(),
         fetchResources()
       ]);
       setUsers(fetchedUsers);
-      setKonular(fetchedKonular);
+      setTopics(fetchedTopics);
       setResources(fetchedResources);
     } catch (error) {
       console.error('Failed to load data:', error);
-      setErrorMessage('Failed to load data.');
+      setErrorMessage('Veriler yüklenemedi.');
     } finally {
       setIsLoading(false);
     }
@@ -107,9 +120,9 @@ export default function ResourcesPage() {
       setResourceType('documentation');
       setNotes('');
       setResourceSearch('');
-      setMessage('Resource created successfully.');
+      setMessage('Kaynak başarıyla oluşturuldu.');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+      setErrorMessage(error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu.');
     } finally {
       setIsCreating(false);
     }
@@ -148,34 +161,34 @@ export default function ResourcesPage() {
         prevResources.map((res) => (res.id === updatedResource.id ? updatedResource : res))
       );
       cancelEditingResource();
-      setMessage('Resource updated successfully.');
+      setMessage('Kaynak başarıyla güncellendi.');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
+      setErrorMessage(error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu.');
     }
   }
 
-  function openSilDialog(resource) {
-    setSilTargetResource(resource);
+  function openDeleteDialog(resource) {
+    setDeleteTargetResource(resource);
     setMessage(null);
     setErrorMessage(null);
   }
 
-  function closeSilDialog() {
-    setSilTargetResource(null);
+  function closeDeleteDialog() {
+    setDeleteTargetResource(null);
   }
 
-  async function confirmSilResource() {
+  async function confirmDeleteResource() {
     if (!deleteTargetResource) return;
 
     setIsDeleting(true);
     try {
       await deleteResource(deleteTargetResource.id);
       setResources((prevResources) => prevResources.filter((res) => res.id !== deleteTargetResource.id));
-      setMessage('Resource deleted successfully.');
-      closeSilDialog();
+      setMessage('Kaynak başarıyla silindi.');
+      closeDeleteDialog();
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
-      closeSilDialog();
+      setErrorMessage(error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu.');
+      closeDeleteDialog();
     } finally {
       setIsDeleting(false);
     }
@@ -183,12 +196,12 @@ export default function ResourcesPage() {
 
   function getUserName(id) {
     const user = users.find((u) => u.id === id);
-    return user ? user.username : `User #${id}`;
+    return user ? user.username : `Kullanıcı #${id}`;
   }
 
   function getTopicName(id) {
     const topic = topics.find((t) => t.id === id);
-    return topic ? topic.name : `Topic #${id}`;
+    return topic ? topic.name : `Konu #${id}`;
   }
 
   const filteredResources = resources.filter((resource) => {
@@ -211,9 +224,9 @@ export default function ResourcesPage() {
   });
 
   return (
-    <MainCard title="Resources">
+    <MainCard title="Kaynaklar">
       <Typography variant="body2" sx={{ mb: 3 }}>
-        Manage external links, tools, and learning materials.
+        Harici bağlantıları, araçları ve öğrenme materyallerini yönetin.
       </Typography>
 
       {message && (
@@ -234,7 +247,7 @@ export default function ResourcesPage() {
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
-                label="Title"
+                label="Başlık"
                 value={editingTitle}
                 onChange={(e) => setEditingTitle(e.target.value)}
                 required
@@ -254,14 +267,14 @@ export default function ResourcesPage() {
               <TextField
                 select
                 fullWidth
-                label="Resource Type"
+                label="Kaynak Türü"
                 value={editingResourceType}
                 onChange={(e) => setEditingResourceType(e.target.value)}
                 required
               >
                 {RESOURCE_TYPES.map((type) => (
                   <MenuItem key={type} value={type}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                    {formatResourceType(type)}
                   </MenuItem>
                 ))}
               </TextField>
@@ -269,7 +282,7 @@ export default function ResourcesPage() {
             <Grid item xs={12} sm={9}>
               <TextField
                 fullWidth
-                label="Notes"
+                label="Notlar"
                 value={editingNotes}
                 onChange={(e) => setEditingNotes(e.target.value)}
                 multiline
@@ -279,7 +292,7 @@ export default function ResourcesPage() {
             <Grid item xs={12} sm={3}>
               <Stack direction="row" spacing={1}>
                 <Button type="submit" variant="contained" fullWidth sx={{ height: '41px' }}>
-                  Save
+                  Kaydet
                 </Button>
                 <Button variant="outlined" fullWidth sx={{ height: '41px' }} onClick={cancelEditingResource}>
                   İptal
@@ -295,7 +308,7 @@ export default function ResourcesPage() {
               <TextField
                 select
                 fullWidth
-                label="User"
+                label="Kullanıcı"
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
                 required
@@ -311,7 +324,7 @@ export default function ResourcesPage() {
               <TextField
                 select
                 fullWidth
-                label="Topic"
+                label="Konu"
                 value={topicId}
                 onChange={(e) => setTopicId(e.target.value)}
                 required
@@ -326,7 +339,7 @@ export default function ResourcesPage() {
             <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
-                label="Title"
+                label="Başlık"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
@@ -336,14 +349,14 @@ export default function ResourcesPage() {
               <TextField
                 select
                 fullWidth
-                label="Resource Type"
+                label="Kaynak Türü"
                 value={resourceType}
                 onChange={(e) => setResourceType(e.target.value)}
                 required
               >
                 {RESOURCE_TYPES.map((type) => (
                   <MenuItem key={type} value={type}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                    {formatResourceType(type)}
                   </MenuItem>
                 ))}
               </TextField>
@@ -361,7 +374,7 @@ export default function ResourcesPage() {
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
-                label="Notes"
+                label="Notlar"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 multiline
@@ -376,7 +389,7 @@ export default function ResourcesPage() {
                 fullWidth
                 sx={{ height: '41px' }}
               >
-                {isCreating ? 'Creating...' : 'Create'}
+                {isCreating ? 'Oluşturuluyor...' : 'Oluştur'}
               </Button>
             </Grid>
           </Grid>
@@ -388,7 +401,7 @@ export default function ResourcesPage() {
         label="Kaynak ara"
         value={resourceSearch}
         onChange={(e) => setResourceSearch(e.target.value)}
-        placeholder="Search by title, url, type, notes, user, or topic"
+        placeholder="Başlık, URL, tür, not, kullanıcı veya konuya göre ara"
         sx={{ mb: 3 }}
       />
 
@@ -397,27 +410,27 @@ export default function ResourcesPage() {
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell>User</TableCell>
-              <TableCell>Topic</TableCell>
-              <TableCell>Title</TableCell>
-              <TableCell>Type</TableCell>
+              <TableCell>Kullanıcı</TableCell>
+              <TableCell>Konu</TableCell>
+              <TableCell>Başlık</TableCell>
+              <TableCell>Tür</TableCell>
               <TableCell>URL</TableCell>
-              <TableCell>Notes</TableCell>
+              <TableCell>Notlar</TableCell>
               <TableCell>Oluşturulma Tarihi</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell align="right">İşlemler</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={9} align="center">
-                  Loading data...
+                  Veriler yükleniyor...
                 </TableCell>
               </TableRow>
             ) : filteredResources.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} align="center">
-                  No resources found.
+                  Kaynak bulunamadı.
                 </TableCell>
               </TableRow>
             ) : (
@@ -428,11 +441,11 @@ export default function ResourcesPage() {
                   <TableCell>{getTopicName(resource.topic_id)}</TableCell>
                   <TableCell>{resource.title}</TableCell>
                   <TableCell sx={{ textTransform: 'capitalize' }}>
-                    {resource.resource_type}
+                    {formatResourceType(resource.resource_type)}
                   </TableCell>
                   <TableCell>
                     <Link href={resource.url} target="_blank" rel="noopener noreferrer">
-                      Open
+                      Aç
                     </Link>
                   </TableCell>
                   <TableCell>{resource.notes || '-'}</TableCell>
@@ -440,9 +453,9 @@ export default function ResourcesPage() {
                   <TableCell align="right">
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
                       <Button size="small" variant="outlined" onClick={() => startEditingResource(resource)}>
-                        Edit
+                        Düzenle
                       </Button>
-                      <Button size="small" variant="outlined" color="error" onClick={() => openSilDialog(resource)}>
+                      <Button size="small" variant="outlined" color="error" onClick={() => openDeleteDialog(resource)}>
                         Sil
                       </Button>
                     </Stack>
@@ -454,19 +467,19 @@ export default function ResourcesPage() {
         </Table>
       </TableContainer>
 
-      <Dialog open={deleteTargetResource !== null} onClose={closeSilDialog}>
-        <DialogTitle>Sil resource</DialogTitle>
+      <Dialog open={deleteTargetResource !== null} onClose={closeDeleteDialog}>
+        <DialogTitle>Kaynağı Sil</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this resource? This action cannot be undone.
+            Bu kaynağı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeSilDialog} color="primary" disabled={isDeleting}>
+          <Button onClick={closeDeleteDialog} color="primary" disabled={isDeleting}>
             İptal
           </Button>
-          <Button onClick={confirmSilResource} color="error" variant="contained" disabled={isDeleting}>
-            {isDeleting ? 'Deleting...' : 'Sil'}
+          <Button onClick={confirmDeleteResource} color="error" variant="contained" disabled={isDeleting}>
+            {isDeleting ? 'Siliniyor...' : 'Sil'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -12,6 +12,25 @@ import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
 
 import MainCard from 'components/MainCard';
+
+const activityTypeLabels = {
+  'auth.login': 'Kullanıcı girişi',
+  'learning_log.update': 'Öğrenme kaydı güncelleme',
+  'learning_log.delete': 'Öğrenme kaydı silme',
+  'resource.update': 'Kaynak güncelleme',
+  'resource.delete': 'Kaynak silme',
+  'topic.delete': 'Konu silme',
+  'users.reset_password': 'Şifre sıfırlama',
+  'users.delete': 'Kullanıcı silme'
+};
+
+function formatActivityType(activityType) {
+  if (!activityType) {
+    return '-';
+  }
+
+  return activityTypeLabels[activityType] || activityType;
+}
 import { fetchDashboardRecentActivity } from 'api/seclab';
 
 export default function RecentActivityPage() {
@@ -28,7 +47,7 @@ export default function RecentActivityPage() {
       setActivities(data);
     } catch (error) {
       console.error('Failed to load recent activity:', error);
-      setErrorMessage('Failed to load recent activity.');
+      setErrorMessage('Son aktiviteler yüklenemedi.');
     } finally {
       setIsLoading(false);
     }
@@ -48,9 +67,9 @@ export default function RecentActivityPage() {
   });
 
   return (
-    <MainCard title="Recent Activity">
+    <MainCard title="Son Aktiviteler">
       <Typography variant="body2" sx={{ mb: 3 }}>
-        Review the latest actions and updates across the platform.
+        Platformdaki son işlemleri ve güncellemeleri inceleyin.
       </Typography>
 
       {errorMessage && (
@@ -61,10 +80,10 @@ export default function RecentActivityPage() {
 
       <TextField
         fullWidth
-        label="Search activity"
+        label="Aktivitelerde ara"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search by type, title, or description"
+        placeholder="Tür, başlık veya açıklamaya göre ara"
         sx={{ mb: 3 }}
       />
 
@@ -72,9 +91,9 @@ export default function RecentActivityPage() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Type</TableCell>
-              <TableCell>Title</TableCell>
-              <TableCell>Description</TableCell>
+              <TableCell>Tür</TableCell>
+              <TableCell>Başlık</TableCell>
+              <TableCell>Açıklama</TableCell>
               <TableCell>Oluşturulma Tarihi</TableCell>
             </TableRow>
           </TableHead>
@@ -82,20 +101,20 @@ export default function RecentActivityPage() {
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={4} align="center">
-                  Loading activity...
+                  Aktiviteler yükleniyor...
                 </TableCell>
               </TableRow>
             ) : filteredActivities.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} align="center">
-                  No recent activity found.
+                  Son aktivite bulunamadı.
                 </TableCell>
               </TableRow>
             ) : (
               filteredActivities.map((item, index) => (
                 <TableRow key={index} hover>
                   <TableCell sx={{ textTransform: 'capitalize' }}>
-                    {(item.activity_type || '').replace('_', ' ')}
+                    {formatActivityType(item.activity_type)}
                   </TableCell>
                   <TableCell>{item.title}</TableCell>
                   <TableCell>{item.description || '-'}</TableCell>

@@ -11,6 +11,14 @@ import MainCard from 'components/MainCard';
 
 const resourceTypes = ['documentation', 'tool', 'article', 'video', 'other'];
 
+const resourceTypeLabels = {
+  documentation: 'Dokümantasyon',
+  tool: 'Araç',
+  article: 'Makale',
+  video: 'Video',
+  other: 'Diğer'
+};
+
 export default function ResourceList({
   resources,
   isSaving,
@@ -24,9 +32,9 @@ export default function ResourceList({
   setEditResourceType,
   setEditResourceNotes,
   handleStartEditResource,
-  handleİptalEditResource,
+  handleCancelEditResource,
   handleUpdateResource,
-  handleSilResource
+  handleDeleteResource
 }) {
   const [search, setSearch] = useState('');
 
@@ -41,7 +49,7 @@ export default function ResourceList({
   });
 
   return (
-    <MainCard id="resources" title="Saved Resources" sx={{ scrollMarginTop: 96 }}>
+    <MainCard id="resources" title="Kaydedilen Kaynaklar" sx={{ scrollMarginTop: 96 }}>
       <Stack spacing={2}>
         <TextField
           label="Kaynak ara"
@@ -52,11 +60,11 @@ export default function ResourceList({
 
         {resources.length === 0 ? (
           <Typography variant="body1" color="text.secondary">
-            No resources yet. Add useful links and documentation references above.
+            Henüz kaynak yok. Faydalı bağlantıları ve dokümanları yukarıdan ekle.
           </Typography>
         ) : filteredResources.length === 0 ? (
           <Typography variant="body1" color="text.secondary">
-            No resources match your search.
+            Aramanızla eşleşen kaynak bulunamadı.
           </Typography>
         ) : (
           <Stack spacing={1.5}>
@@ -64,22 +72,22 @@ export default function ResourceList({
               <Stack key={resource.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                 {editingResourceId === resource.id ? (
                   <Stack component="form" spacing={1.5} onSubmit={(event) => handleUpdateResource(event, resource.id)}>
-                    <TextField label="Title" value={editResourceTitle} onChange={(event) => setEditResourceTitle(event.target.value)} fullWidth />
+                    <TextField label="Başlık" value={editResourceTitle} onChange={(event) => setEditResourceTitle(event.target.value)} fullWidth />
                     <TextField label="URL" value={editResourceUrl} onChange={(event) => setEditResourceUrl(event.target.value)} fullWidth />
-                    <TextField select label="Type" value={editResourceType} onChange={(event) => setEditResourceType(event.target.value)} fullWidth>
+                    <TextField select label="Tür" value={editResourceType} onChange={(event) => setEditResourceType(event.target.value)} fullWidth>
                       {resourceTypes.map((type) => (
                         <MenuItem key={type} value={type}>
-                          {type}
+                          {resourceTypeLabels[type] || type}
                         </MenuItem>
                       ))}
                     </TextField>
-                    <TextField label="Notes" value={editResourceNotes} onChange={(event) => setEditResourceNotes(event.target.value)} fullWidth multiline minRows={2} />
+                    <TextField label="Notlar" value={editResourceNotes} onChange={(event) => setEditResourceNotes(event.target.value)} fullWidth multiline minRows={2} />
                     <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
-                      <Button variant="outlined" onClick={handleİptalEditResource} disabled={isSaving}>
+                      <Button variant="outlined" onClick={handleCancelEditResource} disabled={isSaving}>
                         İptal
                       </Button>
                       <Button variant="contained" type="submit" disabled={isSaving}>
-                        Save
+                        Kaydet
                       </Button>
                     </Stack>
                   </Stack>
@@ -100,9 +108,9 @@ export default function ResourceList({
                     </Stack>
                     <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
                       <Button variant="outlined" size="small" sx={{ minWidth: 72 }} onClick={() => handleStartEditResource(resource)} disabled={isSaving}>
-                        Edit
+                        Düzenle
                       </Button>
-                      <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleSilResource(resource.id)} disabled={isSaving}>
+                      <Button variant="outlined" color="error" size="small" sx={{ minWidth: 72 }} onClick={() => handleDeleteResource(resource.id)} disabled={isSaving}>
                         Sil
                       </Button>
                     </Stack>
@@ -130,7 +138,7 @@ ResourceList.propTypes = {
   setEditResourceType: PropTypes.func.isRequired,
   setEditResourceNotes: PropTypes.func.isRequired,
   handleStartEditResource: PropTypes.func.isRequired,
-  handleİptalEditResource: PropTypes.func.isRequired,
+  handleCancelEditResource: PropTypes.func.isRequired,
   handleUpdateResource: PropTypes.func.isRequired,
-  handleSilResource: PropTypes.func.isRequired
+  handleDeleteResource: PropTypes.func.isRequired
 };

@@ -32,7 +32,7 @@ export default function ForgotPassword() {
     setResetToken('');
 
     if (!email.trim()) {
-      setError('Email address is required.');
+      setError('E-posta adresi gereklidir.');
       return;
     }
 
@@ -48,13 +48,13 @@ export default function ForgotPassword() {
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(data?.detail || 'Could not create reset token.');
+        throw new Error(data?.detail || 'Sıfırlama kodu oluşturulamadı.');
       }
 
       setResetToken(data?.demo_reset_token || '');
-      setMessage('Reset token created. Enter a new password to finish.');
+      setMessage('Sıfırlama kodu oluşturuldu. Tamamlamak için yeni bir şifre girin.');
     } catch (requestError) {
-      setError(requestError.message || 'Şifre reset request failed.');
+      setError(requestError.message || 'Şifre sıfırlama isteği başarısız oldu.');
     } finally {
       setIsRequesting(false);
     }
@@ -67,7 +67,7 @@ export default function ForgotPassword() {
     setMessage('');
 
     if (!resetToken.trim() || !newPassword) {
-      setError('Reset token and new password are required.');
+      setError('Sıfırlama kodu ve yeni şifre gereklidir.');
       return;
     }
 
@@ -83,25 +83,25 @@ export default function ForgotPassword() {
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(data?.detail || 'Could not reset password.');
+        throw new Error(data?.detail || 'Şifre sıfırlanamadı.');
       }
 
       setNewPassword('');
-      setMessage('Şifre reset successfully. You can now log in.');
+      setMessage('Şifre başarıyla sıfırlandı. Şimdi giriş yapabilirsiniz.');
     } catch (resetError) {
-      setError(resetError.message || 'Şifre reset failed.');
+      setError(resetError.message || 'Şifre sıfırlama işlemi başarısız oldu.');
     } finally {
       setIsResetting(false);
     }
   };
 
   return (
-    <AuthShell title="Recover access quickly" description="Generate a demo reset token and set a new password without leaving the SecLab auth flow.">
+    <AuthShell title="Hesabınıza yeniden erişin" description="SecLab giriş akışından ayrılmadan demo sıfırlama kodu oluşturun ve yeni şifrenizi belirleyin.">
       <Stack spacing={3}>
         <Stack spacing={1}>
-          <Typography variant="h3">Reset Şifre</Typography>
+          <Typography variant="h3">Şifreyi Sıfırla</Typography>
           <Typography variant="body1" color="text.secondary">
-            Enter your account email to create a reset token.
+            Sıfırlama kodu oluşturmak için hesap e-postanızı girin.
           </Typography>
         </Stack>
 
@@ -114,7 +114,7 @@ export default function ForgotPassword() {
 
         <Stack component="form" spacing={2.25} onSubmit={handleRequestReset}>
           <Stack sx={{ gap: 1 }}>
-            <InputLabel htmlFor="reset-email">Account email</InputLabel>
+            <InputLabel htmlFor="reset-email">Hesap e-postası</InputLabel>
             <OutlinedInput
               id="reset-email"
               type="email"
@@ -127,7 +127,7 @@ export default function ForgotPassword() {
           </Stack>
 
           <Button disabled={isRequesting} fullWidth size="large" type="submit" variant="contained">
-            Sıfırlama Tokenı Oluştur
+            Sıfırlama Kodu Oluştur
           </Button>
         </Stack>
 
@@ -137,14 +137,14 @@ export default function ForgotPassword() {
 
             <Stack component="form" spacing={2.25} onSubmit={handleResetPassword}>
               <Stack spacing={0.75}>
-                <Typography variant="h5">Finish password reset</Typography>
+                <Typography variant="h5">Şifre sıfırlamayı tamamlayın</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Demo mode shows the token on screen. Production should send it by email.
+                  Demo modunda sıfırlama kodu ekranda gösterilir. Üretim ortamında bu kod e-postayla gönderilmelidir.
                 </Typography>
               </Stack>
 
               <Stack sx={{ gap: 1 }}>
-                <InputLabel htmlFor="reset-token">Demo reset token</InputLabel>
+                <InputLabel htmlFor="reset-token">Demo sıfırlama kodu</InputLabel>
                 <OutlinedInput
                   id="reset-token"
                   value={resetToken}
@@ -152,33 +152,33 @@ export default function ForgotPassword() {
                   fullWidth
                   sx={{ fontFamily: 'monospace', bgcolor: 'grey.50' }}
                 />
-                <FormHelperText>Use this token only for the local demo reset flow.</FormHelperText>
+                <FormHelperText>Bu kodu yalnızca yerel demo sıfırlama akışında kullanın.</FormHelperText>
               </Stack>
 
               <Stack sx={{ gap: 1 }}>
-                <InputLabel htmlFor="new-password">New password</InputLabel>
+                <InputLabel htmlFor="new-password">Yeni şifre</InputLabel>
                 <OutlinedInput
                   id="new-password"
                   type="password"
                   value={newPassword}
                   onChange={(event) => setNewPassword(event.target.value)}
-                  placeholder="New password"
+                  placeholder="Yeni şifre"
                   fullWidth
                   autoComplete="new-password"
                 />
               </Stack>
 
               <Button disabled={isResetting} fullWidth size="large" type="submit" variant="contained">
-                Reset Şifre
+                Şifreyi Sıfırla
               </Button>
             </Stack>
           </>
         )}
 
         <Typography variant="body2" color="text.secondary">
-          Remembered your password?{' '}
+          Şifrenizi hatırladınız mı?{' '}
           <Link component={RouterLink} to="/login">
-            Logine dön
+            Giriş yap
           </Link>
         </Typography>
       </Stack>

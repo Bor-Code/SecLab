@@ -13,6 +13,35 @@ import MainCard from 'components/MainCard';
 import AnalyticEcommerce from 'components/cards/statistics/AnalyticEcommerce';
 import { fetchDashboardRecentActivity, fetchDashboardSummary, fetchHealthStatus } from 'api/seclab';
 
+const ACTIVITY_TYPE_LABELS = {
+  'auth.login': 'Kullanıcı girişi',
+  'topic.create': 'Konu oluşturma',
+  'topic.update': 'Konu güncelleme',
+  'topic.delete': 'Konu silme',
+  'learning_log.create': 'Öğrenme kaydı oluşturma',
+  'learning_log.update': 'Öğrenme kaydı güncelleme',
+  'learning_log.delete': 'Öğrenme kaydı silme',
+  'resource.create': 'Kaynak oluşturma',
+  'resource.update': 'Kaynak güncelleme',
+  'resource.delete': 'Kaynak silme',
+  'users.create': 'Kullanıcı oluşturma',
+  'users.update': 'Kullanıcı güncelleme',
+  'users.delete': 'Kullanıcı silme',
+  'users.reset_password': 'Şifre sıfırlama'
+};
+
+const HEALTH_STATUS_LABELS = {
+  ok: 'Normal',
+  degraded: 'Kısıtlı',
+  connected: 'Bağlı',
+  disconnected: 'Bağlantı yok',
+  unknown: 'Bilinmiyor'
+};
+
+function formatHealthStatus(status) {
+  return HEALTH_STATUS_LABELS[status] || status || 'Bilinmiyor';
+}
+
 export default function DashboardDefault() {
   const [dashboardSummary, setDashboardSummary] = useState(null);
   const [isSummaryLoading, setIsSummaryLoading] = useState(true);
@@ -35,7 +64,7 @@ export default function DashboardDefault() {
         setDashboardSummary(data);
       } catch (error) {
         console.error('Summary load error:', error);
-        setSummaryMessage('Backend unavailable');
+        setSummaryMessage('Backend kullanılamıyor.');
       } finally {
         setIsSummaryLoading(false);
       }
@@ -48,8 +77,8 @@ export default function DashboardDefault() {
         const data = await fetchDashboardRecentActivity();
         setDashboardActivity(Array.isArray(data) ? data : data?.items || data?.activities || data?.recent_activity || []);
       } catch (error) {
-        console.error('Activity load error:', error);
-        setActivityMessage('Activity unavailable');
+        console.error('Aktivite load error:', error);
+        setActivityMessage('Aktivite verileri kullanılamıyor.');
       } finally {
         setIsActivityLoading(false);
       }
@@ -63,7 +92,7 @@ export default function DashboardDefault() {
         setHealthStatus(data);
       } catch (error) {
         console.error('Health status load error:', error);
-        setHealthMessage('Health data unavailable');
+        setHealthMessage('Sistem sağlığı verileri kullanılamıyor.');
       } finally {
         setIsHealthLoading(false);
       }
@@ -87,13 +116,13 @@ export default function DashboardDefault() {
 
   function formatActivityType(type) {
     if (!type) return '';
-    return type.replace('_', ' ');
+    return ACTIVITY_TYPE_LABELS[type] || type;
   }
 
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
       <Grid sx={{ mb: -2.25 }} size={12}>
-        <Typography variant="h5">Dashboard</Typography>
+        <Typography variant="h5">Yönetim Paneli</Typography>
         {summaryMessage && (
           <Typography variant="caption" color="error">
             {summaryMessage}
@@ -102,7 +131,7 @@ export default function DashboardDefault() {
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
         <AnalyticEcommerce
-          title="Users"
+          title="Kullanıcılar"
           count={isSummaryLoading ? '...' : String(dashboardSummary?.users_count ?? dashboardSummary?.users ?? 0)}
         />
       </Grid>
@@ -114,13 +143,13 @@ export default function DashboardDefault() {
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
         <AnalyticEcommerce
-          title="LearningLogs"
+          title="Öğrenme Kayıtları"
           count={isSummaryLoading ? '...' : String(dashboardSummary?.learning_logs_count ?? dashboardSummary?.learning_logs ?? 0)}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
         <AnalyticEcommerce
-          title="Resources"
+          title="Kaynaklar"
           count={isSummaryLoading ? '...' : String(dashboardSummary?.resources_count ?? dashboardSummary?.resources ?? 0)}
         />
       </Grid>
@@ -130,33 +159,33 @@ export default function DashboardDefault() {
       <Grid size={{ xs: 12, md: 7, lg: 8 }}>
         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <Grid>
-            <Typography variant="h5">Records Overview</Typography>
+            <Typography variant="h5">Kayıtlara Genel Bakış</Typography>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
           <List sx={{ p: 0, '& .MuiListItem-root': { py: 2, px: 3 } }}>
             <ListItem divider>
               <ListItemText 
-                primary={<Typography variant="subtitle1">Users</Typography>} 
-                secondary="Manage system access, create new accounts, and review user activity." 
+                primary={<Typography variant="subtitle1">Kullanıcılar</Typography>}
+                secondary="Sistem erişimini yönetin, yeni hesaplar oluşturun ve kullanıcı aktivitelerini inceleyin."
               />
             </ListItem>
             <ListItem divider>
               <ListItemText 
                 primary={<Typography variant="subtitle1">Konular</Typography>} 
-                secondary="Organize learning domains and categorize core focus areas." 
+                secondary="Öğrenme alanlarını düzenleyin ve temel odak alanlarını kategorilere ayırın."
               />
             </ListItem>
             <ListItem divider>
               <ListItemText 
-                primary={<Typography variant="subtitle1">LearningLogs</Typography>} 
-                secondary="Track daily progress and record detailed study notes." 
+                primary={<Typography variant="subtitle1">Öğrenme Kayıtları</Typography>}
+                secondary="Günlük ilerlemeyi takip edin ve ayrıntılı çalışma notları kaydedin."
               />
             </ListItem>
             <ListItem>
               <ListItemText 
-                primary={<Typography variant="subtitle1">Resources</Typography>} 
-                secondary="Maintain a centralized library of external links, documentation, and tools." 
+                primary={<Typography variant="subtitle1">Kaynaklar</Typography>}
+                secondary="Harici bağlantılar, dokümanlar ve araçlar için merkezi bir kaynak alanı yönetin."
               />
             </ListItem>
           </List>
@@ -165,7 +194,7 @@ export default function DashboardDefault() {
       <Grid size={{ xs: 12, md: 5, lg: 4 }}>
         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <Grid>
-            <Typography variant="h5">System Health</Typography>
+            <Typography variant="h5">Sistem Sağlığı</Typography>
           </Grid>
           <Grid />
         </Grid>
@@ -173,7 +202,7 @@ export default function DashboardDefault() {
           {isHealthLoading ? (
             <Box sx={{ p: 3 }}>
               <Typography variant="body2" color="textSecondary">
-                Loading system status...
+                Sistem durumu yükleniyor...
               </Typography>
             </Box>
           ) : (
@@ -181,17 +210,17 @@ export default function DashboardDefault() {
               <ListItem divider>
                 <ListItemText primary="API" />
                 <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
-                  {healthStatus?.status ?? 'unknown'}
+                  {formatHealthStatus(healthStatus?.status)}
                 </Typography>
               </ListItem>
               <ListItem divider>
-                <ListItemText primary="Database" />
+                <ListItemText primary="Veritabanı" />
                 <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
-                  {healthStatus?.database ?? 'unknown'}
+                  {formatHealthStatus(healthStatus?.database)}
                 </Typography>
               </ListItem>
               <ListItem>
-                <ListItemText primary="Last checked" />
+                <ListItemText primary="Son kontrol" />
                 <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
                   {healthStatus?.checked_at_utc ? formatActivityDate(healthStatus.checked_at_utc) : '-'}
                 </Typography>
@@ -211,20 +240,20 @@ export default function DashboardDefault() {
       <Grid size={{ xs: 12, md: 7, lg: 8 }}>
         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <Grid>
-            <Typography variant="h5">Recent Activity</Typography>
+            <Typography variant="h5">Son Aktiviteler</Typography>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
           {isActivityLoading ? (
             <Box sx={{ p: 3 }}>
               <Typography variant="body2" color="textSecondary">
-                Loading activity...
+                Aktiviteler yükleniyor...
               </Typography>
             </Box>
           ) : (!Array.isArray(dashboardActivity) || dashboardActivity.length === 0) ? (
             <Box sx={{ p: 3 }}>
               <Typography variant="body2" color="textSecondary">
-                No recent activity found.
+                Son aktivite bulunamadı.
               </Typography>
             </Box>
           ) : (
@@ -254,22 +283,22 @@ export default function DashboardDefault() {
       <Grid size={{ xs: 12, md: 5, lg: 4 }}>
         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <Grid>
-            <Typography variant="h5">Admin Workflow</Typography>
+            <Typography variant="h5">Yönetici İş Akışı</Typography>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
           <List sx={{ p: 0, '& .MuiListItem-root': { py: 2, px: 3 } }}>
             <ListItem divider>
-              <ListItemText primary="Review users" />
+              <ListItemText primary="Kullanıcıları incele" />
             </ListItem>
             <ListItem divider>
-              <ListItemText primary="Organize topics" />
+              <ListItemText primary="Konuları düzenle" />
             </ListItem>
             <ListItem divider>
-              <ListItemText primary="Track learning logs" />
+              <ListItemText primary="Öğrenme kayıtlarını takip et" />
             </ListItem>
             <ListItem>
-              <ListItemText primary="Curate resources" />
+              <ListItemText primary="Kaynakları düzenle" />
             </ListItem>
           </List>
         </MainCard>

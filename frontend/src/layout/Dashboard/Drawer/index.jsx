@@ -17,8 +17,8 @@ import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
 // ==============================|| MAIN LAYOUT - DRAWER ||============================== //
 
 export default function MainDrawer({ window }) {
-  const { menuMaster } = useGetMenuMaster();
-  const drawerOpen = menuMaster.isDashboardDrawerOpened;
+  const { menuMaster } = useGetMenuMaster() || {};
+  const drawerOpen = menuMaster?.isDashboardDrawerOpened ?? true;
   const downLG = useMediaQuery((theme) => theme.breakpoints.down('lg'));
 
   // responsive drawer container

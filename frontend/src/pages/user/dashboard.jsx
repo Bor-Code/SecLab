@@ -27,23 +27,23 @@ const demoData = {
   },
   progress_score: 100,
   latest_topic: {
-    name: 'SecLab Test Topic',
-    description: 'Temporary CRUD test topic for user workspace'
+    name: 'SecLab Test Konusu',
+    description: 'Kullanıcı çalışma alanı için geçici CRUD test konusu'
   },
   latest_learning_log: {
-    title: 'SecLab Test Log',
-    notes: 'Temporary learning log note for UI testing',
+    title: 'SecLab Test Kaydı',
+    notes: 'Arayüz testi için geçici öğrenme kaydı notu',
     study_date: '2026-07-29'
   },
   latest_resource: {
-    title: 'SecLab Test Resource',
-    resource_type: 'Documentation',
-    notes: 'Temporary resource note'
+    title: 'SecLab Test Kaynağı',
+    resource_type: 'Dokümantasyon',
+    notes: 'Geçici kaynak notu'
   },
   activity: [
-    { title: 'Topic created', detail: 'SecLab Test Topic was added.' },
-    { title: 'Learning log saved', detail: 'SecLab Test Log was recorded.' },
-    { title: 'Resource attached', detail: 'SecLab Test Resource was saved.' }
+    { title: 'Konu oluşturuldu', detail: 'SecLab Test Konusu eklendi.' },
+    { title: 'Öğrenme kaydı kaydedildi', detail: 'SecLab Test Kaydı kaydedildi.' },
+    { title: 'Kaynak eklendi', detail: 'SecLab Test Kaynağı kaydedildi.' }
   ]
 };
 
@@ -142,7 +142,7 @@ function ModuleCard({ title, description, path, meta }) {
         </Stack>
         <Typography color="text.secondary">{description}</Typography>
         <Button component={RouterLink} to={path} variant="contained">
-          Open
+          Aç
         </Button>
       </Stack>
     </Paper>
@@ -185,10 +185,10 @@ export default function UserDashboardPage() {
   const activeDays = workspace.latest_learning_log?.study_date ? 1 : 0;
 
   const checklist = [
-    { label: 'Create topics', done: workspace.counts.topics > 0 },
-    { label: 'Add learning logs', done: workspace.counts.learning_logs > 0 },
-    { label: 'Save resources', done: workspace.counts.resources > 0 },
-    { label: 'Keep profile current', done: Boolean(workspace.user?.email) }
+    { label: 'Konu oluştur', done: workspace.counts.topics > 0 },
+    { label: 'Öğrenme kaydı ekle', done: workspace.counts.learning_logs > 0 },
+    { label: 'Kaynak kaydet', done: workspace.counts.resources > 0 },
+    { label: 'Profili güncel tut', done: Boolean(workspace.user?.email) }
   ];
 
   const filteredActivity = useMemo(() => {
@@ -210,16 +210,16 @@ export default function UserDashboardPage() {
           <Stack direction={{ xs: 'column', md: 'row' }} sx={{ justifyContent: 'space-between', gap: 2 }}>
             <Stack spacing={1}>
               <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-                <Chip label="SecLab Workspace" color="primary" variant="outlined" />
-                <Chip label={status === 'live' ? 'Gerçek DB verisi' : status === 'cached' ? 'Cached DB data' : status === 'loading' ? 'Loading data' : 'Demo fallback'} />
+                <Chip label="SecLab Çalışma Alanı" color="primary" variant="outlined" />
+                <Chip label={status === 'live' ? 'Canlı veritabanı verisi' : status === 'cached' ? 'Önbellekteki veritabanı verisi' : status === 'loading' ? 'Veriler yükleniyor' : 'Demo verisi'} />
               </Stack>
               <Typography variant="h2">Hoş geldin, {userName}</Typography>
               <Typography color="text.secondary">{userEmail}</Typography>
-              <Typography fontWeight={700}>Your workspace is connected to live learning records.</Typography>
+              <Typography fontWeight={700}>Çalışma alanınız canlı öğrenme kayıtlarına bağlı.</Typography>
             </Stack>
 
             <Box className="seclab-score-ring">
-              <Typography variant="caption">Workspace score</Typography>
+              <Typography variant="caption">Çalışma alanı skoru</Typography>
               <Typography variant="h2">{workspace.progress_score}%</Typography>
             </Box>
           </Stack>
@@ -229,13 +229,13 @@ export default function UserDashboardPage() {
               Konu Oluştur
             </Button>
             <Button component={RouterLink} to="/user/learning-logs" variant="outlined">
-              Register Ekle
+              Öğrenme Kaydı Ekle
             </Button>
             <Button component={RouterLink} to="/user/resources" variant="outlined">
               Kaynak Ekle
             </Button>
             <Button component={RouterLink} to="/user/profile" variant="outlined">
-              Profile
+              Profilim
             </Button>
           </Box>
         </Stack>
@@ -243,9 +243,9 @@ export default function UserDashboardPage() {
 
       <Box className="seclab-metric-grid">
         <MetricCard label="Konular" value={workspace.counts.topics} helper="Oluşturulan konular" progress={workspace.counts.topics * 25} />
-        <MetricCard label="LearningLogs" value={workspace.counts.learning_logs} helper="Çalışma kayıtları" progress={workspace.counts.learning_logs * 25} />
-        <MetricCard label="Resources" value={workspace.counts.resources} helper="Kaydedilen kaynaklar" progress={workspace.counts.resources * 25} />
-        <MetricCard label="İlerleme puanı" value={`${workspace.progress_score}%`} helper="Workspace coverage" progress={workspace.progress_score} />
+        <MetricCard label="Öğrenme Kayıtları" value={workspace.counts.learning_logs} helper="Çalışma kayıtları" progress={workspace.counts.learning_logs * 25} />
+        <MetricCard label="Kaynaklar" value={workspace.counts.resources} helper="Kaydedilen kaynaklar" progress={workspace.counts.resources * 25} />
+        <MetricCard label="İlerleme puanı" value={`${workspace.progress_score}%`} helper="Çalışma alanı kapsamı" progress={workspace.progress_score} />
       </Box>
 
       <Box className="seclab-two-col">
@@ -255,16 +255,16 @@ export default function UserDashboardPage() {
           <DetailRow label="Toplam kayıt" value={totalRecords} />
           <DetailRow label="Aktif çalışma günleri" value={activeDays} />
           <DetailRow label="Son çalışma tarihi" value={workspace.latest_learning_log?.study_date} />
-          <DetailRow label="Latest focus" value={workspace.latest_topic?.name} />
+          <DetailRow label="Son odak" value={workspace.latest_topic?.name} />
         </Paper>
 
         <Paper className="seclab-panel">
-          <Typography variant="h4">Workspace Checklist</Typography>
+          <Typography variant="h4">Çalışma Alanı Kontrol Listesi</Typography>
           <Divider sx={{ my: 2 }} />
           <Stack spacing={1.25}>
             {checklist.map((item) => (
               <Box key={item.label} className={item.done ? 'seclab-check-row done' : 'seclab-check-row'}>
-                <span>{item.done ? 'Done' : 'Todo'}</span>
+                <span>{item.done ? 'Tamamlandı' : 'Bekliyor'}</span>
                 <Typography>{item.label}</Typography>
               </Box>
             ))}
@@ -274,40 +274,40 @@ export default function UserDashboardPage() {
 
       <Box className="seclab-module-grid">
         <ModuleCard
-          title="MyProgress"
-          description="Learning momentum, completion score, and current workspace health."
+          title="İlerlemem"
+          description="Öğrenme ivmenizi, tamamlanma puanınızı ve çalışma alanının güncel durumunu görüntüleyin."
           path="/user/progress"
           meta={`${workspace.progress_score}%`}
         />
         <ModuleCard
-          title="StudyPlan"
-          description="Use your latest topic and log data to keep the next study step clear."
+          title="Çalışma Planı"
+          description="Son konu ve kayıt verilerinizi kullanarak bir sonraki çalışma adımınızı netleştirin."
           path="/user/study-plan"
           meta="Plan"
         />
         <ModuleCard
-          title="Notes"
-          description="Collect latest learning notes and resource notes in one place."
+          title="Notlar"
+          description="Son öğrenme ve kaynak notlarını tek yerde toplayın."
           path="/user/notes"
-          meta="Notes"
+          meta="Notlar"
         />
         <ModuleCard
-          title="Activity"
-          description="Review recent topic, log, resource, and profile events."
+          title="Aktivite"
+          description="Son konu, öğrenme kaydı, kaynak ve profil aktivitelerini inceleyin."
           path="/user/activity"
-          meta="Live"
+          meta="Canlı"
         />
       </Box>
 
       <Box className="seclab-two-col">
         <Paper className="seclab-panel">
           <Stack direction={{ xs: 'column', md: 'row' }} sx={{ justifyContent: 'space-between', gap: 2 }}>
-            <Typography variant="h4">Recent Workspace Activity</Typography>
+            <Typography variant="h4">Son Çalışma Alanı Aktiviteleri</Typography>
             <TextField
               size="small"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search activity"
+              placeholder="Aktivitelerde ara"
             />
           </Stack>
           <Divider sx={{ my: 2 }} />
@@ -325,10 +325,10 @@ export default function UserDashboardPage() {
         </Paper>
 
         <Paper className="seclab-panel">
-          <Typography variant="h4">Son Registerlar</Typography>
+          <Typography variant="h4">Son Kayıtlar</Typography>
           <Divider sx={{ my: 2 }} />
           <DetailRow label="Son konu" value={workspace.latest_topic?.name} />
-          <DetailRow label="Topic description" value={workspace.latest_topic?.description} />
+          <DetailRow label="Konu açıklaması" value={workspace.latest_topic?.description} />
           <DetailRow label="Son kayıt" value={workspace.latest_learning_log?.title} />
           <DetailRow label="Son kaynak" value={workspace.latest_resource?.title} />
           <Button sx={{ mt: 2 }} variant="contained" onClick={loadData}>
