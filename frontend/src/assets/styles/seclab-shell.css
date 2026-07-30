@@ -1,68 +1,131 @@
-﻿:root {
-  --seclab-shell-bg: #eef3f8;
-  --seclab-sidebar-bg: #0f172a;
-  --seclab-sidebar-soft: rgba(255, 255, 255, 0.08);
-  --seclab-blue: #1677ff;
-  --seclab-cyan: #22d3ee;
-  --seclab-text: #111827;
+:root {
+  --seclab-canvas: #f4f6f8;
+  --seclab-surface: #ffffff;
+  --seclab-surface-subtle: #f8fafc;
+  --seclab-surface-hover: #f1f5f9;
+  --seclab-border: #e2e8f0;
+  --seclab-border-strong: #cbd5e1;
+  --seclab-text: #172033;
+  --seclab-text-secondary: #64748b;
+  --seclab-primary: #2563eb;
+  --seclab-primary-hover: #1d4ed8;
+  --seclab-primary-soft: #eff6ff;
+  --seclab-success: #15803d;
+  --seclab-danger: #dc2626;
+  --seclab-warning: #b45309;
+  --seclab-radius-sm: 7px;
+  --seclab-radius-md: 10px;
+  --seclab-radius-lg: 14px;
+  --seclab-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --seclab-shadow-md: 0 8px 24px rgba(15, 23, 42, 0.07);
+  --seclab-shadow-focus: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+html {
+  background: var(--seclab-canvas);
 }
 
 body {
-  background:
-    radial-gradient(circle at 88% 14%, rgba(34, 211, 238, 0.20), transparent 34%),
-    radial-gradient(circle at 22% 8%, rgba(22, 119, 255, 0.12), transparent 30%),
-    var(--seclab-shell-bg) !important;
+  min-width: 320px;
+  color: var(--seclab-text);
+  background: var(--seclab-canvas) !important;
 }
 
-/* Left sidebar */
+#root {
+  min-height: 100vh;
+  isolation: isolate;
+  background: var(--seclab-canvas);
+}
+
+#root::before,
+#root::after {
+  display: none !important;
+  content: none !important;
+  animation: none !important;
+}
+
+/* Uygulama iskeleti */
+.seclab-app-shell {
+  min-height: 100vh;
+  background: var(--seclab-canvas);
+}
+
+.seclab-app-main,
+.MuiBox-root[role='main'] {
+  min-width: 0;
+  background: var(--seclab-canvas) !important;
+}
+
+.seclab-app-content {
+  width: 100%;
+  max-width: 1540px;
+  margin-inline: auto;
+}
+
+/* Sol menü */
 .MuiDrawer-paper {
-  background:
-    linear-gradient(180deg, #111c34 0%, #0f172a 52%, #111827 100%) !important;
-  color: #dbeafe !important;
-  border-right: 0 !important;
-  box-shadow: 18px 0 42px rgba(15, 23, 42, 0.18);
+  color: var(--seclab-text) !important;
+  background: var(--seclab-surface) !important;
+  background-image: none !important;
+  border-right: 1px solid var(--seclab-border) !important;
+  box-shadow: none !important;
+}
+
+.MuiDrawer-paper::before,
+.MuiDrawer-paper::after {
+  display: none !important;
+  content: none !important;
 }
 
 .MuiDrawer-paper h1,
 .MuiDrawer-paper h2,
 .MuiDrawer-paper h3,
-.MuiDrawer-paper .MuiTypography-root {
+.MuiDrawer-paper .MuiTypography-root,
+.MuiDrawer-paper [class*='logo'] {
   color: inherit;
 }
 
-.MuiDrawer-paper [class*="logo"],
-.MuiDrawer-paper a[href="/"],
-.MuiDrawer-paper a[href="/free/user"] {
-  color: #fff !important;
+.MuiDrawer-paper [class*='logo'],
+.MuiDrawer-paper a[href='/'],
+.MuiDrawer-paper a[href='/free/user'] {
+  color: #0f2a55 !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.02em;
 }
 
 .MuiDrawer-paper .MuiListSubheader-root,
 .MuiDrawer-paper .MuiTypography-caption {
-  color: rgba(219, 234, 254, 0.62) !important;
-  letter-spacing: 0.04em;
+  color: #94a3b8 !important;
+  background: transparent !important;
+  font-size: 0.69rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.075em !important;
   text-transform: uppercase;
-  font-weight: 700;
 }
 
 .MuiDrawer-paper .MuiListItemButton-root {
-  margin: 5px 12px;
-  border-radius: 12px;
-  color: rgba(219, 234, 254, 0.86);
-  transition: background 160ms ease, transform 160ms ease, color 160ms ease;
+  min-height: 44px;
+  margin: 3px 10px !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--seclab-radius-md) !important;
+  color: var(--seclab-text-secondary) !important;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease !important;
 }
 
 .MuiDrawer-paper .MuiListItemButton-root:hover {
-  background: var(--seclab-sidebar-soft) !important;
-  color: #fff !important;
-  transform: translateX(3px);
+  color: var(--seclab-text) !important;
+  background: var(--seclab-surface-hover) !important;
 }
 
-.MuiDrawer-paper .Mui-selected,
-.MuiDrawer-paper .MuiListItemButton-root.Mui-selected {
-  background:
-    linear-gradient(135deg, rgba(22, 119, 255, 0.95), rgba(34, 211, 238, 0.78)) !important;
-  color: #fff !important;
-  box-shadow: 0 12px 30px rgba(22, 119, 255, 0.26);
+.MuiDrawer-paper .MuiListItemButton-root.Mui-selected,
+.MuiDrawer-paper .MuiListItemButton-root.Mui-selected:hover {
+  color: var(--seclab-primary) !important;
+  background: var(--seclab-primary-soft) !important;
+  border-color: #dbeafe !important;
+  box-shadow: inset 3px 0 0 var(--seclab-primary) !important;
 }
 
 .MuiDrawer-paper .MuiListItemIcon-root,
@@ -70,145 +133,172 @@ body {
   color: currentColor !important;
 }
 
-/* Top header */
-header,
+.MuiDrawer-paper .MuiListItemText-primary,
+.MuiDrawer-paper .MuiListItemText-primary .MuiTypography-root {
+  color: currentColor !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+}
+
+/* Üst bar */
 .MuiAppBar-root {
-  background: rgba(255, 255, 255, 0.82) !important;
   color: var(--seclab-text) !important;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.20) !important;
-  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.08) !important;
-  backdrop-filter: blur(18px);
+  background: #f8fafc !important;
+  background-image: none !important;
+  border-bottom: 1px solid var(--seclab-border) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 
 header .MuiToolbar-root,
 .MuiAppBar-root .MuiToolbar-root {
-  min-height: 72px;
+  min-height: 68px !important;
+  gap: 10px;
+}
+
+header .MuiToolbar-root::before,
+.MuiAppBar-root .MuiToolbar-root::before {
+  display: none !important;
+  content: none !important;
 }
 
 header .MuiOutlinedInput-root,
 .MuiAppBar-root .MuiOutlinedInput-root {
-  background: #f8fafc;
-  border-radius: 14px;
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.18);
+  min-height: 42px;
+  background: var(--seclab-surface) !important;
+  border-radius: var(--seclab-radius-md) !important;
+}
+
+header .MuiOutlinedInput-notchedOutline,
+.MuiAppBar-root .MuiOutlinedInput-notchedOutline {
+  border-color: var(--seclab-border-strong) !important;
 }
 
 header .MuiIconButton-root,
 .MuiAppBar-root .MuiIconButton-root {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: #f8fafc;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  width: 40px;
+  height: 40px;
+  color: #334155 !important;
+  background: var(--seclab-surface) !important;
+  border: 1px solid var(--seclab-border) !important;
+  border-radius: var(--seclab-radius-md) !important;
+  box-shadow: var(--seclab-shadow-sm) !important;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease !important;
 }
 
 header .MuiIconButton-root:hover,
 .MuiAppBar-root .MuiIconButton-root:hover {
-  background: #eff6ff;
+  color: var(--seclab-primary) !important;
+  background: var(--seclab-primary-soft) !important;
+  border-color: #bfdbfe !important;
 }
 
-header .MuiBadge-badge,
-.MuiAppBar-root .MuiBadge-badge {
-  background: linear-gradient(135deg, var(--seclab-blue), var(--seclab-cyan));
-  color: #fff;
-  font-weight: 800;
-  box-shadow: 0 0 0 3px #fff;
+.MuiAppBar-root a[href*='github.com'] {
+  margin-left: auto !important;
 }
 
 header .MuiAvatar-root,
 .MuiAppBar-root .MuiAvatar-root {
-  width: 42px;
-  height: 42px;
-  border: 3px solid #bae6fd;
-  box-shadow: 0 10px 24px rgba(14, 165, 233, 0.28);
+  border: 2px solid var(--seclab-surface) !important;
+  box-shadow: 0 0 0 1px var(--seclab-border-strong) !important;
 }
 
-/* Main app surface */
-main,
-.MuiBox-root[role="main"] {
-  background:
-    radial-gradient(circle at top right, rgba(34, 211, 238, 0.14), transparent 32%),
-    linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%);
-}
-
-.MuiCard-root,
-.MuiPaper-root {
-  border-radius: 14px;
-}
-/* SecLab final shell polish */
-.MuiDrawer-paper {
-  border-radius: 0 !important;
-}
-
-.MuiDrawer-paper .MuiListItemButton-root {
-  border-radius: 0 !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
-
-.MuiDrawer-paper .Mui-selected,
-.MuiDrawer-paper .MuiListItemButton-root.Mui-selected {
-  border-radius: 0 !important;
-}
-
-/* Remove top notification bell completely */
 header .MuiBadge-root,
 .MuiAppBar-root .MuiBadge-root {
   display: none !important;
 }
-/* SecLab dashboard command center */
-.seclab-dashboard-page {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 28px 30px 56px;
-  background:
-    radial-gradient(circle at 88% 8%, rgba(34, 211, 238, 0.22), transparent 28%),
-    radial-gradient(circle at 12% 18%, rgba(59, 130, 246, 0.18), transparent 24%),
-    linear-gradient(180deg, #f8fafc 0%, #e8eef6 100%);
-  min-height: calc(100vh - 72px);
+
+/* Kartlar ve paneller */
+main .MuiCard-root,
+main .MuiPaper-root:not(.MuiAppBar-root),
+.seclab-panel,
+.seclab-hero-card,
+.seclab-metric-card,
+.seclab-module-card,
+.seclab-record-item {
+  color: var(--seclab-text);
+  background: var(--seclab-surface) !important;
+  background-image: none !important;
+  border: 1px solid var(--seclab-border) !important;
+  border-radius: var(--seclab-radius-lg) !important;
+  box-shadow: var(--seclab-shadow-sm) !important;
 }
 
-.seclab-hero-card,
+main .MuiCard-root,
 .seclab-panel,
 .seclab-metric-card,
-.seclab-module-card {
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  box-shadow: 0 20px 55px rgba(15, 23, 42, 0.10);
+.seclab-module-card,
+.seclab-record-item {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease !important;
+}
+
+main .MuiCard-root:hover,
+.seclab-panel:hover,
+.seclab-metric-card:hover,
+.seclab-module-card:hover,
+.seclab-record-item:hover {
+  border-color: var(--seclab-border-strong) !important;
+  box-shadow: var(--seclab-shadow-md) !important;
+  transform: none !important;
+}
+
+main .MuiCardHeader-root {
+  min-height: 68px;
+  padding: 20px 24px !important;
+}
+
+main .MuiCardHeader-title {
+  color: var(--seclab-text);
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+}
+
+main .MuiCardContent-root {
+  padding: 24px !important;
+}
+
+main .MuiDivider-root {
+  border-color: var(--seclab-border);
+}
+
+.seclab-panel {
+  padding: 24px !important;
 }
 
 .seclab-hero-card {
   position: relative;
   overflow: hidden;
-  padding: 36px;
-  border-radius: 0 !important;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.88)),
-    radial-gradient(circle at 92% 18%, rgba(34, 211, 238, 0.22), transparent 24%);
+  padding: clamp(24px, 4vw, 44px) !important;
+  background: var(--seclab-surface) !important;
 }
 
 .seclab-hero-card::after {
-  content: "";
   position: absolute;
-  right: -90px;
-  top: -110px;
-  width: 310px;
-  height: 310px;
-  background: linear-gradient(135deg, rgba(22, 119, 255, 0.14), rgba(34, 211, 238, 0.20));
-  border-radius: 50%;
+  inset: 0 0 0 auto;
+  width: 6px;
+  content: '';
+  background: var(--seclab-primary);
 }
 
 .seclab-score-ring {
-  min-width: 170px;
-  padding: 22px;
-  border: 1px solid rgba(22, 119, 255, 0.24);
-  background: rgba(239, 246, 255, 0.92);
-  text-align: center;
+  border: 1px solid #bfdbfe !important;
+  border-radius: var(--seclab-radius-lg) !important;
+  background: var(--seclab-primary-soft) !important;
 }
 
-.seclab-quick-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+.seclab-dashboard-page {
+  padding: 0 !important;
+}
+
+.seclab-workspace-stack,
+.seclab-dashboard-page {
+  animation: seclab-content-enter 180ms ease-out both;
 }
 
 .seclab-metric-grid,
@@ -218,318 +308,542 @@ header .MuiBadge-root,
   gap: 18px;
 }
 
-.seclab-two-col {
+.seclab-two-col,
+.seclab-productivity-grid,
+.seclab-insights-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
-  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
 }
 
 .seclab-metric-card,
-.seclab-module-card,
-.seclab-panel {
-  border-radius: 0 !important;
-  background: rgba(255, 255, 255, 0.92);
+.seclab-module-card {
+  padding: 22px !important;
 }
 
 .seclab-metric-card {
-  padding: 22px;
+  border-top: 3px solid var(--seclab-primary) !important;
 }
 
-.seclab-module-card {
-  padding: 24px;
-}
-
-.seclab-panel {
-  padding: 26px;
-}
-
-.seclab-detail-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 13px 0;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+.seclab-detail-row,
+.seclab-check-row,
+.seclab-activity-row {
+  border-bottom: 1px solid var(--seclab-border);
 }
 
 .seclab-check-row,
 .seclab-activity-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px;
-  background: #f8fafc;
-  border-left: 4px solid #94a3b8;
+  background: var(--seclab-surface-subtle) !important;
+  border: 1px solid var(--seclab-border);
+  border-radius: var(--seclab-radius-md);
 }
 
 .seclab-check-row.done {
-  border-left-color: #1677ff;
-  background: #eff6ff;
+  border-left: 3px solid var(--seclab-success);
 }
 
-.seclab-check-row span {
-  min-width: 48px;
-  color: #1677ff;
-  font-weight: 800;
-}
-
-.seclab-activity-row > div:first-child {
-  width: 10px;
-  height: 10px;
-  margin-top: 6px;
-  background: linear-gradient(135deg, #1677ff, #22d3ee);
-}
-
-/* Sidebar footer user card */
-.MuiDrawer-paper::after {
-  content: "SecLab Active Workspace\A Demo user session";
-  white-space: pre-line;
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 18px;
-  padding: 14px;
-  color: rgba(219, 234, 254, 0.86);
-  background: rgba(255, 255, 255, 0.07);
-  border-left: 3px solid #22d3ee;
-  font-size: 12px;
-  line-height: 1.55;
-}
-
-/* Cleaner top shell */
-header,
-.MuiAppBar-root {
-  border-radius: 0 !important;
-}
-
-header .MuiToolbar-root::before,
-.MuiAppBar-root .MuiToolbar-root::before {
-  content: "SecLab Workspace";
-  margin-right: 18px;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-@media (max-width: 1200px) {
-  .seclab-metric-grid,
-  .seclab-module-grid,
-  .seclab-two-col {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 760px) {
-  .seclab-dashboard-page {
-    padding: 18px;
-  }
-
-  .seclab-metric-grid,
-  .seclab-module-grid,
-  .seclab-two-col {
-    grid-template-columns: 1fr;
-  }
-}
-/* Remove duplicated header title next to sidebar */
-header .MuiToolbar-root::before,
-.MuiAppBar-root .MuiToolbar-root::before {
-  content: none !important;
-  display: none !important;
-}
-
-/* SecLab productivity visual polish */
-
-/* Cards */
-main .MuiCard-root,
-main .MuiPaper-root:not(.MuiAppBar-root),
-.seclab-panel,
+/* Kayıt listeleri */
 .seclab-record-item {
-  border-radius: 18px !important;
-  border: 1px solid rgba(148, 163, 184, 0.24) !important;
-  box-shadow:
-    0 18px 45px rgba(15, 23, 42, 0.10),
-    0 3px 10px rgba(15, 23, 42, 0.05) !important;
-}
-
-.seclab-record-item {
-  padding: 18px !important;
-  gap: 18px !important;
-  background: rgba(255, 255, 255, 0.88);
-  transition:
-    transform 180ms ease,
-    box-shadow 180ms ease,
-    border-color 180ms ease;
-}
-
-.seclab-record-item:hover {
-  transform: translateY(-2px);
-  border-color: rgba(22, 119, 255, 0.32) !important;
-  box-shadow:
-    0 22px 52px rgba(15, 23, 42, 0.13),
-    0 4px 12px rgba(22, 119, 255, 0.08) !important;
+  padding: 18px 20px !important;
 }
 
 .seclab-record-layout {
-  min-width: 0;
+  width: 100%;
+  align-items: center !important;
 }
 
 .seclab-record-layout > .MuiStack-root:first-child,
 .seclab-record-item > .MuiStack-root:first-child {
   min-width: 0;
-  flex: 1 1 220px;
+  flex: 1 1 auto;
 }
 
 .seclab-record-actions {
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 10px;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(92px, auto));
+  gap: 8px !important;
+  align-items: center;
+  justify-content: end !important;
 }
 
-/* Buttons */
-main .MuiButton-root,
-.MuiDialog-root .MuiButton-root {
-  min-width: 92px;
-  min-height: 40px;
-  padding: 8px 18px;
-  border-radius: 11px !important;
-  flex-shrink: 0;
-  font-weight: 700;
-  text-transform: none;
-  box-shadow: 0 7px 18px rgba(15, 23, 42, 0.08);
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease,
-    background-color 160ms ease;
-}
-
-main .MuiButton-root:hover,
-.MuiDialog-root .MuiButton-root:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 11px 24px rgba(15, 23, 42, 0.13);
-}
-
-main .MuiButton-outlinedError {
-  background: rgba(254, 242, 242, 0.74);
-}
-
-main a {
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
-/* Slightly gray and separated top bar */
-header,
-.MuiAppBar-root {
-  background: rgba(241, 245, 249, 0.94) !important;
-  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.11) !important;
-}
-
-header .MuiToolbar-root,
-.MuiAppBar-root .MuiToolbar-root {
+.seclab-record-actions .MuiButton-root {
   width: 100%;
 }
 
-header a[title="GitHub profilini aç"],
-.MuiAppBar-root a[title="GitHub profilini aç"] {
-  margin-left: auto !important;
+/* Düğmeler */
+.MuiButton-root {
+  min-height: 40px;
+  padding: 8px 16px !important;
+  border-radius: var(--seclab-radius-sm) !important;
+  font-weight: 650 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease !important;
 }
 
-/* Animated network background */
-#root {
-  position: relative;
-  min-height: 100vh;
-  isolation: isolate;
+.MuiButton-root::after {
+  display: none !important;
+  content: none !important;
 }
 
-#root::before,
-#root::after {
-  content: "";
-  position: fixed;
-  inset: -12%;
-  z-index: -1;
-  pointer-events: none;
+.MuiButton-containedPrimary {
+  background: var(--seclab-primary) !important;
 }
 
-#root::before {
-  background-image:
-    radial-gradient(circle at 8% 18%, rgba(22, 119, 255, 0.48) 0 2px, transparent 3px),
-    radial-gradient(circle at 22% 42%, rgba(34, 211, 238, 0.42) 0 2px, transparent 3px),
-    radial-gradient(circle at 38% 15%, rgba(22, 119, 255, 0.38) 0 2px, transparent 3px),
-    radial-gradient(circle at 52% 64%, rgba(34, 211, 238, 0.42) 0 2px, transparent 3px),
-    radial-gradient(circle at 68% 26%, rgba(22, 119, 255, 0.42) 0 2px, transparent 3px),
-    radial-gradient(circle at 82% 72%, rgba(34, 211, 238, 0.40) 0 2px, transparent 3px),
-    radial-gradient(circle at 94% 38%, rgba(22, 119, 255, 0.42) 0 2px, transparent 3px);
-  background-size:
-    310px 290px,
-    370px 340px,
-    420px 360px,
-    460px 390px,
-    520px 430px,
-    580px 470px,
-    650px 520px;
-  opacity: 0.30;
-  animation: seclab-node-drift 24s ease-in-out infinite alternate;
+.MuiButton-containedPrimary:hover {
+  background: var(--seclab-primary-hover) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
 }
 
-#root::after {
-  background-image:
-    linear-gradient(27deg, transparent 49.72%, rgba(22, 119, 255, 0.11) 49.86%, rgba(22, 119, 255, 0.11) 50.14%, transparent 50.28%),
-    linear-gradient(151deg, transparent 49.72%, rgba(34, 211, 238, 0.10) 49.86%, rgba(34, 211, 238, 0.10) 50.14%, transparent 50.28%);
-  background-size: 260px 220px, 340px 300px;
-  opacity: 0.34;
-  animation: seclab-line-drift 32s linear infinite;
+.MuiButton-containedSuccess {
+  background: var(--seclab-success) !important;
 }
 
-main,
-.MuiBox-root[role="main"] {
-  background:
-    radial-gradient(circle at top right, rgba(34, 211, 238, 0.13), transparent 32%),
-    linear-gradient(180deg, rgba(248, 250, 252, 0.91), rgba(238, 243, 248, 0.91)) !important;
-  backdrop-filter: blur(1px);
+.MuiButton-outlined {
+  background: var(--seclab-surface) !important;
 }
 
-@keyframes seclab-node-drift {
-  0% {
-    transform: translate3d(-1.5%, -1%, 0) scale(1);
-  }
-
-  50% {
-    transform: translate3d(1.5%, 1%, 0) scale(1.025);
-  }
-
-  100% {
-    transform: translate3d(2.5%, -1.5%, 0) scale(1.04);
-  }
+.MuiButton-outlined:hover {
+  background: var(--seclab-primary-soft) !important;
 }
 
-@keyframes seclab-line-drift {
+.MuiButton-outlinedError {
+  color: var(--seclab-danger) !important;
+  border-color: #fecaca !important;
+  background: #fff !important;
+}
+
+.MuiButton-outlinedError:hover {
+  border-color: #fca5a5 !important;
+  background: #fef2f2 !important;
+}
+
+/* Form alanları */
+.MuiOutlinedInput-root {
+  min-height: 42px;
+  background: var(--seclab-surface);
+  border-radius: var(--seclab-radius-sm) !important;
+  transition:
+    background-color 150ms ease,
+    box-shadow 150ms ease !important;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #94a3b8 !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused {
+  box-shadow: var(--seclab-shadow-focus) !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-width: 1px !important;
+  border-color: var(--seclab-primary) !important;
+}
+
+.MuiInputLabel-root.Mui-focused {
+  color: var(--seclab-primary) !important;
+}
+
+/* Tablolar ve diyaloglar */
+main .MuiTableContainer-root {
+  overflow: hidden;
+  border: 1px solid var(--seclab-border) !important;
+  border-radius: var(--seclab-radius-md) !important;
+  box-shadow: none !important;
+}
+
+.MuiTableHead-root {
+  background: var(--seclab-surface-subtle);
+}
+
+.MuiTableHead-root .MuiTableCell-root {
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.MuiTableCell-root {
+  border-color: var(--seclab-border) !important;
+}
+
+.MuiTableRow-root:hover .MuiTableCell-root {
+  background: #fafcff;
+}
+
+.MuiDialog-paper {
+  border: 1px solid var(--seclab-border);
+  border-radius: var(--seclab-radius-lg) !important;
+  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.18) !important;
+}
+
+.MuiAlert-root {
+  border-radius: var(--seclab-radius-md) !important;
+}
+
+.MuiLinearProgress-root {
+  background: #e8eef7 !important;
+  border-radius: 999px !important;
+}
+
+.MuiLinearProgress-bar {
+  background: var(--seclab-primary) !important;
+  border-radius: 999px !important;
+}
+
+/* Kimlik doğrulama ekranları */
+body:has(form) .MuiCard-root {
+  border-color: var(--seclab-border);
+}
+
+@keyframes seclab-content-enter {
   from {
-    transform: translate3d(-3%, -2%, 0);
+    opacity: 0;
+    transform: translateY(4px);
   }
 
   to {
-    transform: translate3d(3%, 2%, 0);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@media (max-width: 600px) {
-  .seclab-record-item {
+@media (max-width: 1199px) {
+  .seclab-metric-grid,
+  .seclab-module-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 899px) {
+  .seclab-two-col,
+  .seclab-productivity-grid,
+  .seclab-insights-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .seclab-record-layout {
     align-items: stretch !important;
   }
 
-  .seclab-record-item > .MuiButton-root {
-    align-self: flex-end;
+  .seclab-record-actions {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 599px) {
+  header .MuiToolbar-root,
+  .MuiAppBar-root .MuiToolbar-root {
+    min-height: 62px !important;
+    padding-inline: 12px !important;
+  }
+
+  main .MuiCardHeader-root,
+  main .MuiCardContent-root,
+  .seclab-panel,
+  .seclab-metric-card,
+  .seclab-module-card {
+    padding: 18px !important;
+  }
+
+  .seclab-metric-grid,
+  .seclab-module-grid {
+    grid-template-columns: 1fr;
   }
 
   .seclab-record-actions {
-    justify-content: flex-start;
+    grid-template-columns: 1fr;
+  }
+
+  .seclab-quick-actions {
+    display: grid !important;
+    grid-template-columns: 1fr;
+  }
+
+  .MuiButton-root {
+    min-height: 42px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #root::before,
-  #root::after,
-  .seclab-record-item,
-  main .MuiButton-root {
-    animation: none !important;
-    transition: none !important;
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Kurumsal dashboard son düzenlemeleri */
+html,
+body,
+#root {
+  overflow-x: clip;
+}
+
+body #root .MuiDrawer-paper {
+  color: #d6e0ef !important;
+  background: #111c33 !important;
+  background-image: none !important;
+  border-right: 1px solid #24324b !important;
+  box-shadow: 6px 0 20px rgba(15, 23, 42, 0.12) !important;
+}
+
+body #root .MuiDrawer-paper [class*='logo'],
+body #root .MuiDrawer-paper a[href='/'],
+body #root .MuiDrawer-paper a[href='/free/user'] {
+  color: #f8fafc !important;
+}
+
+body #root .MuiDrawer-paper .MuiListSubheader-root,
+body #root .MuiDrawer-paper .MuiTypography-caption {
+  color: #8392ab !important;
+}
+
+body #root .MuiDrawer-paper .MuiListItemButton-root {
+  width: 100% !important;
+  min-height: 56px !important;
+  margin: 0 !important;
+  color: #b7c3d6 !important;
+  border: 0 !important;
+  border-left: 4px solid transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body #root .MuiDrawer-paper .MuiListItemButton-root:hover {
+  color: #ffffff !important;
+  background: #1a2944 !important;
+  border-left-color: #334766 !important;
+}
+
+body #root .MuiDrawer-paper .MuiListItemButton-root.Mui-selected,
+body #root .MuiDrawer-paper .MuiListItemButton-root.Mui-selected:hover {
+  color: #ffffff !important;
+  background: #1d4ed8 !important;
+  border-left-color: #93c5fd !important;
+  box-shadow: none !important;
+}
+
+body #root .MuiDrawer-paper .MuiListItemIcon-root,
+body #root .MuiDrawer-paper .MuiListItemText-primary,
+body #root .MuiDrawer-paper .MuiListItemText-primary .MuiTypography-root {
+  color: currentColor !important;
+}
+
+.seclab-header-actions {
+  width: auto !important;
+  margin-left: auto !important;
+}
+
+.seclab-header-actions > * {
+  margin-left: 0 !important;
+}
+
+.seclab-workspace-stack {
+  gap: 24px !important;
+}
+
+body #root main .seclab-workspace-hero.MuiCard-root {
+  overflow: hidden;
+  color: #ffffff !important;
+  background: #102a56 !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: 0 14px 34px rgba(15, 42, 85, 0.16) !important;
+}
+
+body #root main .seclab-workspace-hero .MuiCardContent-root,
+body #root main .seclab-workspace-hero__layout {
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.seclab-workspace-hero__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+  min-height: 270px;
+}
+
+.seclab-workspace-hero__intro {
+  position: relative;
+  justify-content: center;
+  padding: clamp(28px, 4vw, 42px);
+}
+
+.seclab-workspace-hero__intro::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  content: '';
+  background: rgba(255, 255, 255, 0.12);
+}
+
+body #root main .seclab-workspace-hero__eyebrow {
+  color: #93c5fd !important;
+  font-size: 0.72rem !important;
+  font-weight: 750 !important;
+  letter-spacing: 0.12em !important;
+}
+
+body #root main .seclab-workspace-hero__title {
+  max-width: 760px;
+  color: #ffffff !important;
+  font-size: clamp(1.65rem, 2.7vw, 2.35rem) !important;
+  font-weight: 750 !important;
+  line-height: 1.16 !important;
+  letter-spacing: -0.035em !important;
+}
+
+body #root main .seclab-workspace-hero__description {
+  max-width: 680px;
+  margin-top: 10px !important;
+  color: #cbd7e8 !important;
+  font-size: 0.94rem !important;
+  line-height: 1.65 !important;
+}
+
+.seclab-workspace-hero__actions {
+  margin-top: 4px;
+}
+
+.seclab-workspace-hero__primary-action {
+  color: #102a56 !important;
+  background: #ffffff !important;
+}
+
+.seclab-workspace-hero__primary-action:hover {
+  color: #102a56 !important;
+  background: #eaf2ff !important;
+}
+
+.seclab-workspace-hero__secondary-action {
+  color: #ffffff !important;
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.42) !important;
+}
+
+.seclab-workspace-hero__secondary-action:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.seclab-workspace-hero__meta {
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.seclab-workspace-hero__meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 15px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.seclab-workspace-hero__meta-item span {
+  color: #9fb1ca !important;
+  font-size: 0.7rem !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.seclab-workspace-hero__meta-item strong {
+  overflow: hidden;
+  color: #ffffff !important;
+  font-size: 0.92rem !important;
+  font-weight: 650 !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seclab-workspace-hero__status::before {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  content: '';
+  border-radius: 50%;
+  background: #4ade80;
+}
+
+.seclab-dashboard-section {
+  min-width: 0;
+  scroll-margin-top: 94px;
+}
+
+.seclab-dashboard-section .seclab-productivity-grid {
+  margin-bottom: 0 !important;
+}
+
+main .MuiTableContainer-root {
+  overflow-x: auto !important;
+}
+
+main .MuiChartsSurface-root,
+main .MuiChartsSurface-root svg {
+  max-width: 100% !important;
+}
+
+@media (max-width: 899px) {
+  .seclab-workspace-hero__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .seclab-workspace-hero__intro::after {
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+  }
+
+  .seclab-workspace-hero__meta {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 22px;
+  }
+
+  .seclab-productivity-grid,
+  .seclab-insights-grid,
+  .seclab-two-col {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 599px) {
+  .seclab-workspace-hero__layout {
+    min-height: auto;
+  }
+
+  .seclab-workspace-hero__intro {
+    padding: 24px 20px;
+  }
+
+  .seclab-workspace-hero__meta {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+
+  .seclab-record-actions {
+    grid-template-columns: 1fr !important;
   }
 }

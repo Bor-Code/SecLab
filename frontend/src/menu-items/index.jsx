@@ -10,7 +10,7 @@ const userWorkspace = {
   children: [
     {
       id: 'user-workspace',
-      title: 'MyWorkspace',
+      title: 'Çalışma Alanım',
       type: 'item',
       url: '/user',
       icon: DashboardOutlined,

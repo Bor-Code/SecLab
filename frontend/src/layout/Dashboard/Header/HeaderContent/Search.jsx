@@ -9,7 +9,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 const items = [
-  { label: 'MyWorkspace', path: '/user' },
+  { label: 'Çalışma Alanım', path: '/user' },
   { label: 'Konular', path: '/user/topics' },
   { label: 'Öğrenme Kayıtları', path: '/user/learning-logs' },
   { label: 'Kaynaklar', path: '/user/resources' },

@@ -155,6 +155,7 @@ export default function InsightsPanel({
 
   return (
     <Box
+      className="seclab-insights-grid"
       sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', xl: '1.15fr 1fr' },

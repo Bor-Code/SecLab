@@ -178,6 +178,7 @@ export default function ProductivityPanel() {
 
   return (
     <Box
+      className="seclab-productivity-grid"
       sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' },

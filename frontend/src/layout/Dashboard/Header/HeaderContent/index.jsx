@@ -1,19 +1,14 @@
-// material-ui
 import useMediaQuery from '@mui/material/useMediaQuery';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
 
-// project imports
 import Search from './Search';
 import Profile from './Profile';
-import Notification from './Notification';
 import MobileSection from './MobileSection';
 
-// project import
 import { GithubOutlined } from '@ant-design/icons';
-
-// ==============================|| HEADER - CONTENT ||============================== //
 
 export default function HeaderContent() {
   const downLG = useMediaQuery((theme) => theme.breakpoints.down('lg'));
@@ -22,26 +17,35 @@ export default function HeaderContent() {
     <>
       {!downLG && <Search />}
       {downLG && <Box sx={{ width: '100%', ml: 1 }} />}
-      <IconButton
-        component={Link}
-        href="https://github.com/Bor-Code"
-        target="_blank"
-        disableRipple
-        color="secondary"
-        title="Download Free Version"
-        sx={{
-          color: 'text.primary',
-          bgcolor: 'grey.100',
-          ml: 'auto',
-          flexShrink: 0
-        }}
-      >
-        <GithubOutlined />
-      </IconButton>
 
-      <Notification />
-      {!downLG && <Profile />}
-      {downLG && <MobileSection />}
+      <Stack
+        className="seclab-header-actions"
+        direction="row"
+        spacing={1}
+        alignItems="center"
+        sx={{ ml: 'auto', flexShrink: 0 }}
+      >
+        <IconButton
+          component={Link}
+          href="https://github.com/Bor-Code"
+          target="_blank"
+          rel="noopener noreferrer"
+          disableRipple
+          color="secondary"
+          title="GitHub profilini aç"
+          aria-label="GitHub profilini aç"
+          sx={{
+            color: 'text.primary',
+            bgcolor: 'grey.100',
+            flexShrink: 0
+          }}
+        >
+          <GithubOutlined />
+        </IconButton>
+
+        {!downLG && <Profile />}
+        {downLG && <MobileSection />}
+      </Stack>
     </>
   );
 }
