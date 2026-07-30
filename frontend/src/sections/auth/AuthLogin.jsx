@@ -53,7 +53,7 @@ export default function AuthLogin({ isDemo = false }) {
       });
 
       if (!loginResponse.ok) {
-        throw new Error('Login request failed');
+        throw new Error('Giriş isteği başarısız oldu');
       }
 
       const response = await loginResponse.json();
@@ -79,7 +79,7 @@ export default function AuthLogin({ isDemo = false }) {
             window.location.assign('/free/user');
     } catch (error) {
       console.error('Login failed:', error);
-      setLoginError('Invalid email or password.');
+      setLoginError('E-posta veya şifre hatalı.');
     } finally {
       setSubmitting(false);
     }
@@ -94,16 +94,16 @@ export default function AuthLogin({ isDemo = false }) {
       )}
       <Formik
         initialValues={{
-          email: 'admin@seclab.local',
-          password: 'admin123',
+          email: '',
+          password: '',
           submit: null
         }}
         validationSchema={Yup.object().shape({
-          email: Yup.string().max(255).required('Email is required'),
+          email: Yup.string().max(255).required('E-posta zorunludur'),
           password: Yup.string()
-            .required('Password is required')
-            .test('no-leading-trailing-whitespace', 'Password cannot start or end with spaces', (value) => value === value.trim())
-            .max(50, 'Password is too long')
+            .required('Şifre zorunludur')
+            .test('no-leading-trailing-whitespace', 'Şifre boşlukla başlayamaz veya bitemez', (value) => value === value.trim())
+            .max(50, 'Şifre çok uzun')
         })}
         onSubmit={handleLoginSubmit}
       >
@@ -112,7 +112,7 @@ export default function AuthLogin({ isDemo = false }) {
             <Grid container spacing={3}>
               <Grid size={12}>
                 <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="email-login">Email Address</InputLabel>
+                  <InputLabel htmlFor="email-login">E-posta Adresi</InputLabel>
                   <OutlinedInput
                     id="email-login"
                     type="email"
@@ -120,7 +120,7 @@ export default function AuthLogin({ isDemo = false }) {
                     name="email"
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    placeholder="Enter email address"
+                    placeholder="example@gmail.com"
                     fullWidth
                     error={Boolean(touched.email && errors.email)}
                   />
@@ -133,7 +133,7 @@ export default function AuthLogin({ isDemo = false }) {
               </Grid>
               <Grid size={12}>
                 <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="password-login">Password</InputLabel>
+                  <InputLabel htmlFor="password-login">Şifre</InputLabel>
                   <OutlinedInput
                     fullWidth
                     error={Boolean(touched.password && errors.password)}
@@ -156,7 +156,7 @@ export default function AuthLogin({ isDemo = false }) {
                         </IconButton>
                       </InputAdornment>
                     }
-                    placeholder="Enter password"
+                    placeholder="Şifrenizi girin"
                   />
                 </Stack>
                 {touched.password && errors.password && (
@@ -168,7 +168,7 @@ export default function AuthLogin({ isDemo = false }) {
               <Grid size={12}>
                 <AnimateButton>
                   <Button fullWidth size="large" type="submit" variant="contained" color="primary" disabled={isSubmitting}>
-                    {isSubmitting ? 'Authenticating...' : 'SecLab Login'}
+                    {isSubmitting ? 'Giriş yapılıyor...' : 'SecLab Giriş'}
                   </Button>
                 </AnimateButton>
               </Grid>

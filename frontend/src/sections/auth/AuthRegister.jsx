@@ -39,11 +39,11 @@ export default function AuthRegister() {
     const trimmedEmail = email.trim().toLowerCase();
 
     if (!trimmedUsername) {
-      return 'Username is required.';
+      return 'Kullanıcı adı zorunludur.';
     }
 
     if (!emailPattern.test(trimmedEmail)) {
-      return 'Enter a valid email address.';
+      return 'Geçerli bir e-posta adresi girin.';
     }
 
     if (password.length < 8) {
@@ -86,7 +86,7 @@ export default function AuthRegister() {
       navigate(user.role === 'admin' ? '/admin' : '/user', { replace: true });
     } catch (error) {
       console.error('Registration failed:', error);
-      setRegisterError(error.message || 'Registration failed.');
+      setRegisterError(error.message || 'Kayıt işlemi başarısız oldu.');
     } finally {
       setIsSubmitting(false);
     }
@@ -100,7 +100,7 @@ export default function AuthRegister() {
       <Grid container spacing={2}>
         <Grid size={12}>
           <TextField
-            label="Username"
+            label="Kullanıcı Adı"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
             fullWidth

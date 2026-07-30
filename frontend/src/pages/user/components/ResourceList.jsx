@@ -6,19 +6,20 @@ import MainCard from 'components/MainCard';
 
 export default function ResourceList({ resources, isSaving, handleDeleteResource }) {
   return (
-    <MainCard title="Saved Resources">
+    <MainCard title="Kaydedilen Kaynaklar">
       {resources.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
-          No resources yet. Add useful links and documentation references above.
+          Henüz kaynak yok. Faydalı bağlantıları ve dokümanları ekleyin.
         </Typography>
       ) : (
         <Stack spacing={1}>
           {resources.map((resource) => (
             <Stack
               key={resource.id}
-              direction="row"
+              className="seclab-record-item"
+              direction={{ xs: 'column', sm: 'row' }}
               justifyContent="space-between"
-              alignItems="center"
+              alignItems={{ xs: 'stretch', sm: 'center' }}
               sx={{ p: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}
             >
               <Stack spacing={0.5}>

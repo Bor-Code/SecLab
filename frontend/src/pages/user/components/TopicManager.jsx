@@ -20,26 +20,26 @@ export default function TopicManager({
   handleDeleteTopic
 }) {
   return (
-    <MainCard title="My Topics">
+    <MainCard title="Konularım">
       {topics.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
-          No topics yet. Create your first topic above to start organizing your learning journey.
+          Henüz konu yok. Öğrenme sürecinizi düzenlemek için ilk konunuzu oluşturun.
         </Typography>
       ) : (
         <Stack spacing={2}>
           {topics.map((topic) => (
-            <Box key={topic.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+            <Box className="seclab-record-item" key={topic.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
               {editingTopicId === topic.id ? (
                 <Stack component="form" spacing={2} onSubmit={(e) => handleUpdateTopic(e, topic.id)}>
                   <TextField
-                    label="Topic name"
+                    label="Konu adı"
                     value={editTopicName}
                     onChange={(e) => setEditTopicName(e.target.value)}
                     fullWidth
                     disabled={isSaving}
                   />
                   <TextField
-                    label="Description"
+                    label="Açıklama"
                     value={editTopicDescription}
                     onChange={(e) => setEditTopicDescription(e.target.value)}
                     fullWidth
@@ -47,7 +47,7 @@ export default function TopicManager({
                     minRows={2}
                     disabled={isSaving}
                   />
-                  <Stack direction="row" spacing={1}>
+                  <Stack className="seclab-record-actions" direction="row" spacing={1}>
                     <Button type="submit" variant="contained" size="small" disabled={isSaving}>
                       Save
                     </Button>
@@ -57,7 +57,13 @@ export default function TopicManager({
                   </Stack>
                 </Stack>
               ) : (
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Stack
+                  className="seclab-record-layout"
+                  direction={{ xs: 'column', sm: 'row' }}
+                  justifyContent="space-between"
+                  alignItems={{ xs: 'stretch', sm: 'center' }}
+                  spacing={2}
+                >
                   <Stack spacing={0.5}>
                     <Typography variant="subtitle1">{topic.name}</Typography>
                     {topic.description && (
@@ -66,7 +72,7 @@ export default function TopicManager({
                       </Typography>
                     )}
                   </Stack>
-                  <Stack direction="row" spacing={1}>
+                  <Stack className="seclab-record-actions" direction="row" spacing={1}>
                     <Button variant="outlined" size="small" onClick={() => handleStartEditTopic(topic)} disabled={isSaving}>
                       Edit
                     </Button>

@@ -29,7 +29,12 @@ export default function HeaderContent() {
         disableRipple
         color="secondary"
         title="Download Free Version"
-        sx={{ color: 'text.primary', bgcolor: 'grey.100' }}
+        sx={{
+          color: 'text.primary',
+          bgcolor: 'grey.100',
+          ml: 'auto',
+          flexShrink: 0
+        }}
       >
         <GithubOutlined />
       </IconButton>

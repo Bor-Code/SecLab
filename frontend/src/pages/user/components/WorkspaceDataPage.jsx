@@ -14,42 +14,42 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000
 
 const pageConfig = {
   progress: {
-    title: 'MyProgress',
-    eyebrow: 'Progress Command Center',
-    description: 'Track learning momentum, workspace coverage, and recent study consistency.',
-    mainLabel: 'Workspace score',
-    actionTitle: 'Best next move',
-    actionText: 'Add a learning log after each study session so progress becomes more accurate.'
+    title: 'İlerlemem',
+    eyebrow: 'İlerleme Kontrol Merkezi',
+    description: 'Öğrenme hızınızı, çalışma alanı kapsamını ve son çalışma düzeninizi takip edin.',
+    mainLabel: 'Çalışma alanı puanı',
+    actionTitle: 'En iyi sonraki adım',
+    actionText: 'İlerleme verilerinin daha doğru olması için her çalışma oturumundan sonra bir öğrenme kaydı ekleyin.'
   },
   plan: {
-    title: 'StudyPlan',
-    eyebrow: 'Study Control Room',
-    description: 'Plan the next study step using your latest topic and learning records.',
-    mainLabel: 'Study readiness',
+    title: 'Çalışma Planı',
+    eyebrow: 'Çalışma Kontrol Merkezi',
+    description: 'Son konunuzu ve öğrenme kayıtlarınızı kullanarak sonraki çalışma adımını planlayın.',
+    mainLabel: 'Çalışma hazırlığı',
     actionTitle: 'Sonraki çalışma adımı',
     actionText: 'Use the latest topic as today focus, then record the result as a learning log.'
   },
   notes: {
-    title: 'Notes',
+    title: 'Notlar',
     eyebrow: 'Knowledge Board',
-    description: 'Review your latest learning notes and resource notes in one clean board.',
-    mainLabel: 'Captured notes',
-    actionTitle: 'Review habit',
-    actionText: 'Turn short notes into useful summaries so they stay valuable later.'
+    description: 'Son öğrenme ve kaynak notlarınızı tek bir panelden inceleyin.',
+    mainLabel: 'Kaydedilen notlar',
+    actionTitle: 'Tekrar alışkanlığı',
+    actionText: 'Kısa notları daha sonra kullanılabilecek yararlı özetlere dönüştürün.'
   },
   activity: {
-    title: 'Activity',
-    eyebrow: 'Workspace Timeline',
-    description: 'Follow recent workspace actions generated from real database records.',
-    mainLabel: 'Recent activity',
-    actionTitle: 'Notification source',
+    title: 'Aktivite',
+    eyebrow: 'Çalışma Alanı Zaman Akışı',
+    description: 'Gerçek veritabanı kayıtlarından oluşturulan son çalışma alanı işlemlerini takip edin.',
+    mainLabel: 'Son aktiviteler',
+    actionTitle: 'Bildirim kaynağı',
     actionText: 'This activity feed will power the real notification menu in the next pass.'
   }
 };
 
 const demoData = {
   user: {
-    username: localStorage.getItem('seclab-user-username') || 'Demo User',
+    username: localStorage.getItem('seclab-user-username') || 'Demo Kullanıcısı',
     email: localStorage.getItem('seclab-user-email') || 'demo@seclab.local',
     role: localStorage.getItem('seclab-user-role') || 'user'
   },
@@ -69,14 +69,14 @@ const demoData = {
     learning_log: { title: 'SecLab Test Log', notes: 'Temporary learning log note for UI testing' },
     resource: {
       title: 'SecLab Test Resource',
-      resource_type: 'Documentation',
+      resource_type: 'Dokümantasyon',
       url: 'https://fastapi.tiangolo.com/',
       notes: 'Temporary resource note for UI testing'
     }
   },
   activity: [
     { title: 'Son konu', description: 'SecLab Test Topic' },
-    { title: 'Latest learning log', description: 'SecLab Test Log' },
+    { title: 'Son öğrenme kaydı', description: 'SecLab Test Log' },
     { title: 'Son kaynak', description: 'SecLab Test Resource' }
   ],
   notifications: [],
@@ -156,7 +156,7 @@ export default function WorkspaceDataPage({ type = 'progress' }) {
       {
         label: 'Konular',
         value: counts.topics ?? 0,
-        helper: 'Learning subjects',
+        helper: 'Öğrenme konuları',
         percent: Math.min(100, Number(counts.topics || 0) * 25)
       },
       {
@@ -166,9 +166,9 @@ export default function WorkspaceDataPage({ type = 'progress' }) {
         percent: Math.min(100, Number(counts.learning_logs || 0) * 25)
       },
       {
-        label: 'Resources',
+        label: 'Kaynaklar',
         value: counts.resources ?? 0,
-        helper: 'Saved material',
+        helper: 'Kaydedilen materyaller',
         percent: Math.min(100, Number(counts.resources || 0) * 25)
       }
     ],
@@ -178,18 +178,18 @@ export default function WorkspaceDataPage({ type = 'progress' }) {
   const focusCards = [
     {
       label: 'Latest Topic',
-      title: latest.topic?.name || 'No topic yet',
-      text: latest.topic?.description || 'Create a topic to start building your workspace.'
+      title: latest.topic?.name || 'Henüz konu yok',
+      text: latest.topic?.description || 'Çalışma alanınızı oluşturmaya başlamak için bir konu ekleyin.'
     },
     {
       label: 'Latest Log',
-      title: latest.learning_log?.title || 'No log yet',
-      text: latest.learning_log?.notes || 'Add a learning log after your study session.'
+      title: latest.learning_log?.title || 'Henüz öğrenme kaydı yok',
+      text: latest.learning_log?.notes || 'Çalışma oturumunuzdan sonra bir öğrenme kaydı ekleyin.'
     },
     {
       label: 'Latest Resource',
-      title: latest.resource?.title || 'No resource yet',
-      text: latest.resource?.notes || 'Save documentation, links, and references.'
+      title: latest.resource?.title || 'Henüz kaynak yok',
+      text: latest.resource?.notes || 'Dokümanları, bağlantıları ve referansları kaydedin.'
     }
   ];
 
@@ -197,8 +197,8 @@ export default function WorkspaceDataPage({ type = 'progress' }) {
     if (type === 'plan') {
       return [
         ['Son konu', latest.topic?.name],
-        ['Topic description', latest.topic?.description],
-        ['Latest learning log', latest.learning_log?.title],
+        ['Konu açıklaması', latest.topic?.description],
+        ['Son öğrenme kaydı', latest.learning_log?.title],
         ['Son çalışma tarihi', progress.last_study_date],
         ['Aktif çalışma günleri', progress.active_days]
       ];
@@ -209,14 +209,14 @@ export default function WorkspaceDataPage({ type = 'progress' }) {
         ['Son kayıt notes', latest.learning_log?.notes],
         ['Son kaynak notes', latest.resource?.notes],
         ['Son kaynak', latest.resource?.title],
-        ['Resource type', latest.resource?.resource_type],
+        ['Kaynak türü', latest.resource?.resource_type],
         ['Resource URL', latest.resource?.url]
       ];
     }
 
     if (type === 'activity') {
       const rows = data?.activity || [];
-      return rows.length ? rows.map((item) => [item.title, item.description]) : [['Activity status', 'No activity records yet']];
+      return rows.length ? rows.map((item) => [item.title, item.description]) : [['Aktivite durumu', 'Henüz aktivite kaydı yok']];
     }
 
     return [
@@ -276,7 +276,7 @@ export default function WorkspaceDataPage({ type = 'progress' }) {
 
               <Stack spacing={1} sx={{ alignItems: { xs: 'flex-start', md: 'flex-end' } }}>
                 <Chip
-                  label={source === 'live' ? 'Live DB' : source === 'loading' ? 'Loading' : 'Demo data'}
+                  label={source === 'live' ? 'Canlı Veritabanı' : source === 'loading' ? 'Yükleniyor' : 'Demo verisi'}
                   sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.38)' }}
                   variant="outlined"
                 />
@@ -312,7 +312,7 @@ export default function WorkspaceDataPage({ type = 'progress' }) {
                       }}
                     />
                     <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.72)' }}>
-                      {isLoading ? 'Loading live workspace data...' : `${counts.total_records ?? 0} total records in this workspace`}
+                      {isLoading ? 'Canlı çalışma alanı verileri yükleniyor...' : `${counts.total_records ?? 0} çalışma alanındaki toplam kayıt`}
                     </Typography>
                   </Stack>
                 </Paper>

@@ -319,3 +319,12 @@ export function fetchDashboardRecentActivity() {
 export function fetchHealthStatus() {
   return request<HealthStatus>('/health');
 }
+
+export function resetUserPassword(userId: number) {
+  return request<{ message: string; temporary_password: string }>(
+    `/users/${userId}/reset-password`,
+    {
+      method: 'POST'
+    }
+  );
+}

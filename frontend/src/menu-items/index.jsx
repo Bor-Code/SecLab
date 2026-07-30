@@ -5,7 +5,7 @@ import { BarChartOutlined, BookOutlined, CalendarOutlined, DashboardOutlined, Fi
 
 const userWorkspace = {
   id: 'group-user-workspace',
-  title: 'Workspace',
+  title: 'Çalışma Alanı',
   type: 'group',
   children: [
     {
@@ -26,7 +26,7 @@ const userWorkspace = {
     },
     {
       id: 'user-learning-logs',
-      title: 'LearningLogs',
+      title: 'Öğrenme Kayıtları',
       type: 'item',
       url: '/user/learning-logs',
       icon: ReadOutlined,
@@ -34,7 +34,7 @@ const userWorkspace = {
     },
     {
       id: 'user-resources',
-      title: 'Resources',
+      title: 'Kaynaklar',
       type: 'item',
       url: '/user/resources',
       icon: LinkOutlined,
@@ -43,7 +43,7 @@ const userWorkspace = {
     
         {
           id: 'user-progress',
-          title: 'MyProgress',
+          title: 'İlerlemem',
           type: 'item',
           url: '/user/progress',
           icon: BarChartOutlined
@@ -51,7 +51,7 @@ const userWorkspace = {
 
         {
           id: 'user-study-plan',
-          title: 'StudyPlan',
+          title: 'Çalışma Planı',
           type: 'item',
           url: '/user/study-plan',
           icon: CalendarOutlined
@@ -59,7 +59,7 @@ const userWorkspace = {
 
         {
           id: 'user-notes',
-          title: 'Notes',
+          title: 'Notlar',
           type: 'item',
           url: '/user/notes',
           icon: FileTextOutlined
@@ -67,14 +67,14 @@ const userWorkspace = {
 
         {
           id: 'user-activity',
-          title: 'Activity',
+          title: 'Aktivite',
           type: 'item',
           url: '/user/activity',
           icon: HistoryOutlined
         },
 {
       id: 'user-profile',
-      title: 'Profile',
+      title: 'Profil',
       type: 'item',
       url: '/user/profile',
       icon: UserOutlined,

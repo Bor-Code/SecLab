@@ -35,7 +35,7 @@ export default function DashboardDefault() {
         setDashboardSummary(data);
       } catch (error) {
         console.error('Summary load error:', error);
-        setSummaryMessage('Backend unavailable');
+        setSummaryMessage('Backend kullanılamıyor');
       } finally {
         setIsSummaryLoading(false);
       }
@@ -49,7 +49,7 @@ export default function DashboardDefault() {
         setDashboardActivity(Array.isArray(data) ? data : data?.items || data?.activities || data?.recent_activity || []);
       } catch (error) {
         console.error('Activity load error:', error);
-        setActivityMessage('Activity unavailable');
+        setActivityMessage('Aktivite verileri kullanılamıyor');
       } finally {
         setIsActivityLoading(false);
       }
@@ -63,7 +63,7 @@ export default function DashboardDefault() {
         setHealthStatus(data);
       } catch (error) {
         console.error('Health status load error:', error);
-        setHealthMessage('Health data unavailable');
+        setHealthMessage('Sistem durumu verileri kullanılamıyor');
       } finally {
         setIsHealthLoading(false);
       }
@@ -102,61 +102,61 @@ export default function DashboardDefault() {
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
         <AnalyticEcommerce
-          title="Users"
+          title="Kullanıcılar"
           count={isSummaryLoading ? '...' : String(dashboardSummary?.users_count ?? dashboardSummary?.users ?? 0)}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
         <AnalyticEcommerce
-          title="Topics"
+          title="Konular"
           count={isSummaryLoading ? '...' : String(dashboardSummary?.topics_count ?? dashboardSummary?.topics ?? 0)}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
         <AnalyticEcommerce
-          title="Learning Logs"
+          title="Öğrenme Kayıtları"
           count={isSummaryLoading ? '...' : String(dashboardSummary?.learning_logs_count ?? dashboardSummary?.learning_logs ?? 0)}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
         <AnalyticEcommerce
-          title="Resources"
+          title="Kaynaklar"
           count={isSummaryLoading ? '...' : String(dashboardSummary?.resources_count ?? dashboardSummary?.resources ?? 0)}
         />
       </Grid>
 
       <Grid sx={{ display: { sm: 'none', md: 'block', lg: 'none' } }} size={{ md: 8 }} />
-      
+
       <Grid size={{ xs: 12, md: 7, lg: 8 }}>
         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <Grid>
-            <Typography variant="h5">Records Overview</Typography>
+            <Typography variant="h5">Kayıtların Genel Görünümü</Typography>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
           <List sx={{ p: 0, '& .MuiListItem-root': { py: 2, px: 3 } }}>
             <ListItem divider>
-              <ListItemText 
-                primary={<Typography variant="subtitle1">Users</Typography>} 
-                secondary="Manage system access, create new accounts, and review user activity." 
+              <ListItemText
+                primary={<Typography variant="subtitle1">Kullanıcılar</Typography>}
+                secondary="Sistem erişimini yönetin, yeni hesaplar oluşturun ve kullanıcı aktivitelerini inceleyin."
               />
             </ListItem>
             <ListItem divider>
-              <ListItemText 
-                primary={<Typography variant="subtitle1">Topics</Typography>} 
-                secondary="Organize learning domains and categorize core focus areas." 
+              <ListItemText
+                primary={<Typography variant="subtitle1">Konular</Typography>}
+                secondary="Organize learning domains and categorize core focus areas."
               />
             </ListItem>
             <ListItem divider>
-              <ListItemText 
-                primary={<Typography variant="subtitle1">Learning Logs</Typography>} 
-                secondary="Track daily progress and record detailed study notes." 
+              <ListItemText
+                primary={<Typography variant="subtitle1">Öğrenme Kayıtları</Typography>}
+                secondary="Track daily progress and record detailed study notes."
               />
             </ListItem>
             <ListItem>
-              <ListItemText 
-                primary={<Typography variant="subtitle1">Resources</Typography>} 
-                secondary="Maintain a centralized library of external links, documentation, and tools." 
+              <ListItemText
+                primary={<Typography variant="subtitle1">Kaynaklar</Typography>}
+                secondary="Maintain a centralized library of external links, documentation, and tools."
               />
             </ListItem>
           </List>
@@ -165,7 +165,7 @@ export default function DashboardDefault() {
       <Grid size={{ xs: 12, md: 5, lg: 4 }}>
         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <Grid>
-            <Typography variant="h5">System Health</Typography>
+            <Typography variant="h5">Sistem Durumu</Typography>
           </Grid>
           <Grid />
         </Grid>
@@ -207,11 +207,11 @@ export default function DashboardDefault() {
           )}
         </MainCard>
       </Grid>
-      
+
       <Grid size={{ xs: 12, md: 7, lg: 8 }}>
         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <Grid>
-            <Typography variant="h5">Recent Activity</Typography>
+            <Typography variant="h5">Son Aktiviteler</Typography>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
@@ -260,16 +260,16 @@ export default function DashboardDefault() {
         <MainCard sx={{ mt: 2 }} content={false}>
           <List sx={{ p: 0, '& .MuiListItem-root': { py: 2, px: 3 } }}>
             <ListItem divider>
-              <ListItemText primary="Review users" />
+              <ListItemText primary="Kullanıcıları incele" />
             </ListItem>
             <ListItem divider>
-              <ListItemText primary="Organize topics" />
+              <ListItemText primary="Konuları düzenle" />
             </ListItem>
             <ListItem divider>
-              <ListItemText primary="Track learning logs" />
+              <ListItemText primary="Öğrenme kayıtlarını takip et" />
             </ListItem>
             <ListItem>
-              <ListItemText primary="Curate resources" />
+              <ListItemText primary="Kaynakları yönet" />
             </ListItem>
           </List>
         </MainCard>

@@ -18,12 +18,12 @@ const icons = {
 
 const records = {
   id: 'group-records',
-  title: 'Records',
+  title: 'Kayıtlar',
   type: 'group',
   children: [
     {
       id: 'users',
-      title: 'Users',
+      title: 'Kullanıcılar',
       type: 'item',
       url: '/admin/users',
       icon: icons.UserOutlined,
@@ -39,7 +39,7 @@ const records = {
     },
     {
       id: 'learning-logs',
-      title: 'LearningLogs',
+      title: 'Öğrenme Kayıtları',
       type: 'item',
       url: '/admin/learning-logs',
       icon: icons.ReadOutlined,
@@ -47,7 +47,7 @@ const records = {
     },
     {
       id: 'resources',
-      title: 'Resources',
+      title: 'Kaynaklar',
       type: 'item',
       url: '/admin/resources',
       icon: icons.LinkOutlined,

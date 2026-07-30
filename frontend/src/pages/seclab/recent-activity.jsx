@@ -28,7 +28,7 @@ export default function RecentActivityPage() {
       setActivities(data);
     } catch (error) {
       console.error('Failed to load recent activity:', error);
-      setErrorMessage('Failed to load recent activity.');
+      setErrorMessage('Son aktiviteler yüklenemedi.');
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +48,7 @@ export default function RecentActivityPage() {
   });
 
   return (
-    <MainCard title="Recent Activity">
+    <MainCard title="Son Aktiviteler">
       <Typography variant="body2" sx={{ mb: 3 }}>
         Review the latest actions and updates across the platform.
       </Typography>
@@ -61,10 +61,10 @@ export default function RecentActivityPage() {
 
       <TextField
         fullWidth
-        label="Search activity"
+        label="Aktivite ara"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search by type, title, or description"
+        placeholder="Tür, başlık veya açıklamaya göre ara"
         sx={{ mb: 3 }}
       />
 
@@ -72,9 +72,9 @@ export default function RecentActivityPage() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Type</TableCell>
-              <TableCell>Title</TableCell>
-              <TableCell>Description</TableCell>
+              <TableCell>Tür</TableCell>
+              <TableCell>Başlık</TableCell>
+              <TableCell>Açıklama</TableCell>
               <TableCell>Oluşturulma Tarihi</TableCell>
             </TableRow>
           </TableHead>
