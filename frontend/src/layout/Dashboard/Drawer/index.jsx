@@ -31,7 +31,7 @@ export default function MainDrawer({ window }) {
   return (
     <Box component="nav" sx={{ flexShrink: { md: 0 }, zIndex: 1200 }} aria-label="mailbox folders">
       {!downLG ? (
-        <MiniDrawerStyled variant="permanent" open={drawerOpen}>
+        <MiniDrawerStyled className={drawerOpen ? 'seclab-drawer-open' : 'seclab-drawer-closed'} variant="permanent" open={drawerOpen}>
           {drawerHeader}
           {drawerContent}
         </MiniDrawerStyled>

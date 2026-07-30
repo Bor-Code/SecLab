@@ -45,15 +45,15 @@ export function buildPalette(presetColor) {
       ...extendedCommon,
       ...extendedLight,
       text: {
-        primary: extendedLight.grey[700],
-        secondary: extendedLight.grey[500],
+        primary: '#172033',
+        secondary: '#64748b',
         disabled: extendedLight.grey[400]
       },
       action: { disabled: extendedLight.grey[300] },
-      divider: extendedLight.grey[200],
+      divider: '#e2e8f0',
       background: {
-        paper: extendedLight.grey[0],
-        default: extendedLight.grey.A50
+        paper: '#ffffff',
+        default: '#f4f6f8'
       }
     }
   };

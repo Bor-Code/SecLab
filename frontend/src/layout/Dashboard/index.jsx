@@ -29,14 +29,15 @@ export default function DashboardLayout() {
   if (menuMasterLoading) return <Loader />;
 
   return (
-    <Box sx={{ display: 'flex', width: '100%' }}>
+    <Box className="seclab-app-shell" sx={{ display: 'flex', width: '100%' }}>
       <ScrollTop />
       <Header />
       <Drawer />
 
-      <Box component="main" sx={{ width: 'calc(100% - 260px)', flexGrow: 1, p: { xs: 2, sm: 3 } }}>
+      <Box component="main" className="seclab-app-main" sx={{ width: 'calc(100% - 260px)', flexGrow: 1, p: { xs: 2, sm: 3 } }}>
         <Toolbar sx={{ mt: 'inherit' }} />
         <Box
+          className="seclab-app-content"
           sx={{
             ...{ px: { xs: 0, sm: 2 } },
             position: 'relative',

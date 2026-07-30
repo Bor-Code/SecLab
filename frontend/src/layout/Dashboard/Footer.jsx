@@ -5,10 +5,10 @@ export default function Footer() {
   return (
     <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
       <Typography variant="caption" color="text.secondary">
-        SecLab admin workspace
+        SecLab yönetim çalışma alanı
       </Typography>
       <Typography variant="caption" color="text.secondary">
-        Demo environment
+        Demo ortamı
       </Typography>
     </Stack>
   );

@@ -1,4 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { clearAuthStorage } from 'utils/authStorage';
 
 export default function UserGuard() {
   const location = useLocation();
@@ -9,7 +10,7 @@ export default function UserGuard() {
   const allowedRoles = ['user', 'admin'];
 
   if (expiresAt && new Date().getTime() > Number(expiresAt)) {
-    localStorage.clear();
+    clearAuthStorage();
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

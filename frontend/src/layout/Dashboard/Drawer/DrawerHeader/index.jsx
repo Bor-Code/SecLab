@@ -1,24 +1,31 @@
 import PropTypes from 'prop-types';
 
-// project imports
 import DrawerHeaderStyled from './DrawerHeaderStyled';
 import Logo from 'components/logo';
-
-// ==============================|| DRAWER HEADER ||============================== //
 
 export default function DrawerHeader({ open }) {
   return (
     <DrawerHeaderStyled
       open={open}
       sx={{
-        minHeight: '60px',
-        width: 'initial',
-        paddingTop: '8px',
-        paddingBottom: '8px',
-        paddingLeft: open ? '24px' : 0
+        minHeight: open ? 72 : 68,
+        width: '100%',
+        px: open ? 2.25 : 0,
+        py: 1,
+        overflow: 'hidden'
       }}
     >
-      <Logo isIcon={!open} sx={{ width: open ? 'auto' : 35, height: 35 }} />
+      <Logo
+        isIcon={!open}
+        sx={{
+          width: open ? '100%' : 40,
+          height: open ? 'auto' : 40,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: open ? 'flex-start' : 'center',
+          color: 'inherit'
+        }}
+      />
     </DrawerHeaderStyled>
   );
 }

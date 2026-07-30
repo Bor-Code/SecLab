@@ -1,17 +1,8 @@
-// assets
-import { HeartOutlined, HistoryOutlined } from '@ant-design/icons';
-
-// icons
-const icons = {
-  HeartOutlined,
-  HistoryOutlined
-};
-
-// ==============================|| MENU ITEMS - MONITORING ||============================== //
+import { DatabaseOutlined, HeartOutlined, HistoryOutlined } from '@ant-design/icons';
 
 const monitoring = {
   id: 'group-monitoring',
-  title: 'Monitoring',
+  title: 'İzleme',
   type: 'group',
   children: [
     {
@@ -19,7 +10,7 @@ const monitoring = {
       title: 'Sistem Durumu',
       type: 'item',
       url: '/admin/system-health',
-      icon: icons.HeartOutlined,
+      icon: HeartOutlined,
       breadcrumbs: false
     },
     {
@@ -27,7 +18,7 @@ const monitoring = {
       title: 'Son Aktiviteler',
       type: 'item',
       url: '/admin/recent-activity',
-      icon: icons.HistoryOutlined,
+      icon: HistoryOutlined,
       breadcrumbs: false
     },
     {
@@ -35,7 +26,7 @@ const monitoring = {
       title: 'Veri Tarayıcısı',
       type: 'item',
       url: '/admin/data-browser',
-      icon: icons.HistoryOutlined,
+      icon: DatabaseOutlined,
       breadcrumbs: false
     }
   ]

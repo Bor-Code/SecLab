@@ -1,24 +1,16 @@
-// assets
 import { DashboardOutlined } from '@ant-design/icons';
-
-// icons
-const icons = {
-  DashboardOutlined
-};
-
-// ==============================|| MENU ITEMS - DASHBOARD ||============================== //
 
 const dashboard = {
   id: 'group-dashboard',
-  title: 'Overview',
+  title: 'Genel Bakış',
   type: 'group',
   children: [
     {
       id: 'dashboard',
-      title: 'Dashboard',
+      title: 'Gösterge Paneli',
       type: 'item',
       url: '/admin',
-      icon: icons.DashboardOutlined,
+      icon: DashboardOutlined,
       breadcrumbs: false
     }
   ]

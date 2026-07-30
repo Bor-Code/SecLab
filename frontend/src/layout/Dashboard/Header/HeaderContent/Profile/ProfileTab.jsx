@@ -1,50 +1,86 @@
-import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
 
 import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
+import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 
-import DashboardOutlined from '@ant-design/icons/DashboardOutlined';
-import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
-import UserOutlined from '@ant-design/icons/UserOutlined';
+import ClockCircleOutlined from '@ant-design/icons/ClockCircleOutlined';
+import HourglassOutlined from '@ant-design/icons/HourglassOutlined';
+import MailOutlined from '@ant-design/icons/MailOutlined';
+import SafetyCertificateOutlined from '@ant-design/icons/SafetyCertificateOutlined';
 
-export default function ProfileTab({ onLogout }) {
-  const username =
-    localStorage.getItem('seclab-username') ||
-    localStorage.getItem('seclab-user-username') ||
-    'SecLab User';
+function formatDateTime(value) {
+  if (!value || Number.isNaN(value)) return 'Yeniden girişte kaydedilecek';
 
-  const email = localStorage.getItem('seclab-user-email') || 'Oturum açık';
+  return new Date(value).toLocaleString('tr-TR', {
+    dateStyle: 'short',
+    timeStyle: 'short'
+  });
+}
+
+function formatRemaining(expiresAt, now) {
+  if (!expiresAt || Number.isNaN(expiresAt)) return 'Bilinmiyor';
+
+  const remainingMs = expiresAt - now;
+  if (remainingMs <= 0) return 'Oturum sona erdi';
+
+  const totalMinutes = Math.ceil(remainingMs / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours > 0) return `${hours} saat ${minutes} dakika`;
+  return `${minutes} dakika`;
+}
+
+export default function ProfileTab() {
+  const email = localStorage.getItem('seclab-user-email') || 'Bilinmiyor';
   const role = localStorage.getItem('seclab-user-role') || 'user';
-  const roleLabel = role === 'admin' ? 'Admin' : 'Kullanıcı';
+  const startedAt = Number(localStorage.getItem('seclab-session-started-at'));
+  const expiresAt = Number(localStorage.getItem('seclab-token-expires-at'));
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const information = [
+    {
+      label: 'E-posta',
+      value: email,
+      icon: <MailOutlined />
+    },
+    {
+      label: 'Yetki',
+      value: role === 'admin' ? 'Yönetici' : 'Kullanıcı',
+      icon: <SafetyCertificateOutlined />
+    },
+    {
+      label: 'Oturum Açılışı',
+      value: formatDateTime(startedAt),
+      icon: <ClockCircleOutlined />
+    },
+    {
+      label: 'Oturum Bitişi',
+      value: formatDateTime(expiresAt),
+      icon: <ClockCircleOutlined />
+    },
+    {
+      label: 'Kalan Süre',
+      value: formatRemaining(expiresAt, now),
+      icon: <HourglassOutlined />
+    }
+  ];
 
   return (
-    <List component="nav" sx={{ p: 0, '& .MuiListItemIcon-root': { minWidth: 32 } }}>
-      <ListItemButton>
-        <ListItemIcon>
-          <UserOutlined />
-        </ListItemIcon>
-        <ListItemText primary={username} secondary={`${email} · ${roleLabel}`} />
-      </ListItemButton>
-
-      <ListItemButton>
-        <ListItemIcon>
-          <DashboardOutlined />
-        </ListItemIcon>
-        <ListItemText primary="Çalışma Alanı" secondary="Konular, logs, and resources" />
-      </ListItemButton>
-
-      <ListItemButton onClick={onLogout}>
-        <ListItemIcon>
-          <LogoutOutlined />
-        </ListItemIcon>
-        <ListItemText primary="Çıkış Yap" />
-      </ListItemButton>
+    <List component="div" sx={{ p: 0, '& .MuiListItemIcon-root': { minWidth: 32 } }}>
+      {information.map((item) => (
+        <ListItem key={item.label} sx={{ py: 1 }}>
+          <ListItemIcon>{item.icon}</ListItemIcon>
+          <ListItemText primary={item.label} secondary={item.value} />
+        </ListItem>
+      ))}
     </List>
   );
 }
-
-ProfileTab.propTypes = {
-  onLogout: PropTypes.func
-};

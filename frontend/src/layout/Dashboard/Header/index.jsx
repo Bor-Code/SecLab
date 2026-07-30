@@ -32,7 +32,7 @@ export default function Header() {
   const mainHeader = (
     <Toolbar>
       <IconButton
-        aria-label="open drawer"
+        aria-label="menüyü aç veya kapat"
         onClick={() => handlerDrawerOpen(!drawerOpen)}
         edge="start"
         color="secondary"

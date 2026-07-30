@@ -9,15 +9,15 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 const items = [
-  { label: 'MyWorkspace', path: '/user' },
+  { label: 'İlerleme Analizim', path: '/user' },
   { label: 'Konular', path: '/user/topics' },
-  { label: 'Öğrenme Kayıtları', path: '/user/learning-logs' },
+  { label: 'Öğrenme Kayıt Yönetimiı', path: '/user/learning-logs' },
   { label: 'Kaynaklar', path: '/user/resources' },
   { label: 'İlerlemem', path: '/user/progress' },
   { label: 'Çalışma Planı', path: '/user/study-plan' },
   { label: 'Notlar', path: '/user/notes' },
   { label: 'Aktivite', path: '/user/activity' },
-  { label: 'Profil', path: '/user/profile' }
+  { label: 'Hesap AyarlarÄ±', path: '/user/settings/account' }
 ];
 
 export default function Search() {

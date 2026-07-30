@@ -1,77 +1,120 @@
 # SecLab
 
-## Project Objective
-SecLab is a learning tracking system developed for the engineering component of the internship.
-The goal is to enable users to track their learning topics, work logs, and useful resources through a single web application.
+SecLab is a learning-tracking application built with FastAPI, PostgreSQL, React, and Vite. It provides separate administrator and user workspaces, JWT authentication, profile management, learning topics, study logs, resources, dashboard summaries, and a demo password-reset flow.
 
-## Technologies
-**Backend:**
-- Python
-- FastAPI
+## Technology Stack
+
+### Backend
+
+- Python and FastAPI
 - SQLAlchemy Core
 - PostgreSQL
 - Pydantic
-- Swagger/OpenAPI
+- JWT authentication
 
-**Frontend:**
+### Frontend
+
 - React
-- TypeScript
 - Vite
-- ESLint
-- CSS
+- Material UI
+- ESLint and Prettier
 
-## Current Status
-On the backend, a CRUD infrastructure has been set up for Users, Topics, Learning Logs, and Resources.
+## Local Setup
 
-On the frontend:
-- Listing, creating, editing, and deleting users
-- Listing, creating, editing, and deleting topics
-- Listing, creating, editing, and deleting learning logs
-- Listing, creating, editing, and deleting resources
-- Using dropdowns for user and topic selection
+### 1. Database
 
-## API Endpoints
-**Users:**
+Create a PostgreSQL database named `seclab`, then run:
+
+```powershell
+psql -U postgres -d seclab -f .\docs\schema.sql
+```
+
+### 2. Backend
+
+```powershell
+cd .\backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+Copy-Item .env.example .env
+```
+
+Update `backend/.env`:
+
+```env
+DATABASE_URL=postgresql+psycopg://postgres:your_password@localhost:5432/seclab
+SECLAB_JWT_SECRET=replace_with_a_long_random_secret
+SECLAB_TOKEN_EXPIRE_MINUTES=60
+SECLAB_RESET_TOKEN_EXPIRE_MINUTES=15
+SECLAB_CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```
+
+Start the API:
+
+```powershell
+uvicorn app.main:app --reload
+```
+
+Swagger UI is available at `http://127.0.0.1:8000/docs`.
+
+### 3. Frontend
+
+```powershell
+cd .\frontend
+npm install
+npm run start
+```
+
+The frontend uses `http://127.0.0.1:8000` by default. Override it with `VITE_API_BASE_URL` in `frontend/.env` when necessary.
+
+## Main API Routes
+
+### Authentication
+
+- `POST /auth/register`
+- `POST /auth/login`
+- `GET /auth/me`
+- `PATCH /auth/me`
+- `POST /auth/forgot-password`
+- `POST /auth/reset-password`
+
+### Administrator
+
 - `GET /users`
 - `POST /users`
 - `GET /users/{user_id}`
 - `PATCH /users/{user_id}`
 - `DELETE /users/{user_id}`
+- `POST /users/{user_id}/reset-password`
+- `GET /dashboard/summary`
+- `GET /dashboard/recent-activity`
 
-**Topics:**
-- `GET /topics`
-- `POST /topics`
-- `GET /topics/{topic_id}`
-- `PATCH /topics/{topic_id}`
-- `DELETE /topics/{topic_id}`
+### User Records
 
-**Learning Logs:**
-- `GET /learning-logs`
-- `POST /learning-logs`
-- `GET /learning-logs/{log_id}`
-- `PATCH /learning-logs/{log_id}`
-- `DELETE /learning-logs/{log_id}`
+- `GET`, `POST /topics`
+- `PATCH`, `DELETE /topics/{topic_id}`
+- `GET`, `POST /learning-logs`
+- `PATCH`, `DELETE /learning-logs/{log_id}`
+- `GET`, `POST /resources`
+- `PATCH`, `DELETE /resources/{resource_id}`
+- `GET /dashboard/user-workspace`
 
-**Resources:**
-- `GET /resources`
-- `POST /resources`
-- `GET /resources/{resource_id}`
-- `PATCH /resources/{resource_id}`
-- `DELETE /resources/{resource_id}`
+Normal users can access only their own records. Administrator-only routes are protected by backend authorization checks.
 
-## Local Execution
-Start PostgreSQL:
+## Validation
 
 ```powershell
-$pgBin = "C:\Program Files\PostgreSQL\18\bin"
-$pgData = "$env:USERPROFILE\postgres-data\seclab"
-$pgLog = "$pgData\postgres-$(Get-Date -Format 'yyyyMMdd-HHmmss').log"
-& "$pgBin\pg_ctl.exe" -D $pgData -l $pgLog start
-& "$pgBin\pg_isready.exe" -h localhost -p 5432 -U postgres
+cd .\frontend
+npm run lint
+npm run build
 ```
 
-## Backend Validation
+Backend validation notes are available in [docs/backend-validation.md](docs/backend-validation.md).
 
-Backend router or API changes can be checked with the commands documented in:
+## Security Notes
 
-- [Backend Validation](docs/backend-validation.md)
+- Never commit or share `backend/.env`.
+- Use a long, random `SECLAB_JWT_SECRET` outside local development.
+- Password-reset tokens become invalid after a successful password change.
+- Existing access tokens are invalidated when the account password changes.
+- The current password-reset interface displays the token for demonstration purposes; production email delivery is not implemented.

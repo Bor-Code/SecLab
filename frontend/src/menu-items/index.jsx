@@ -1,16 +1,27 @@
 import dashboard from './dashboard';
 import records from './records';
 import monitoring from './monitoring';
-import { BarChartOutlined, BookOutlined, CalendarOutlined, DashboardOutlined, FileTextOutlined, HistoryOutlined, LinkOutlined, ReadOutlined, UserOutlined } from '@ant-design/icons';
+
+import {
+  BarChartOutlined,
+  BookOutlined,
+  CalendarOutlined,
+  DashboardOutlined,
+  FileTextOutlined,
+  HistoryOutlined,
+  LinkOutlined,
+  ReadOutlined,
+  SettingOutlined
+} from '@ant-design/icons';
 
 const userWorkspace = {
   id: 'group-user-workspace',
-  title: 'Çalışma Alanı',
+  title: 'İlerleme Analizi',
   type: 'group',
   children: [
     {
       id: 'user-workspace',
-      title: 'MyWorkspace',
+      title: 'İlerleme Analizim',
       type: 'item',
       url: '/user',
       icon: DashboardOutlined,
@@ -26,7 +37,7 @@ const userWorkspace = {
     },
     {
       id: 'user-learning-logs',
-      title: 'Öğrenme Kayıtları',
+      title: 'Öğrenme Kayıt Yönetimiı',
       type: 'item',
       url: '/user/learning-logs',
       icon: ReadOutlined,
@@ -40,55 +51,65 @@ const userWorkspace = {
       icon: LinkOutlined,
       breadcrumbs: false
     },
-    
-        {
-          id: 'user-progress',
-          title: 'İlerlemem',
-          type: 'item',
-          url: '/user/progress',
-          icon: BarChartOutlined
-        },
-
-        {
-          id: 'user-study-plan',
-          title: 'Çalışma Planı',
-          type: 'item',
-          url: '/user/study-plan',
-          icon: CalendarOutlined
-        },
-
-        {
-          id: 'user-notes',
-          title: 'Notlar',
-          type: 'item',
-          url: '/user/notes',
-          icon: FileTextOutlined
-        },
-
-        {
-          id: 'user-activity',
-          title: 'Aktivite',
-          type: 'item',
-          url: '/user/activity',
-          icon: HistoryOutlined
-        },
-{
-      id: 'user-profile',
-      title: 'Profil',
+    {
+      id: 'user-progress',
+      title: 'İlerlemem',
       type: 'item',
-      url: '/user/profile',
-      icon: UserOutlined,
+      url: '/user/progress',
+      icon: BarChartOutlined,
+      breadcrumbs: false
+    },
+    {
+      id: 'user-study-plan',
+      title: 'Çalışma Planı',
+      type: 'item',
+      url: '/user/study-plan',
+      icon: CalendarOutlined,
+      breadcrumbs: false
+    },
+    {
+      id: 'user-notes',
+      title: 'Notlar',
+      type: 'item',
+      url: '/user/notes',
+      icon: FileTextOutlined,
+      breadcrumbs: false
+    },
+    {
+      id: 'user-activity',
+      title: 'Aktivite',
+      type: 'item',
+      url: '/user/activity',
+      icon: HistoryOutlined,
+      breadcrumbs: false
+    },
+    {
+      id: 'user-settings',
+      title: 'Hesap Ayarları',
+      type: 'item',
+      url: '/user/settings/account',
+      icon: SettingOutlined,
       breadcrumbs: false
     }
   ]
 };
 
-const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-const role = typeof window !== 'undefined' ? localStorage.getItem('seclab-user-role') : null;
-const isUserWorkspace = role === 'user' || pathname.includes('/user');
+function normalizePathname(pathname = '') {
+  const withoutBase = pathname.replace(/^\/free(?=\/|$)/, '');
+  return withoutBase || '/';
+}
 
-const menuItems = {
-  items: isUserWorkspace ? [userWorkspace] : [dashboard, records, monitoring]
-};
+export function getMenuItems(pathname = '') {
+  const normalizedPath = normalizePathname(pathname);
+  const role = typeof window !== 'undefined' ? localStorage.getItem('seclab-user-role') : null;
+  const isAdminPath = normalizedPath === '/admin' || normalizedPath.startsWith('/admin/');
+  const isUserPath = normalizedPath === '/user' || normalizedPath.startsWith('/user/');
 
-export default menuItems;
+  if (isAdminPath || (role === 'admin' && !isUserPath)) {
+    return { items: [dashboard, records, monitoring] };
+  }
+
+  return { items: [userWorkspace] };
+}
+
+export default getMenuItems(typeof window !== 'undefined' ? window.location.pathname : '');

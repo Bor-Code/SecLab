@@ -37,14 +37,8 @@ export default function ResourceList({ resources, isSaving, handleDeleteResource
                   {resource.url}
                 </Typography>
               </Stack>
-              <Button
-                variant="outlined"
-                color="error"
-                size="small"
-                onClick={() => handleDeleteResource(resource.id)}
-                disabled={isSaving}
-              >
-                Delete
+              <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteResource(resource.id)} disabled={isSaving}>
+                Sil
               </Button>
             </Stack>
           ))}

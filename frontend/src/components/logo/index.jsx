@@ -1,22 +1,27 @@
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
-// material-ui
 import ButtonBase from '@mui/material/ButtonBase';
 
-// project imports
 import Logo from './LogoMain';
 import LogoIcon from './LogoIcon';
-import { APP_DEFAULT_PATH } from 'config';
-
-// ==============================|| MAIN LOGO ||============================== //
 
 export default function LogoSection({ reverse, isIcon, sx, to }) {
+  const location = useLocation();
+  const role = typeof window !== 'undefined' ? localStorage.getItem('seclab-user-role') : null;
+  const isAdminRoute = location.pathname === '/admin' || location.pathname.startsWith('/admin/');
+  const homePath = isAdminRoute || role === 'admin' ? '/admin' : '/user';
+
   return (
-    <ButtonBase disableRipple component={Link} to={to || APP_DEFAULT_PATH} sx={sx} aria-label="Logo">
+    <ButtonBase disableRipple component={Link} to={to || homePath} sx={sx} aria-label="Ana sayfaya git">
       {isIcon ? <LogoIcon /> : <Logo reverse={reverse} />}
     </ButtonBase>
   );
 }
 
-LogoSection.propTypes = { reverse: PropTypes.bool, isIcon: PropTypes.bool, sx: PropTypes.any, to: PropTypes.any };
+LogoSection.propTypes = {
+  reverse: PropTypes.bool,
+  isIcon: PropTypes.bool,
+  sx: PropTypes.any,
+  to: PropTypes.any
+};

@@ -1,463 +1,250 @@
 import { useEffect, useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
 
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid';
 import LinearProgress from '@mui/material/LinearProgress';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+import { fetchLearningLogs, fetchResources, fetchTopics } from 'api/seclab';
 
 const pageConfig = {
   progress: {
     title: 'İlerlemem',
-    eyebrow: 'İlerleme Kontrol Merkezi',
-    description: 'Öğrenme hızınızı, çalışma alanı kapsamını ve son çalışma düzeninizi takip edin.',
-    mainLabel: 'Çalışma alanı puanı',
-    actionTitle: 'En iyi sonraki adım',
-    actionText: 'İlerleme verilerinin daha doğru olması için her çalışma oturumundan sonra bir öğrenme kaydı ekleyin.'
+    description: 'Konu, öğrenme kaydı ve kaynak sayılarınıza göre çalışma ilerlemenizi takip edin.'
   },
   plan: {
     title: 'Çalışma Planı',
-    eyebrow: 'Çalışma Kontrol Merkezi',
-    description: 'Son konunuzu ve öğrenme kayıtlarınızı kullanarak sonraki çalışma adımını planlayın.',
-    mainLabel: 'Çalışma hazırlığı',
-    actionTitle: 'Sonraki çalışma adımı',
-    actionText: 'Use the latest topic as today focus, then record the result as a learning log.'
+    description: 'Son kayıtlarınıza göre bir sonraki çalışma adımınızı düzenleyin.'
   },
   notes: {
     title: 'Notlar',
-    eyebrow: 'Knowledge Board',
-    description: 'Son öğrenme ve kaynak notlarınızı tek bir panelden inceleyin.',
-    mainLabel: 'Kaydedilen notlar',
-    actionTitle: 'Tekrar alışkanlığı',
-    actionText: 'Kısa notları daha sonra kullanılabilecek yararlı özetlere dönüştürün.'
+    description: 'Öğrenme kayıtlarınız ve kaynaklarınızdaki son notları görüntüleyin.'
   },
   activity: {
     title: 'Aktivite',
-    eyebrow: 'Çalışma Alanı Zaman Akışı',
-    description: 'Gerçek veritabanı kayıtlarından oluşturulan son çalışma alanı işlemlerini takip edin.',
-    mainLabel: 'Son aktiviteler',
-    actionTitle: 'Bildirim kaynağı',
-    actionText: 'This activity feed will power the real notification menu in the next pass.'
+    description: 'Çalışma alanınızdaki son kayıt hareketlerini kronolojik olarak inceleyin.'
   }
 };
 
-const demoData = {
-  user: {
-    username: localStorage.getItem('seclab-user-username') || 'Demo Kullanıcısı',
-    email: localStorage.getItem('seclab-user-email') || 'demo@seclab.local',
-    role: localStorage.getItem('seclab-user-role') || 'user'
-  },
-  counts: {
-    topics: 1,
-    learning_logs: 1,
-    resources: 1,
-    total_records: 3
-  },
-  progress: {
-    completion_score: 65,
-    active_days: 1,
-    last_study_date: new Date().toISOString().slice(0, 10)
-  },
-  latest: {
-    topic: { name: 'SecLab Test Topic', description: 'Temporary CRUD test topic for user workspace' },
-    learning_log: { title: 'SecLab Test Log', notes: 'Temporary learning log note for UI testing' },
-    resource: {
-      title: 'SecLab Test Resource',
-      resource_type: 'Dokümantasyon',
-      url: 'https://fastapi.tiangolo.com/',
-      notes: 'Temporary resource note for UI testing'
-    }
-  },
-  activity: [
-    { title: 'Son konu', description: 'SecLab Test Topic' },
-    { title: 'Son öğrenme kaydı', description: 'SecLab Test Log' },
-    { title: 'Son kaynak', description: 'SecLab Test Resource' }
-  ],
-  notifications: [],
-  unread_notifications: 0
-};
-
-function formatValue(value) {
-  if (value === 0) return '0';
-  if (!value) return 'Not available';
-  return String(value);
+function toArray(value) {
+  return Array.isArray(value) ? value : [];
 }
 
-async function fetchWorkspaceData(token) {
-  const urls = [
-    `${API_BASE_URL}/dashboard/user-workspace`,
-    `${API_BASE_URL}/dashboard/dashboard/user-workspace`
-  ];
+function formatDate(value) {
+  if (!value) return 'Tarih yok';
 
-  for (const url of urls) {
-    try {
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
 
-      const data = await response.json().catch(() => null);
-
-      if (response.ok && data) {
-        return { data, source: 'live' };
-      }
-    } catch {
-      // fallback below
-    }
-  }
-
-  return { data: demoData, source: 'demo' };
+  return date.toLocaleString('tr-TR', {
+    dateStyle: 'short',
+    timeStyle: 'short'
+  });
 }
 
-export default function WorkspaceDataPage({ type = 'progress' }) {
-  const [data, setData] = useState(demoData);
-  const [source, setSource] = useState('loading');
+export default function WorkspaceDataPage({ type }) {
+  const [topics, setTopics] = useState([]);
+  const [learningLogs, setLearningLogs] = useState([]);
+  const [resources, setResources] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const config = pageConfig[type] || pageConfig.progress;
 
   useEffect(() => {
     let active = true;
 
-    async function loadWorkspaceData() {
+    async function loadData() {
       setIsLoading(true);
+      setError('');
 
-      const token = localStorage.getItem('seclab-access-token');
-      const result = await fetchWorkspaceData(token);
+      try {
+        const [topicData, learningLogData, resourceData] = await Promise.all([fetchTopics(), fetchLearningLogs(), fetchResources()]);
 
-      if (active) {
-        setData(result.data || demoData);
-        setSource(result.source);
-        setIsLoading(false);
+        if (!active) return;
+
+        setTopics(toArray(topicData));
+        setLearningLogs(toArray(learningLogData));
+        setResources(toArray(resourceData));
+      } catch (loadError) {
+        if (active) {
+          setError(loadError.message || 'Çalışma alanı verileri yüklenemedi.');
+        }
+      } finally {
+        if (active) setIsLoading(false);
       }
     }
 
-    loadWorkspaceData();
+    loadData();
 
     return () => {
       active = false;
     };
   }, []);
 
-  const counts = data?.counts || {};
-  const progress = data?.progress || {};
-  const latest = data?.latest || {};
-  const score = Number(progress.completion_score || 0);
+  const totalRecords = topics.length + learningLogs.length + resources.length;
+  const progressScore = Math.min(100, topics.length * 20 + learningLogs.length * 15 + resources.length * 10);
 
-  const metrics = useMemo(
-    () => [
-      {
-        label: 'Konular',
-        value: counts.topics ?? 0,
-        helper: 'Öğrenme konuları',
-        percent: Math.min(100, Number(counts.topics || 0) * 25)
-      },
-      {
-        label: 'Logs',
-        value: counts.learning_logs ?? 0,
-        helper: 'Çalışma kayıtları',
-        percent: Math.min(100, Number(counts.learning_logs || 0) * 25)
-      },
-      {
-        label: 'Kaynaklar',
-        value: counts.resources ?? 0,
-        helper: 'Kaydedilen materyaller',
-        percent: Math.min(100, Number(counts.resources || 0) * 25)
-      }
-    ],
-    [counts]
-  );
+  const activityRows = useMemo(() => {
+    const topicRows = topics.map((item) => ({
+      title: `Konu: ${item.name}`,
+      detail: item.description || 'Açıklama eklenmedi.',
+      date: item.created_at
+    }));
+    const learningRows = learningLogs.map((item) => ({
+      title: `Öğrenme kaydı: ${item.title}`,
+      detail: item.notes || 'Not eklenmedi.',
+      date: item.study_date || item.created_at
+    }));
+    const resourceRows = resources.map((item) => ({
+      title: `Kaynak: ${item.title}`,
+      detail: item.notes || item.url || 'Açıklama eklenmedi.',
+      date: item.created_at
+    }));
 
-  const focusCards = [
+    return [...topicRows, ...learningRows, ...resourceRows]
+      .sort((left, right) => new Date(right.date || 0) - new Date(left.date || 0))
+      .slice(0, 12);
+  }, [learningLogs, resources, topics]);
+
+  const noteRows = useMemo(() => {
+    const learningNotes = learningLogs
+      .filter((item) => item.notes)
+      .map((item) => ({ title: item.title, detail: item.notes, date: item.study_date || item.created_at }));
+    const resourceNotes = resources
+      .filter((item) => item.notes)
+      .map((item) => ({ title: item.title, detail: item.notes, date: item.created_at }));
+
+    return [...learningNotes, ...resourceNotes].slice(0, 12);
+  }, [learningLogs, resources]);
+
+  const planRows = [
     {
-      label: 'Latest Topic',
-      title: latest.topic?.name || 'Henüz konu yok',
-      text: latest.topic?.description || 'Çalışma alanınızı oluşturmaya başlamak için bir konu ekleyin.'
+      title: '1. Konuyu belirle',
+      detail: topics[0]?.name || 'Önce çalışma alanınıza bir konu ekleyin.'
     },
     {
-      label: 'Latest Log',
-      title: latest.learning_log?.title || 'Henüz öğrenme kaydı yok',
-      text: latest.learning_log?.notes || 'Çalışma oturumunuzdan sonra bir öğrenme kaydı ekleyin.'
+      title: '2. Çalışmayı kaydet',
+      detail: learningLogs[0]?.title || 'Çalışma sonrasında bir öğrenme kaydı oluşturun.'
     },
     {
-      label: 'Latest Resource',
-      title: latest.resource?.title || 'Henüz kaynak yok',
-      text: latest.resource?.notes || 'Dokümanları, bağlantıları ve referansları kaydedin.'
+      title: '3. Kaynak ekle',
+      detail: resources[0]?.title || 'Kullandığınız bağlantı veya dokümanı kaynaklara ekleyin.'
     }
   ];
 
-  const detailRows = useMemo(() => {
-    if (type === 'plan') {
-      return [
-        ['Son konu', latest.topic?.name],
-        ['Konu açıklaması', latest.topic?.description],
-        ['Son öğrenme kaydı', latest.learning_log?.title],
-        ['Son çalışma tarihi', progress.last_study_date],
-        ['Aktif çalışma günleri', progress.active_days]
-      ];
-    }
+  let rows = activityRows;
 
-    if (type === 'notes') {
-      return [
-        ['Son kayıt notes', latest.learning_log?.notes],
-        ['Son kaynak notes', latest.resource?.notes],
-        ['Son kaynak', latest.resource?.title],
-        ['Kaynak türü', latest.resource?.resource_type],
-        ['Resource URL', latest.resource?.url]
-      ];
-    }
-
-    if (type === 'activity') {
-      const rows = data?.activity || [];
-      return rows.length ? rows.map((item) => [item.title, item.description]) : [['Aktivite durumu', 'Henüz aktivite kaydı yok']];
-    }
-
-    return [
-      ['Toplam kayıt', counts.total_records],
-      ['Aktif çalışma günleri', progress.active_days],
-      ['Son çalışma tarihi', progress.last_study_date],
-      ['Son konu', latest.topic?.name],
-      ['Son kaynak', latest.resource?.title]
-    ];
-  }, [counts, data, latest, progress, type]);
+  if (type === 'notes') rows = noteRows;
+  if (type === 'plan') rows = planRows;
 
   return (
-    <Box
-      sx={{
-        minHeight: 'calc(100vh - 96px)',
-        mx: { xs: -2, md: -3 },
-        my: { xs: -2, md: -3 },
-        px: { xs: 2, md: 4 },
-        py: { xs: 3, md: 4 },
-        background:
-          'linear-gradient(135deg, #dfe6ef 0%, #f7f9fc 42%, #e7edf5 100%)'
-      }}
-    >
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
       <Stack spacing={3}>
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 3, md: 4 },
-            borderRadius: 2,
-            overflow: 'hidden',
-            position: 'relative',
-            color: 'common.white',
-            bgcolor: '#101828',
-            boxShadow: '0 24px 70px rgba(15,23,42,0.22)'
-          }}
-        >
-          <Box
-            sx={{
-              position: 'absolute',
-              inset: 0,
-              background:
-                'radial-gradient(circle at 82% 12%, rgba(56,189,248,0.36), transparent 26%), radial-gradient(circle at 18% 85%, rgba(34,197,94,0.18), transparent 30%), linear-gradient(135deg, #101828 0%, #1e293b 58%, #0f766e 100%)'
-            }}
-          />
-
-          <Stack spacing={3} sx={{ position: 'relative' }}>
-            <Stack direction="row" sx={{ justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
-              <Stack spacing={1}>
-                <Typography variant="overline" sx={{ color: 'rgba(255,255,255,0.72)', letterSpacing: 1 }}>
-                  {config.eyebrow}
-                </Typography>
-                <Typography variant="h2">{config.title}</Typography>
-                <Typography sx={{ maxWidth: 720, color: 'rgba(255,255,255,0.76)' }}>
-                  {config.description}
-                </Typography>
-              </Stack>
-
-              <Stack spacing={1} sx={{ alignItems: { xs: 'flex-start', md: 'flex-end' } }}>
-                <Chip
-                  label={source === 'live' ? 'Canlı Veritabanı' : source === 'loading' ? 'Yükleniyor' : 'Demo verisi'}
-                  sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.38)' }}
-                  variant="outlined"
-                />
-                <Typography sx={{ color: 'rgba(255,255,255,0.72)' }}>{data?.user?.email}</Typography>
-              </Stack>
-            </Stack>
-
-            <Grid container spacing={2.5}>
-              <Grid size={{ xs: 12, md: 5 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2.5,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(255,255,255,0.12)',
-                    border: '1px solid rgba(255,255,255,0.18)',
-                    backdropFilter: 'blur(10px)'
-                  }}
-                >
-                  <Stack spacing={1.5}>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.72)' }}>{config.mainLabel}</Typography>
-                    <Typography variant="h1" sx={{ color: 'white' }}>
-                      {score}%
-                    </Typography>
-                    <LinearProgress
-                      variant="determinate"
-                      value={score}
-                      sx={{
-                        height: 8,
-                        borderRadius: 999,
-                        bgcolor: 'rgba(255,255,255,0.22)',
-                        '& .MuiLinearProgress-bar': { bgcolor: '#38bdf8' }
-                      }}
-                    />
-                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.72)' }}>
-                      {isLoading ? 'Canlı çalışma alanı verileri yükleniyor...' : `${counts.total_records ?? 0} çalışma alanındaki toplam kayıt`}
-                    </Typography>
-                  </Stack>
-                </Paper>
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 7 }}>
-                <Grid container spacing={1.5}>
-                  {metrics.map((metric) => (
-                    <Grid key={metric.label} size={{ xs: 12, sm: 4 }}>
-                      <Paper
-                        elevation={0}
-                        sx={{
-                          p: 2,
-                          height: '100%',
-                          borderRadius: 2,
-                          bgcolor: 'rgba(255,255,255,0.10)',
-                          border: '1px solid rgba(255,255,255,0.16)'
-                        }}
-                      >
-                        <Stack spacing={0.75}>
-                          <Typography sx={{ color: 'rgba(255,255,255,0.72)' }}>{metric.label}</Typography>
-                          <Typography variant="h3" sx={{ color: 'white' }}>
-                            {metric.value}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.66)' }}>
-                            {metric.helper}
-                          </Typography>
-                        </Stack>
-                      </Paper>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Grid>
-            </Grid>
+        <Paper sx={{ p: { xs: 2.5, md: 3 } }}>
+          <Stack spacing={1}>
+            <Typography variant="h3">{config.title}</Typography>
+            <Typography color="text.secondary">{config.description}</Typography>
           </Stack>
         </Paper>
 
-        <Grid container spacing={2.5}>
-          {focusCards.map((card) => (
-            <Grid key={card.label} size={{ xs: 12, md: 4 }}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2.5,
-                  height: '100%',
-                  borderRadius: 2,
-                  border: '1px solid rgba(148,163,184,0.28)',
-                  bgcolor: 'rgba(255,255,255,0.96)',
-                  boxShadow: '0 18px 46px rgba(15,23,42,0.08)'
-                }}
-              >
-                <Stack spacing={1}>
-                  <Typography variant="caption" color="text.secondary">
-                    {card.label}
+        {error && <Alert severity="error">{error}</Alert>}
+
+        {isLoading ? (
+          <Paper sx={{ p: 5, textAlign: 'center' }}>
+            <CircularProgress size={34} />
+            <Typography sx={{ mt: 2 }} color="text.secondary">
+              Veriler yükleniyor...
+            </Typography>
+          </Paper>
+        ) : (
+          <>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+                gap: 2
+              }}
+            >
+              {[
+                ['Konular', topics.length],
+                ['Öğrenme Kayıt Yönetimiı', learningLogs.length],
+                ['Kaynaklar', resources.length],
+                ['Toplam Kayıt', totalRecords]
+              ].map(([label, value]) => (
+                <Paper key={label} sx={{ p: 2.5 }}>
+                  <Typography color="text.secondary">{label}</Typography>
+                  <Typography variant="h3" sx={{ mt: 1 }}>
+                    {value}
                   </Typography>
-                  <Typography variant="h5">{card.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {card.text}
-                  </Typography>
+                </Paper>
+              ))}
+            </Box>
+
+            {type === 'progress' ? (
+              <Paper sx={{ p: 3 }}>
+                <Stack spacing={2}>
+                  <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h5">Çalışma ilerleme puanı</Typography>
+                    <Chip label={`%${progressScore}`} color="primary" />
+                  </Stack>
+                  <LinearProgress variant="determinate" value={progressScore} sx={{ height: 10, borderRadius: 10 }} />
+                  <Typography color="text.secondary">Düzenli konu, kayıt ve kaynak ekledikçe bu puan yükselir.</Typography>
                 </Stack>
               </Paper>
-            </Grid>
-          ))}
-        </Grid>
-
-        <Grid container spacing={2.5}>
-          <Grid size={{ xs: 12, md: 8 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 2.5, md: 3 },
-                borderRadius: 2,
-                border: '1px solid rgba(148,163,184,0.28)',
-                bgcolor: 'rgba(255,255,255,0.96)',
-                boxShadow: '0 18px 46px rgba(15,23,42,0.08)'
-              }}
-            >
-              <Stack spacing={2}>
-                <Stack direction="row" sx={{ justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
-                  <Typography variant="h5">Live Details</Typography>
-                  <Chip label={source === 'live' ? 'Connected' : 'Fallback'} color={source === 'live' ? 'success' : 'warning'} variant="outlined" />
-                </Stack>
-
-                <Divider />
-
-                {detailRows.map(([label, value]) => (
-                  <Stack
-                    key={label}
-                    direction={{ xs: 'column', sm: 'row' }}
-                    spacing={1}
-                    sx={{
-                      justifyContent: 'space-between',
-                      borderBottom: '1px solid',
-                      borderColor: 'divider',
-                      pb: 1.25
-                    }}
-                  >
-                    <Typography sx={{ fontWeight: 600 }}>{label}</Typography>
-                    <Typography color="text.secondary" sx={{ maxWidth: 760, textAlign: { sm: 'right' } }}>
-                      {formatValue(value)}
-                    </Typography>
-                  </Stack>
-                ))}
-
-                <Box>
-                  <Button variant="contained" onClick={() => window.location.reload()}>
-                    Veriyi Yenile
-                  </Button>
-                </Box>
-              </Stack>
-            </Paper>
-          </Grid>
-
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 2.5, md: 3 },
-                height: '100%',
-                borderRadius: 2,
-                color: 'white',
-                bgcolor: '#0f766e',
-                boxShadow: '0 18px 46px rgba(15,23,42,0.14)',
-                background:
-                  'radial-gradient(circle at top right, rgba(255,255,255,0.22), transparent 32%), linear-gradient(135deg, #0f766e, #0f172a)'
-              }}
-            >
-              <Stack spacing={2}>
-                <Typography variant="h5" sx={{ color: 'white' }}>
-                  {config.actionTitle}
-                </Typography>
-                <Typography sx={{ color: 'rgba(255,255,255,0.76)' }}>{config.actionText}</Typography>
-
-                <Divider sx={{ borderColor: 'rgba(255,255,255,0.18)' }} />
-
-                <Stack spacing={1}>
-                  <Chip label={`Toplam kayıt: ${counts.total_records ?? 0}`} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.34)' }} variant="outlined" />
-                  <Chip label={`Active days: ${progress.active_days ?? 0}`} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.34)' }} variant="outlined" />
-                  <Chip label={`Last study: ${formatValue(progress.last_study_date)}`} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.34)' }} variant="outlined" />
-                </Stack>
-              </Stack>
-            </Paper>
-          </Grid>
-        </Grid>
+            ) : (
+              <Paper>
+                <List disablePadding>
+                  {rows.length === 0 ? (
+                    <ListItem sx={{ py: 3 }}>
+                      <ListItemText
+                        primary="Henüz gösterilecek kayıt yok"
+                        secondary="Çalışma alanına veri eklediğinizde bu bölüm otomatik güncellenir."
+                      />
+                    </ListItem>
+                  ) : (
+                    rows.map((item, index) => (
+                      <Box key={`${item.title}-${index}`}>
+                        <ListItem sx={{ py: 2 }}>
+                          <ListItemText
+                            primary={item.title}
+                            secondary={
+                              <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  {item.detail}
+                                </Typography>
+                                {item.date && (
+                                  <Typography variant="caption" color="text.secondary">
+                                    {formatDate(item.date)}
+                                  </Typography>
+                                )}
+                              </Stack>
+                            }
+                          />
+                        </ListItem>
+                        {index < rows.length - 1 && <Divider />}
+                      </Box>
+                    ))
+                  )}
+                </List>
+              </Paper>
+            )}
+          </>
+        )}
       </Stack>
     </Box>
   );
 }
+
+WorkspaceDataPage.propTypes = {
+  type: PropTypes.oneOf(['progress', 'plan', 'notes', 'activity']).isRequired
+};

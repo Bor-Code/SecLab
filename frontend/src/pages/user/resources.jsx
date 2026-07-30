@@ -4,8 +4,7 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 
 import ResourceList from './components/ResourceList';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+import { fetchResources, fetchTopics } from 'api/seclab';
 
 export default function UserResourcesPage() {
   const [resources, setResources] = useState([]);
@@ -14,20 +13,7 @@ export default function UserResourcesPage() {
 
   async function loadData() {
     try {
-      const token = localStorage.getItem('seclab-access-token');
-      const headers = { Authorization: `Bearer ${token}` };
-
-      const [resourcesResponse, topicsResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/resources`, { headers }),
-        fetch(`${API_BASE_URL}/topics`, { headers })
-      ]);
-
-      const resourcesData = await resourcesResponse.json().catch(() => []);
-      const topicsData = await topicsResponse.json().catch(() => []);
-
-      if (!resourcesResponse.ok) {
-        throw new Error(resourcesData?.detail || 'Kaynaklar yüklenemedi.');
-      }
+      const [resourcesData, topicsData] = await Promise.all([fetchResources(), fetchTopics()]);
 
       setResources(Array.isArray(resourcesData) ? resourcesData : []);
       setKonular(Array.isArray(topicsData) ? topicsData : []);
@@ -44,13 +30,12 @@ export default function UserResourcesPage() {
 
   return (
     <Box>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      <ResourceList
-        resources={resources}
-        setResources={setResources}
-        topics={topics}
-        onChange={loadData}
-      />
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      <ResourceList resources={resources} setResources={setResources} topics={topics} onChange={loadData} />
     </Box>
   );
 }

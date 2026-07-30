@@ -31,9 +31,9 @@ export default function MainCard({
       sx={(theme) => ({
         position: 'relative',
         ...(border && { border: `1px solid ${theme.vars.palette.grey['A800']}` }),
-        borderRadius: 1,
-        boxShadow: boxShadow && !border ? shadow || theme.vars.customShadows.z1 : 'inherit',
-        ':hover': { boxShadow: boxShadow ? shadow || theme.vars.customShadows.z1 : 'inherit' },
+        borderRadius: 2.5,
+        boxShadow: boxShadow && !border ? shadow || theme.vars.customShadows.z1 : '0 1px 2px rgba(15, 23, 42, 0.05)',
+        ':hover': { boxShadow: boxShadow ? shadow || theme.vars.customShadows.z1 : '0 8px 24px rgba(15, 23, 42, 0.07)' },
         ...(codeHighlight && {
           '& pre': { margin: 0, padding: '12px !important', fontFamily: theme.typography.fontFamily, fontSize: '0.75rem' }
         }),
@@ -53,7 +53,7 @@ export default function MainCard({
       {/* card header and action */}
       {title && (
         <CardHeader
-          sx={{ p: 2.5 }}
+          sx={{ px: 3, py: 2.5 }}
           slotProps={{ title: { variant: 'subtitle1' }, action: { sx: { m: '0px auto', alignSelf: 'center' } } }}
           title={title}
           action={secondary}

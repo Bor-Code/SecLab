@@ -162,36 +162,55 @@ export default function KonularPage() {
   return (
     <MainCard title="Konular">
       <Typography variant="body2" sx={{ mb: 3 }}>
-        Create, update, search, and delete learning topics assigned to SecLab users.
+        SecLab kullanıcılarına atanmış öğrenme konularını oluşturun, güncelleyin, arayın ve silin.
       </Typography>
 
-      {message && <Alert severity="success" sx={{ mb: 3 }}>{message}</Alert>}
-      {errorMessage && <Alert severity="error" sx={{ mb: 3 }}>{errorMessage}</Alert>}
+      {message && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          {message}
+        </Alert>
+      )}
+      {errorMessage && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {errorMessage}
+        </Alert>
+      )}
 
       {editingTopicId !== null ? (
         <form onSubmit={handleUpdateTopic}>
-          <Grid container spacing={2} sx={{ mb: 4 }} alignItems="center">
+          <Grid container spacing={2} sx={{ mb: 4, alignItems: 'center' }}>
             <Grid item xs={12} sm={5}>
               <TextField fullWidth label="Konu Adı" value={editingName} onChange={(event) => setEditingName(event.target.value)} required />
             </Grid>
             <Grid item xs={12} sm={5}>
-              <TextField fullWidth label="Açıklama" value={editingDescription} onChange={(event) => setEditingDescription(event.target.value)} />
+              <TextField
+                fullWidth
+                label="Açıklama"
+                value={editingDescription}
+                onChange={(event) => setEditingDescription(event.target.value)}
+              />
             </Grid>
             <Grid item xs={12} sm={2}>
               <Stack direction="row" spacing={1}>
-                <Button type="submit" variant="contained" fullWidth>Kaydet</Button>
-                <Button variant="outlined" fullWidth onClick={cancelEditingTopic}>İptal</Button>
+                <Button type="submit" variant="contained" fullWidth>
+                  Kaydet
+                </Button>
+                <Button variant="outlined" fullWidth onClick={cancelEditingTopic}>
+                  İptal
+                </Button>
               </Stack>
             </Grid>
           </Grid>
         </form>
       ) : (
         <form onSubmit={handleCreateTopic}>
-          <Grid container spacing={2} sx={{ mb: 4 }} alignItems="center">
+          <Grid container spacing={2} sx={{ mb: 4, alignItems: 'center' }}>
             <Grid item xs={12} sm={3}>
               <TextField select fullWidth label="Kullanıcı" value={userId} onChange={(event) => setUserId(event.target.value)} required>
                 {users.map((user) => (
-                  <MenuItem key={user.id} value={user.id}>{user.username}</MenuItem>
+                  <MenuItem key={user.id} value={user.id}>
+                    {user.username}
+                  </MenuItem>
                 ))}
               </TextField>
             </Grid>
@@ -226,9 +245,17 @@ export default function KonularPage() {
           </TableHead>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={6} align="center">Konular yükleniyor...</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  Konular yükleniyor...
+                </TableCell>
+              </TableRow>
             ) : filteredKonular.length === 0 ? (
-              <TableRow><TableCell colSpan={6} align="center">Konu bulunamadı.</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  Konu bulunamadı.
+                </TableCell>
+              </TableRow>
             ) : (
               filteredKonular.map((topic) => (
                 <TableRow key={topic.id} hover>
@@ -238,9 +265,13 @@ export default function KonularPage() {
                   <TableCell>{topic.description || '-'}</TableCell>
                   <TableCell>{new Date(topic.created_at).toLocaleString('tr-TR')}</TableCell>
                   <TableCell align="right">
-                    <Stack direction="row" spacing={1} justifyContent="flex-end">
-                      <Button size="small" variant="outlined" onClick={() => startEditingTopic(topic)}>Düzenle</Button>
-                      <Button size="small" variant="outlined" color="error" onClick={() => openSilDialog(topic)}>Sil</Button>
+                    <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
+                      <Button size="small" variant="outlined" onClick={() => startEditingTopic(topic)}>
+                        Düzenle
+                      </Button>
+                      <Button size="small" variant="outlined" color="error" onClick={() => openSilDialog(topic)}>
+                        Sil
+                      </Button>
                     </Stack>
                   </TableCell>
                 </TableRow>
@@ -253,9 +284,7 @@ export default function KonularPage() {
       <Dialog open={deleteTargetTopic !== null} onClose={closeSilDialog}>
         <DialogTitle>Konuyu Sil</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Bu konuyu silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
-          </DialogContentText>
+          <DialogContentText>Bu konuyu silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeSilDialog} color="primary" disabled={isDeleting}>

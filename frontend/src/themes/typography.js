@@ -7,25 +7,25 @@ export default function Typography(fontFamily) {
     fontWeightLight: 300,
     fontWeightRegular: 400,
     fontWeightMedium: 500,
-    fontWeightBold: 600,
+    fontWeightBold: 700,
     h1: {
       fontWeight: 600,
-      fontSize: '2.375rem',
+      fontSize: '2rem',
       lineHeight: 1.21
     },
     h2: {
       fontWeight: 600,
-      fontSize: '1.875rem',
+      fontSize: '1.625rem',
       lineHeight: 1.27
     },
     h3: {
       fontWeight: 600,
-      fontSize: '1.5rem',
+      fontSize: '1.375rem',
       lineHeight: 1.33
     },
     h4: {
       fontWeight: 600,
-      fontSize: '1.25rem',
+      fontSize: '1.125rem',
       lineHeight: 1.4
     },
     h5: {
@@ -65,7 +65,8 @@ export default function Typography(fontFamily) {
       lineHeight: 1.66
     },
     button: {
-      textTransform: 'capitalize'
+      textTransform: 'none',
+      fontWeight: 600
     }
   };
 }

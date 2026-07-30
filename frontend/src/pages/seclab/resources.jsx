@@ -22,14 +22,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
 import MainCard from 'components/MainCard';
-import {
-  fetchResources,
-  createResource,
-  updateResource,
-  deleteResource,
-  fetchUsers,
-  fetchTopics
-} from 'api/seclab';
+import { fetchResources, createResource, updateResource, deleteResource, fetchUsers, fetchTopics } from 'api/seclab';
 
 const RESOURCE_TYPES = ['documentation', 'video', 'article', 'course', 'tool', 'other'];
 
@@ -64,11 +57,7 @@ export default function ResourcesPage() {
   async function loadData() {
     setIsLoading(true);
     try {
-      const [fetchedUsers, fetchedKonular, fetchedResources] = await Promise.all([
-        fetchUsers(),
-        fetchTopics(),
-        fetchResources()
-      ]);
+      const [fetchedUsers, fetchedKonular, fetchedResources] = await Promise.all([fetchUsers(), fetchTopics(), fetchResources()]);
       setUsers(fetchedUsers);
       setKonular(fetchedKonular);
       setResources(fetchedResources);
@@ -144,9 +133,7 @@ export default function ResourcesPage() {
         resource_type: editingResourceType,
         notes: editingNotes || null
       });
-      setResources((prevResources) =>
-        prevResources.map((res) => (res.id === updatedResource.id ? updatedResource : res))
-      );
+      setResources((prevResources) => prevResources.map((res) => (res.id === updatedResource.id ? updatedResource : res)));
       cancelEditingResource();
       setMessage('Kaynak başarıyla güncellendi.');
     } catch (error) {
@@ -200,14 +187,7 @@ export default function ResourcesPage() {
     const typeMatch = resource.resource_type.toLowerCase().includes(search);
     const notesMatch = (resource.notes || '').toLowerCase().includes(search);
 
-    return (
-      titleMatch ||
-      urlMatch ||
-      typeMatch ||
-      notesMatch ||
-      userName.includes(search) ||
-      topicName.includes(search)
-    );
+    return titleMatch || urlMatch || typeMatch || notesMatch || userName.includes(search) || topicName.includes(search);
   });
 
   return (
@@ -232,23 +212,10 @@ export default function ResourcesPage() {
         <form onSubmit={handleUpdateResource}>
           <Grid container spacing={2} sx={{ mb: 4 }}>
             <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                label="Başlık"
-                value={editingTitle}
-                onChange={(e) => setEditingTitle(e.target.value)}
-                required
-              />
+              <TextField fullWidth label="Başlık" value={editingTitle} onChange={(e) => setEditingTitle(e.target.value)} required />
             </Grid>
             <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                type="url"
-                label="URL"
-                value={editingUrl}
-                onChange={(e) => setEditingUrl(e.target.value)}
-                required
-              />
+              <TextField fullWidth type="url" label="URL" value={editingUrl} onChange={(e) => setEditingUrl(e.target.value)} required />
             </Grid>
             <Grid item xs={12} sm={4}>
               <TextField
@@ -279,7 +246,7 @@ export default function ResourcesPage() {
             <Grid item xs={12} sm={3}>
               <Stack direction="row" spacing={1}>
                 <Button type="submit" variant="contained" fullWidth sx={{ height: '41px' }}>
-                  Save
+                  Kaydet
                 </Button>
                 <Button variant="outlined" fullWidth sx={{ height: '41px' }} onClick={cancelEditingResource}>
                   İptal
@@ -292,14 +259,7 @@ export default function ResourcesPage() {
         <form onSubmit={handleCreateResource}>
           <Grid container spacing={2} sx={{ mb: 4 }}>
             <Grid item xs={12} sm={3}>
-              <TextField
-                select
-                fullWidth
-                label="Kullanıcı"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                required
-              >
+              <TextField select fullWidth label="Kullanıcı" value={userId} onChange={(e) => setUserId(e.target.value)} required>
                 {users.map((user) => (
                   <MenuItem key={user.id} value={user.id}>
                     {user.username}
@@ -308,14 +268,7 @@ export default function ResourcesPage() {
               </TextField>
             </Grid>
             <Grid item xs={12} sm={3}>
-              <TextField
-                select
-                fullWidth
-                label="Konu"
-                value={topicId}
-                onChange={(e) => setTopicId(e.target.value)}
-                required
-              >
+              <TextField select fullWidth label="Konu" value={topicId} onChange={(e) => setTopicId(e.target.value)} required>
                 {topics.map((topic) => (
                   <MenuItem key={topic.id} value={topic.id}>
                     {topic.name}
@@ -324,13 +277,7 @@ export default function ResourcesPage() {
               </TextField>
             </Grid>
             <Grid item xs={12} sm={3}>
-              <TextField
-                fullWidth
-                label="Başlık"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
+              <TextField fullWidth label="Başlık" value={title} onChange={(e) => setTitle(e.target.value)} required />
             </Grid>
             <Grid item xs={12} sm={3}>
               <TextField
@@ -349,24 +296,10 @@ export default function ResourcesPage() {
               </TextField>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                type="url"
-                label="URL"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                required
-              />
+              <TextField fullWidth type="url" label="URL" value={url} onChange={(e) => setUrl(e.target.value)} required />
             </Grid>
             <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                label="Notlar"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                multiline
-                rows={1}
-              />
+              <TextField fullWidth label="Notlar" value={notes} onChange={(e) => setNotes(e.target.value)} multiline rows={1} />
             </Grid>
             <Grid item xs={12} sm={2}>
               <Button
@@ -427,9 +360,7 @@ export default function ResourcesPage() {
                   <TableCell>{getUserName(resource.user_id)}</TableCell>
                   <TableCell>{getTopicName(resource.topic_id)}</TableCell>
                   <TableCell>{resource.title}</TableCell>
-                  <TableCell sx={{ textTransform: 'capitalize' }}>
-                    {resource.resource_type}
-                  </TableCell>
+                  <TableCell sx={{ textTransform: 'capitalize' }}>{resource.resource_type}</TableCell>
                   <TableCell>
                     <Link href={resource.url} target="_blank" rel="noopener noreferrer">
                       Open
@@ -438,9 +369,9 @@ export default function ResourcesPage() {
                   <TableCell>{resource.notes || '-'}</TableCell>
                   <TableCell>{new Date(resource.created_at).toLocaleString('tr-TR')}</TableCell>
                   <TableCell align="right">
-                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
                       <Button size="small" variant="outlined" onClick={() => startEditingResource(resource)}>
-                        Edit
+                        Düzenle
                       </Button>
                       <Button size="small" variant="outlined" color="error" onClick={() => openSilDialog(resource)}>
                         Sil
@@ -457,9 +388,7 @@ export default function ResourcesPage() {
       <Dialog open={deleteTargetResource !== null} onClose={closeSilDialog}>
         <DialogTitle>Kaynağı Sil</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Bu kaynağı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
-          </DialogContentText>
+          <DialogContentText>Bu kaynağı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeSilDialog} color="primary" disabled={isDeleting}>
