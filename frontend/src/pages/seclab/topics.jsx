@@ -21,10 +21,10 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
 import MainCard from 'components/MainCard';
-import { createTopic, deleteTopic, fetchTopics, fetchUsers, updateTopic } from 'api/seclab';
+import { createTopic, deleteTopic, fetchKonular, fetchUsers, updateTopic } from 'api/seclab';
 
-export default function TopicsPage() {
-  const [topics, setTopics] = useState([]);
+export default function KonularPage() {
+  const [topics, setKonular] = useState([]);
   const [users, setUsers] = useState([]);
 
   const [userId, setUserId] = useState('');
@@ -35,7 +35,7 @@ export default function TopicsPage() {
   const [editingName, setEditingName] = useState('');
   const [editingDescription, setEditingDescription] = useState('');
 
-  const [deleteTargetTopic, setDeleteTargetTopic] = useState(null);
+  const [deleteTargetTopic, setSilTargetTopic] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [topicSearch, setTopicSearch] = useState('');
@@ -49,8 +49,8 @@ export default function TopicsPage() {
     setErrorMessage(null);
 
     try {
-      const [topicsData, usersData] = await Promise.all([fetchTopics(), fetchUsers()]);
-      setTopics(topicsData);
+      const [topicsData, usersData] = await Promise.all([fetchKonular(), fetchUsers()]);
+      setKonular(topicsData);
       setUsers(usersData);
     } catch (error) {
       console.error('Failed to load topics page:', error);
@@ -82,7 +82,7 @@ export default function TopicsPage() {
         description: description || null
       });
 
-      setTopics((prevTopics) => [...prevTopics, createdTopic]);
+      setKonular((prevKonular) => [...prevKonular, createdTopic]);
       setUserId('');
       setName('');
       setDescription('');
@@ -119,7 +119,7 @@ export default function TopicsPage() {
         description: editingDescription || null
       });
 
-      setTopics((prevTopics) => prevTopics.map((topic) => (topic.id === updatedTopic.id ? updatedTopic : topic)));
+      setKonular((prevKonular) => prevKonular.map((topic) => (topic.id === updatedTopic.id ? updatedTopic : topic)));
       cancelEditingTopic();
       setMessage('Topic updated successfully.');
     } catch (error) {
@@ -127,40 +127,40 @@ export default function TopicsPage() {
     }
   }
 
-  function openDeleteDialog(topic) {
-    setDeleteTargetTopic(topic);
+  function openSilDialog(topic) {
+    setSilTargetTopic(topic);
     setMessage(null);
     setErrorMessage(null);
   }
 
-  function closeDeleteDialog() {
-    setDeleteTargetTopic(null);
+  function closeSilDialog() {
+    setSilTargetTopic(null);
   }
 
-  async function confirmDeleteTopic() {
+  async function confirmSilTopic() {
     if (!deleteTargetTopic) return;
 
     setIsDeleting(true);
     try {
       await deleteTopic(deleteTargetTopic.id);
-      setTopics((prevTopics) => prevTopics.filter((topic) => topic.id !== deleteTargetTopic.id));
+      setKonular((prevKonular) => prevKonular.filter((topic) => topic.id !== deleteTargetTopic.id));
       setMessage('Topic deleted successfully.');
-      closeDeleteDialog();
+      closeSilDialog();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
-      closeDeleteDialog();
+      closeSilDialog();
     } finally {
       setIsDeleting(false);
     }
   }
 
-  const filteredTopics = topics.filter((topic) => {
+  const filteredKonular = topics.filter((topic) => {
     const searchValue = topicSearch.toLowerCase();
     return topic.name.toLowerCase().includes(searchValue) || (topic.description || '').toLowerCase().includes(searchValue);
   });
 
   return (
-    <MainCard title="Topics">
+    <MainCard title="Konular">
       <Typography variant="body2" sx={{ mb: 3 }}>
         Create, update, search, and delete learning topics assigned to SecLab users.
       </Typography>
@@ -180,7 +180,7 @@ export default function TopicsPage() {
             <Grid item xs={12} sm={2}>
               <Stack direction="row" spacing={1}>
                 <Button type="submit" variant="contained" fullWidth>Save</Button>
-                <Button variant="outlined" fullWidth onClick={cancelEditingTopic}>Cancel</Button>
+                <Button variant="outlined" fullWidth onClick={cancelEditingTopic}>İptal</Button>
               </Stack>
             </Grid>
           </Grid>
@@ -210,7 +210,7 @@ export default function TopicsPage() {
         </form>
       )}
 
-      <TextField fullWidth label="Search topics" value={topicSearch} onChange={(event) => setTopicSearch(event.target.value)} sx={{ mb: 3 }} />
+      <TextField fullWidth label="Konu ara" value={topicSearch} onChange={(event) => setTopicSearch(event.target.value)} sx={{ mb: 3 }} />
 
       <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
         <Table>
@@ -220,17 +220,17 @@ export default function TopicsPage() {
               <TableCell>User</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Description</TableCell>
-              <TableCell>Created At</TableCell>
+              <TableCell>Oluşturulma Tarihi</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {isLoading ? (
               <TableRow><TableCell colSpan={6} align="center">Loading topics...</TableCell></TableRow>
-            ) : filteredTopics.length === 0 ? (
+            ) : filteredKonular.length === 0 ? (
               <TableRow><TableCell colSpan={6} align="center">No topics found.</TableCell></TableRow>
             ) : (
-              filteredTopics.map((topic) => (
+              filteredKonular.map((topic) => (
                 <TableRow key={topic.id} hover>
                   <TableCell>{topic.id}</TableCell>
                   <TableCell>{getUserLabel(topic.user_id)}</TableCell>
@@ -240,7 +240,7 @@ export default function TopicsPage() {
                   <TableCell align="right">
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
                       <Button size="small" variant="outlined" onClick={() => startEditingTopic(topic)}>Edit</Button>
-                      <Button size="small" variant="outlined" color="error" onClick={() => openDeleteDialog(topic)}>Delete</Button>
+                      <Button size="small" variant="outlined" color="error" onClick={() => openSilDialog(topic)}>Sil</Button>
                     </Stack>
                   </TableCell>
                 </TableRow>
@@ -250,19 +250,19 @@ export default function TopicsPage() {
         </Table>
       </TableContainer>
 
-      <Dialog open={deleteTargetTopic !== null} onClose={closeDeleteDialog}>
-        <DialogTitle>Delete topic</DialogTitle>
+      <Dialog open={deleteTargetTopic !== null} onClose={closeSilDialog}>
+        <DialogTitle>Sil topic</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Are you sure you want to delete this topic? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDeleteDialog} color="primary" disabled={isDeleting}>
-            Cancel
+          <Button onClick={closeSilDialog} color="primary" disabled={isDeleting}>
+            İptal
           </Button>
-          <Button onClick={confirmDeleteTopic} color="error" variant="contained" disabled={isDeleting}>
-            {isDeleting ? 'Deleting...' : 'Delete'}
+          <Button onClick={confirmSilTopic} color="error" variant="contained" disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Sil'}
           </Button>
         </DialogActions>
       </Dialog>

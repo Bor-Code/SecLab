@@ -38,7 +38,7 @@ export default function RecentActivityPage() {
     loadActivity();
   }, []);
 
-  const filteredActivities = activities.filter((item) => {
+  const filteredActivities = (Array.isArray(activities) ? activities : []).filter((item) => {
     const query = search.toLowerCase();
     const typeMatch = (item.activity_type || '').toLowerCase().includes(query);
     const titleMatch = (item.title || '').toLowerCase().includes(query);
@@ -75,7 +75,7 @@ export default function RecentActivityPage() {
               <TableCell>Type</TableCell>
               <TableCell>Title</TableCell>
               <TableCell>Description</TableCell>
-              <TableCell>Created At</TableCell>
+              <TableCell>Oluşturulma Tarihi</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

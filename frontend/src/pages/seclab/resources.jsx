@@ -28,7 +28,7 @@ import {
   updateResource,
   deleteResource,
   fetchUsers,
-  fetchTopics
+  fetchKonular
 } from 'api/seclab';
 
 const RESOURCE_TYPES = ['documentation', 'video', 'article', 'course', 'tool', 'other'];
@@ -36,7 +36,7 @@ const RESOURCE_TYPES = ['documentation', 'video', 'article', 'course', 'tool', '
 export default function ResourcesPage() {
   const [resources, setResources] = useState([]);
   const [users, setUsers] = useState([]);
-  const [topics, setTopics] = useState([]);
+  const [topics, setKonular] = useState([]);
 
   const [userId, setUserId] = useState('');
   const [topicId, setTopicId] = useState('');
@@ -51,7 +51,7 @@ export default function ResourcesPage() {
   const [editingResourceType, setEditingResourceType] = useState('documentation');
   const [editingNotes, setEditingNotes] = useState('');
 
-  const [deleteTargetResource, setDeleteTargetResource] = useState(null);
+  const [deleteTargetResource, setSilTargetResource] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [resourceSearch, setResourceSearch] = useState('');
@@ -64,13 +64,13 @@ export default function ResourcesPage() {
   async function loadData() {
     setIsLoading(true);
     try {
-      const [fetchedUsers, fetchedTopics, fetchedResources] = await Promise.all([
+      const [fetchedUsers, fetchedKonular, fetchedResources] = await Promise.all([
         fetchUsers(),
-        fetchTopics(),
+        fetchKonular(),
         fetchResources()
       ]);
       setUsers(fetchedUsers);
-      setTopics(fetchedTopics);
+      setKonular(fetchedKonular);
       setResources(fetchedResources);
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -154,17 +154,17 @@ export default function ResourcesPage() {
     }
   }
 
-  function openDeleteDialog(resource) {
-    setDeleteTargetResource(resource);
+  function openSilDialog(resource) {
+    setSilTargetResource(resource);
     setMessage(null);
     setErrorMessage(null);
   }
 
-  function closeDeleteDialog() {
-    setDeleteTargetResource(null);
+  function closeSilDialog() {
+    setSilTargetResource(null);
   }
 
-  async function confirmDeleteResource() {
+  async function confirmSilResource() {
     if (!deleteTargetResource) return;
 
     setIsDeleting(true);
@@ -172,10 +172,10 @@ export default function ResourcesPage() {
       await deleteResource(deleteTargetResource.id);
       setResources((prevResources) => prevResources.filter((res) => res.id !== deleteTargetResource.id));
       setMessage('Resource deleted successfully.');
-      closeDeleteDialog();
+      closeSilDialog();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unexpected error occurred.');
-      closeDeleteDialog();
+      closeSilDialog();
     } finally {
       setIsDeleting(false);
     }
@@ -282,7 +282,7 @@ export default function ResourcesPage() {
                   Save
                 </Button>
                 <Button variant="outlined" fullWidth sx={{ height: '41px' }} onClick={cancelEditingResource}>
-                  Cancel
+                  İptal
                 </Button>
               </Stack>
             </Grid>
@@ -385,7 +385,7 @@ export default function ResourcesPage() {
 
       <TextField
         fullWidth
-        label="Search resources"
+        label="Kaynak ara"
         value={resourceSearch}
         onChange={(e) => setResourceSearch(e.target.value)}
         placeholder="Search by title, url, type, notes, user, or topic"
@@ -403,7 +403,7 @@ export default function ResourcesPage() {
               <TableCell>Type</TableCell>
               <TableCell>URL</TableCell>
               <TableCell>Notes</TableCell>
-              <TableCell>Created At</TableCell>
+              <TableCell>Oluşturulma Tarihi</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -442,8 +442,8 @@ export default function ResourcesPage() {
                       <Button size="small" variant="outlined" onClick={() => startEditingResource(resource)}>
                         Edit
                       </Button>
-                      <Button size="small" variant="outlined" color="error" onClick={() => openDeleteDialog(resource)}>
-                        Delete
+                      <Button size="small" variant="outlined" color="error" onClick={() => openSilDialog(resource)}>
+                        Sil
                       </Button>
                     </Stack>
                   </TableCell>
@@ -454,19 +454,19 @@ export default function ResourcesPage() {
         </Table>
       </TableContainer>
 
-      <Dialog open={deleteTargetResource !== null} onClose={closeDeleteDialog}>
-        <DialogTitle>Delete resource</DialogTitle>
+      <Dialog open={deleteTargetResource !== null} onClose={closeSilDialog}>
+        <DialogTitle>Sil resource</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Are you sure you want to delete this resource? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDeleteDialog} color="primary" disabled={isDeleting}>
-            Cancel
+          <Button onClick={closeSilDialog} color="primary" disabled={isDeleting}>
+            İptal
           </Button>
-          <Button onClick={confirmDeleteResource} color="error" variant="contained" disabled={isDeleting}>
-            {isDeleting ? 'Deleting...' : 'Delete'}
+          <Button onClick={confirmSilResource} color="error" variant="contained" disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Sil'}
           </Button>
         </DialogActions>
       </Dialog>
