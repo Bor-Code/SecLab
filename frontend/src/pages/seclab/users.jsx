@@ -23,7 +23,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 
 import MainCard from 'components/MainCard';
 import { fetchUsers, createUser, updateUser, deleteUser,
-  resetUserŞifre } from 'api/seclab';
+  resetUserPassword } from 'api/seclab';
 
 export default function UsersPage() {
   const currentUserId = Number(localStorage.getItem('seclab-user-id') || 0);
@@ -145,7 +145,7 @@ export default function UsersPage() {
 
     try {
       setErrorMessage(null);
-      const response = await resetUserŞifre(user.id);
+      const response = await resetUserPassword(user.id);
       setSuccessMessage(`Temporary password: ${response.temporary_password}`);
     } catch (error) {
       console.error('Failed to reset user password:', error);

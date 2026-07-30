@@ -28,7 +28,7 @@ import {
   updateResource,
   deleteResource,
   fetchUsers,
-  fetchKonular
+  fetchTopics
 } from 'api/seclab';
 
 const RESOURCE_TYPES = ['documentation', 'video', 'article', 'course', 'tool', 'other'];
@@ -66,7 +66,7 @@ export default function ResourcesPage() {
     try {
       const [fetchedUsers, fetchedKonular, fetchedResources] = await Promise.all([
         fetchUsers(),
-        fetchKonular(),
+        fetchTopics(),
         fetchResources()
       ]);
       setUsers(fetchedUsers);

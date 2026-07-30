@@ -29,7 +29,7 @@ import {
   updateLearningLog,
   deleteLearningLog,
   fetchUsers,
-  fetchKonular
+  fetchTopics
 } from 'api/seclab';
 
 // ==============================|| LEARNING LOGS PAGE ||============================== //
@@ -68,7 +68,7 @@ export default function LearningLogsPage() {
     try {
       const [fetchedUsers, fetchedKonular, fetchedLogs] = await Promise.all([
         fetchUsers(),
-        fetchKonular(),
+        fetchTopics(),
         fetchLearningLogs()
       ]);
       setUsers(fetchedUsers);

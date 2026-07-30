@@ -14,7 +14,7 @@ import Alert from '@mui/material/Alert';
 import Link from '@mui/material/Link';
 
 import MainCard from 'components/MainCard';
-import { fetchUsers, fetchKonular, fetchLearningLogs, fetchResources } from 'api/seclab';
+import { fetchUsers, fetchTopics, fetchLearningLogs, fetchResources } from 'api/seclab';
 
 export default function DataBrowserPage() {
   const [tabIndex, setTabIndex] = useState(0);
@@ -30,7 +30,7 @@ export default function DataBrowserPage() {
     try {
       const [fUsers, fKonular, fLogs, fResources] = await Promise.all([
         fetchUsers(),
-        fetchKonular(),
+        fetchTopics(),
         fetchLearningLogs(),
         fetchResources()
       ]);

@@ -21,7 +21,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
 import MainCard from 'components/MainCard';
-import { createTopic, deleteTopic, fetchKonular, fetchUsers, updateTopic } from 'api/seclab';
+import { createTopic, deleteTopic, fetchTopics, fetchUsers, updateTopic } from 'api/seclab';
 
 export default function KonularPage() {
   const [topics, setKonular] = useState([]);
@@ -49,7 +49,7 @@ export default function KonularPage() {
     setErrorMessage(null);
 
     try {
-      const [topicsData, usersData] = await Promise.all([fetchKonular(), fetchUsers()]);
+      const [topicsData, usersData] = await Promise.all([fetchTopics(), fetchUsers()]);
       setKonular(topicsData);
       setUsers(usersData);
     } catch (error) {
