@@ -1,173 +1,163 @@
 import PropTypes from 'prop-types';
-import { Link, useLocation, matchPath } from 'react-router-dom';
+import { Link, matchPath, useLocation } from 'react-router-dom';
 
-// material-ui
-import useMediaQuery from '@mui/material/useMediaQuery';
 import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
-// project imports
 import IconButton from 'components/@extended/IconButton';
-
 import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
-
-// ==============================|| NAVIGATION - LIST ITEM ||============================== //
 
 export default function NavItem({ item, level, isParents = false, setSelectedID }) {
   const { menuMaster } = useGetMenuMaster();
   const drawerOpen = menuMaster.isDashboardDrawerOpened;
-
   const downLG = useMediaQuery((theme) => theme.breakpoints.down('lg'));
 
-  let itemTarget = '_self';
-  if (item.target) {
-    itemTarget = '_blank';
-  }
+  const itemTarget = item.target ? '_blank' : '_self';
 
   const itemHandler = () => {
     if (downLG) handlerDrawerOpen(false);
-
-    if (isParents && setSelectedID) {
-      setSelectedID(item.id);
-    }
+    if (isParents && setSelectedID) setSelectedID(item.id);
   };
 
   const Icon = item.icon;
-  const itemIcon = item.icon ? (
+  const itemIcon = Icon ? (
     <Icon
       style={{
         fontSize: drawerOpen ? '1rem' : '1.25rem',
         ...(isParents && { fontSize: 20, stroke: '1.5' })
       }}
     />
-  ) : (
-    false
-  );
+  ) : null;
 
   const { pathname } = useLocation();
-  const isSelected = !!matchPath({ path: item?.link ? item.link : item.url, end: false }, pathname);
+  const isSelected = Boolean(matchPath({ path: item?.link || item.url, end: false }, pathname));
 
-  const textColor = 'text.primary';
-  const iconSelectedColor = 'primary.main';
+  const button = (
+    <ListItemButton
+      component={Link}
+      to={item.url}
+      target={itemTarget}
+      disabled={item.disabled}
+      selected={isSelected}
+      aria-label={item.title}
+      onClick={itemHandler}
+      sx={{
+        zIndex: 1201,
+        minHeight: 44,
+        width: drawerOpen ? 'auto' : 44,
+        mx: drawerOpen ? 1.25 : 'auto',
+        my: 0.4,
+        px: drawerOpen ? 1.5 : 0,
+        pl: drawerOpen ? `${level * 28}px` : 0,
+        py: drawerOpen ? 1 : 0,
+        justifyContent: drawerOpen ? 'initial' : 'center',
+        borderRadius: 2,
+        overflow: 'hidden',
+        '&:hover': { bgcolor: drawerOpen ? 'primary.lighter' : 'action.hover' },
+        '&.Mui-selected': {
+          bgcolor: drawerOpen ? 'primary.lighter' : 'primary.main',
+          color: drawerOpen ? 'primary.main' : 'primary.contrastText',
+          borderRight: drawerOpen ? '2px solid' : 0,
+          borderColor: drawerOpen ? 'primary.main' : 'transparent',
+          '&:hover': {
+            bgcolor: drawerOpen ? 'primary.lighter' : 'primary.dark',
+            color: drawerOpen ? 'primary.main' : 'primary.contrastText'
+          }
+        }
+      }}
+    >
+      {itemIcon && (
+        <ListItemIcon
+          sx={{
+            minWidth: drawerOpen ? 28 : 44,
+            width: drawerOpen ? 28 : 44,
+            height: drawerOpen ? 'auto' : 44,
+            color: isSelected ? (drawerOpen ? 'primary.main' : 'inherit') : 'inherit',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: 'transparent',
+            borderRadius: 0
+          }}
+        >
+          {itemIcon}
+        </ListItemIcon>
+      )}
+      {drawerOpen && (
+        <ListItemText
+          primary={
+            <Typography variant="h6" sx={{ color: 'inherit' }}>
+              {item.title}
+            </Typography>
+          }
+        />
+      )}
+      {drawerOpen && item.chip && (
+        <Chip
+          color={item.chip.color}
+          variant={item.chip.variant}
+          size={item.chip.size}
+          label={item.chip.label}
+          avatar={item.chip.avatar && <Avatar>{item.chip.avatar}</Avatar>}
+        />
+      )}
+    </ListItemButton>
+  );
 
   return (
-    <>
-      <Box sx={{ position: 'relative' }}>
-        <ListItemButton
-          component={Link}
-          to={item.url}
-          target={itemTarget}
-          disabled={item.disabled}
-          selected={isSelected}
-          sx={(theme) => ({
-            zIndex: 1201,
-            pl: drawerOpen ? `${level * 28}px` : 1.5,
-            py: !drawerOpen && level === 1 ? 1.25 : 1,
-            ...(drawerOpen && {
-              '&:hover': { bgcolor: 'primary.lighter' },
-              '&.Mui-selected': {
-                bgcolor: 'primary.lighter',
-                borderRight: '2px solid',
-                borderColor: 'primary.main',
-                color: iconSelectedColor,
-                '&:hover': { color: iconSelectedColor, bgcolor: 'primary.lighter' }
-              }
-            }),
-            ...(!drawerOpen && {
-              '&:hover': { bgcolor: 'transparent' },
-              '&.Mui-selected': { '&:hover': { bgcolor: 'transparent' }, bgcolor: 'transparent' }
-            })
-          })}
-          onClick={() => itemHandler()}
-        >
-          {itemIcon && (
-            <ListItemIcon
-              sx={(theme) => ({
-                minWidth: 28,
-                color: isSelected ? iconSelectedColor : textColor,
-                ...(!drawerOpen && {
-                  borderRadius: 1.5,
-                  width: 36,
-                  height: 36,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  '&:hover': { bgcolor: 'secondary.lighter' }
-                }),
-                ...(!drawerOpen &&
-                  isSelected && {
-                    bgcolor: 'primary.lighter',
-                    '&:hover': { bgcolor: 'primary.lighter' }
-                  })
+    <Box sx={{ position: 'relative' }}>
+      {drawerOpen ? (
+        button
+      ) : (
+        <Tooltip title={item.title} placement="right" arrow>
+          {button}
+        </Tooltip>
+      )}
+      {drawerOpen &&
+        item?.actions?.map((action, index) => {
+          const ActionIcon = action.icon;
+          const callAction = action?.function;
+          return (
+            <IconButton
+              key={index}
+              {...(action.type === 'function' && {
+                onClick: (event) => {
+                  event.stopPropagation();
+                  callAction();
+                }
               })}
+              {...(action.type === 'link' && {
+                component: Link,
+                to: action.url,
+                target: action.target ? '_blank' : '_self'
+              })}
+              color="secondary"
+              variant="outlined"
+              sx={{
+                position: 'absolute',
+                top: 12,
+                right: 20,
+                zIndex: 1202,
+                width: 20,
+                height: 20,
+                mr: -1,
+                ml: 1,
+                color: 'secondary.dark',
+                borderColor: isSelected ? 'primary.light' : 'secondary.light',
+                '&:hover': { borderColor: isSelected ? 'primary.main' : 'secondary.main' }
+              }}
             >
-              {itemIcon}
-            </ListItemIcon>
-          )}
-          {(drawerOpen || (!drawerOpen && level !== 1)) && (
-            <ListItemText
-              primary={
-                <Typography variant="h6" sx={{ color: isSelected ? iconSelectedColor : textColor }}>
-                  {item.title}
-                </Typography>
-              }
-            />
-          )}
-          {(drawerOpen || (!drawerOpen && level !== 1)) && item.chip && (
-            <Chip
-              color={item.chip.color}
-              variant={item.chip.variant}
-              size={item.chip.size}
-              label={item.chip.label}
-              avatar={item.chip.avatar && <Avatar>{item.chip.avatar}</Avatar>}
-            />
-          )}
-        </ListItemButton>
-        {(drawerOpen || (!drawerOpen && level !== 1)) &&
-          item?.actions &&
-          item?.actions.map((action, index) => {
-            const ActionIcon = action.icon;
-            const callAction = action?.function;
-            return (
-              <IconButton
-                key={index}
-                {...(action.type === 'function' && {
-                  onClick: (event) => {
-                    event.stopPropagation();
-                    callAction();
-                  }
-                })}
-                {...(action.type === 'link' && {
-                  component: Link,
-                  to: action.url,
-                  target: action.target ? '_blank' : '_self'
-                })}
-                color="secondary"
-                variant="outlined"
-                sx={{
-                  position: 'absolute',
-                  top: 12,
-                  right: 20,
-                  zIndex: 1202,
-                  width: 20,
-                  height: 20,
-                  mr: -1,
-                  ml: 1,
-                  color: 'secondary.dark',
-                  borderColor: isSelected ? 'primary.light' : 'secondary.light',
-                  '&:hover': { borderColor: isSelected ? 'primary.main' : 'secondary.main' }
-                }}
-              >
-                <ActionIcon style={{ fontSize: '0.625rem' }} />
-              </IconButton>
-            );
-          })}
-      </Box>
-    </>
+              <ActionIcon style={{ fontSize: '0.625rem' }} />
+            </IconButton>
+          );
+        })}
+    </Box>
   );
 }
 

@@ -1,14 +1,18 @@
 // material-ui
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import { useLocation } from 'react-router-dom';
 
 // project import
 import NavGroup from './NavGroup';
-import menuItem from 'menu-items';
+import { getMenuItems } from 'menu-items';
 
 // ==============================|| DRAWER CONTENT - NAVIGATION ||============================== //
 
 export default function Navigation() {
+  const location = useLocation();
+  const menuItem = getMenuItems(location.pathname);
+
   const navGroups = menuItem.items.map((item) => {
     switch (item.type) {
       case 'group':

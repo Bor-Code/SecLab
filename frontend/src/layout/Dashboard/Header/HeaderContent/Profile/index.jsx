@@ -22,6 +22,7 @@ import Avatar from 'components/@extended/Avatar';
 import MainCard from 'components/MainCard';
 import Transitions from 'components/@extended/Transitions';
 import IconButton from 'components/@extended/IconButton';
+import { clearAuthStorage, getUserStorageKey } from 'utils/authStorage';
 
 // assets
 import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
@@ -49,42 +50,40 @@ export default function Profile() {
 
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const username = localStorage.getItem('seclab-user-username') || 'SecLab User';
-  const email = localStorage.getItem('seclab-user-email') || 'Oturum açık';
-  const role = localStorage.getItem('seclab-user-role') || 'user';
-  const [avatar, setAvatar] = useState(
-    () => localStorage.getItem('seclab-user-avatar') || avatar1
-  );
+  const [username, setUsername] = useState(() => localStorage.getItem('seclab-user-username') || 'SecLab Kullanıcısı');
+  const [email, setEmail] = useState(() => localStorage.getItem('seclab-user-email') || 'Oturum açık');
+  const [role, setRole] = useState(() => localStorage.getItem('seclab-user-role') || 'user');
+  const avatarStorageKey = getUserStorageKey('seclab-user-avatar');
+  const [avatar, setAvatar] = useState(() => localStorage.getItem(avatarStorageKey) || avatar1);
 
   useEffect(() => {
     function handleAvatarUpdated(event) {
-      setAvatar(
-        event.detail ||
-          localStorage.getItem('seclab-user-avatar') ||
-          avatar1
-      );
+      setAvatar(event.detail || localStorage.getItem(avatarStorageKey) || avatar1);
     }
 
     function handleAvatarStorage(event) {
-      if (event.key === 'seclab-user-avatar') {
+      if (event.key === avatarStorageKey) {
         setAvatar(event.newValue || avatar1);
       }
     }
 
-    window.addEventListener(
-      'seclab-user-avatar-updated',
-      handleAvatarUpdated
-    );
+    function handleProfileUpdated(event) {
+      const updatedUser = event.detail || {};
+      setUsername(updatedUser.username || localStorage.getItem('seclab-user-username') || 'SecLab Kullanıcısı');
+      setEmail(updatedUser.email || localStorage.getItem('seclab-user-email') || 'Oturum açık');
+      setRole(updatedUser.role || localStorage.getItem('seclab-user-role') || 'user');
+    }
+
+    window.addEventListener('seclab-user-avatar-updated', handleAvatarUpdated);
     window.addEventListener('storage', handleAvatarStorage);
+    window.addEventListener('seclab-user-profile-updated', handleProfileUpdated);
 
     return () => {
-      window.removeEventListener(
-        'seclab-user-avatar-updated',
-        handleAvatarUpdated
-      );
+      window.removeEventListener('seclab-user-avatar-updated', handleAvatarUpdated);
       window.removeEventListener('storage', handleAvatarStorage);
+      window.removeEventListener('seclab-user-profile-updated', handleProfileUpdated);
     };
-  }, []);
+  }, [avatarStorageKey]);
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
@@ -97,7 +96,7 @@ export default function Profile() {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
+    clearAuthStorage();
     const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     window.location.href = `${baseUrl}/login`;
   };
@@ -117,7 +116,7 @@ export default function Profile() {
             borderRadius: 1,
             '&:focus-visible': { outline: `2px solid ${theme.vars.palette.secondary.dark}`, outlineOffset: 2 }
           })}
-          aria-label="open profile"
+          aria-label="Profil menüsünü aç"
           ref={anchorRef}
           aria-controls={open ? 'profile-grow' : undefined}
           aria-haspopup="true"
@@ -156,7 +155,7 @@ export default function Profile() {
                         <Stack>
                           <Typography variant="h6">{username}</Typography>
                           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            {email} · {role}
+                            {email} · {role === 'admin' ? 'Yönetici' : 'Kullanıcı'}
                           </Typography>
                         </Stack>
                       </Stack>
@@ -199,7 +198,7 @@ export default function Profile() {
                           }
                         }}
                         icon={<SettingOutlined />}
-                        label="Setting"
+                        label="Ayarlar"
                         {...a11yProps(1)}
                       />
                     </Tabs>
@@ -208,7 +207,7 @@ export default function Profile() {
                     <ProfileTab onLogout={handleLogout} />
                   </TabPanel>
                   <TabPanel value={value} index={1} dir={theme.direction}>
-                    <SettingTab />
+                    <SettingTab onClose={() => setOpen(false)} />
                   </TabPanel>
                 </MainCard>
               </ClickAwayListener>

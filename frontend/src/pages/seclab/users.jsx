@@ -22,23 +22,21 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
 import MainCard from 'components/MainCard';
-import { fetchUsers, createUser, updateUser, deleteUser,
-  resetUserPassword } from 'api/seclab';
+import { fetchUsers, createUser, updateUser, deleteUser, resetUserPassword } from 'api/seclab';
 
 export default function UsersPage() {
-  const currentUserId = Number(localStorage.getItem('seclab-user-id') || 0);
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRol] = useState('user');
-  
+
   const [editingUserId, setEditingUserId] = useState(null);
   const [editingUsername, setEditingUsername] = useState('');
   const [editingEmail, setEditingEmail] = useState('');
   const [editingRol, setEditingRol] = useState('user');
 
   const [userSearch, setUserSearch] = useState('');
-  
+
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -120,11 +118,9 @@ export default function UsersPage() {
       const updatedUser = await updateUser(editingUserId, {
         username: editingUsername,
         email: editingEmail,
-        role: editingRol,
+        role: editingRol
       });
-      setUsers((prevUsers) =>
-        prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u))
-      );
+      setUsers((prevUsers) => prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
       cancelEditingUser();
       setMessage('Kullanıcı başarıyla güncellendi.');
     } catch (error) {
@@ -140,29 +136,32 @@ export default function UsersPage() {
 
   function closeSilDialog() {
     setSilTargetUser(null);
-      setEditingUserId(null);
+    setEditingUserId(null);
   }
 
+  async function handleResetUserPassword(user) {
+    const confirmed = window.confirm(`${user.email} kullanıcısının şifresi sıfırlansın mı?`);
 
-
-  async function handleResetUserŞifre(user) {
-    if (!window.confirm(`Reset password for ${user.email}?`)) {
+    if (!confirmed) {
       return;
     }
 
     try {
+      setMessage(null);
       setErrorMessage(null);
+
       const response = await resetUserPassword(user.id);
-      setSuccessMessage(`Temporary password: ${response.temporary_password}`);
+
+      setMessage(`Geçici şifre: ${response.temporary_password} ` + '(Bu şifre yalnızca şimdi görüntülenir.)');
     } catch (error) {
-      console.error('Failed to reset user password:', error);
+      console.error('Password reset failed:', error);
       setErrorMessage(error.message || 'Kullanıcı şifresi sıfırlanamadı.');
     }
   }
 
   async function confirmSilUser() {
     if (!deleteTargetUser) return;
-    
+
     setIsDeleting(true);
     try {
       await deleteUser(deleteTargetUser.id);
@@ -198,7 +197,7 @@ export default function UsersPage() {
   return (
     <MainCard title="Kullanıcılar">
       <Typography variant="body2" sx={{ mb: 3 }}>
-        Create and manage application users. Use the form below to add a new user to the system.
+        Uygulama kullanıcılarını oluşturun, düzenleyin ve yönetin.
       </Typography>
 
       {message && (
@@ -215,7 +214,7 @@ export default function UsersPage() {
 
       {editingUserId !== null ? (
         <form id="user-edit-form" onSubmit={handleUpdateUser}>
-          <Grid container spacing={2} sx={{ mb: 4 }} alignItems="center">
+          <Grid container spacing={2} sx={{ mb: 4, alignItems: 'center' }}>
             <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
@@ -236,34 +235,17 @@ export default function UsersPage() {
               />
             </Grid>
             <Grid item xs={12} sm={2}>
-              <TextField
-                select
-                fullWidth
-                label="Rol"
-                value={editingRol}
-                onChange={(e) => setEditingRol(e.target.value)}
-                required
-              >
+              <TextField select fullWidth label="Rol" value={editingRol} onChange={(e) => setEditingRol(e.target.value)} required>
                 <MenuItem value="user">Kullanıcı</MenuItem>
                 <MenuItem value="admin">Admin</MenuItem>
               </TextField>
             </Grid>
             <Grid item xs={12} sm={4}>
               <Stack direction="row" spacing={1}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  fullWidth
-                  sx={{ height: '41px' }}
-                >
-                  Save changes
+                <Button type="submit" variant="contained" fullWidth sx={{ height: '41px' }}>
+                  Değişiklikleri Kaydet
                 </Button>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  sx={{ height: '41px' }}
-                  onClick={cancelEditingUser}
-                >
+                <Button variant="outlined" fullWidth sx={{ height: '41px' }} onClick={cancelEditingUser}>
                   İptal
                 </Button>
               </Stack>
@@ -272,47 +254,21 @@ export default function UsersPage() {
         </form>
       ) : (
         <form onSubmit={handleCreateUser}>
-          <Grid container spacing={2} sx={{ mb: 4 }} alignItems="center">
+          <Grid container spacing={2} sx={{ mb: 4, alignItems: 'center' }}>
             <Grid item xs={12} sm={3}>
-              <TextField
-                fullWidth
-                label="Kullanıcı Adı"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
+              <TextField fullWidth label="Kullanıcı Adı" value={username} onChange={(e) => setUsername(e.target.value)} required />
             </Grid>
             <Grid item xs={12} sm={3}>
-              <TextField
-                fullWidth
-                type="email"
-                label="E-posta"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <TextField fullWidth type="email" label="E-posta" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </Grid>
             <Grid item xs={12} sm={2}>
-              <TextField
-                select
-                fullWidth
-                label="Rol"
-                value={role}
-                onChange={(e) => setRol(e.target.value)}
-                required
-              >
+              <TextField select fullWidth label="Rol" value={role} onChange={(e) => setRol(e.target.value)} required>
                 <MenuItem value="user">Kullanıcı</MenuItem>
                 <MenuItem value="admin">Admin</MenuItem>
               </TextField>
             </Grid>
             <Grid item xs={12} sm={4}>
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={isCreating}
-                fullWidth
-                sx={{ height: '41px' }}
-              >
+              <Button type="submit" variant="contained" disabled={isCreating} fullWidth sx={{ height: '41px' }}>
                 {isCreating ? 'Oluşturuluyor...' : 'Kullanıcı Oluştur'}
               </Button>
             </Grid>
@@ -322,7 +278,7 @@ export default function UsersPage() {
 
       <TextField
         fullWidth
-        label="User ara"
+        label="Kullanıcı ara"
         value={userSearch}
         onChange={(e) => {
           setUserSearch(e.target.value);
@@ -363,22 +319,22 @@ export default function UsersPage() {
                   <TableCell>{user.id}</TableCell>
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell sx={{ textTransform: 'capitalize' }}>{user.role}</TableCell>
+                  <TableCell>{user.role === 'admin' ? 'Yönetici' : 'Kullanıcı'}</TableCell>
                   <TableCell>{new Date(user.created_at).toLocaleString('tr-TR')}</TableCell>
                   <TableCell align="right">
-                    <Stack direction="row" spacing={1} justifyContent="flex-end">
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => startEditingUser(user)}
-                      >
+                    <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ justifyContent: 'flex-end' }}>
+                      <Button size="small" variant="outlined" onClick={() => startEditingUser(user)}>
                         Düzenle
+                      </Button>
+                      <Button size="small" variant="outlined" color="warning" onClick={() => handleResetUserPassword(user)}>
+                        Şifre Sıfırla
                       </Button>
                       <Button
                         size="small"
                         variant="outlined"
                         color="error"
-                        disabled={user.role === "admin"} onClick={() => openSilDialog(user)}
+                        disabled={user.role === 'admin'}
+                        onClick={() => openSilDialog(user)}
                       >
                         Sil
                       </Button>
@@ -397,15 +353,15 @@ export default function UsersPage() {
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Sayfa başına satır:"
+          labelDisplayedRows={({ from, to, count }) => `${from}-${to} / ${count}`}
         />
       </TableContainer>
 
       <Dialog open={deleteTargetUser !== null} onClose={closeSilDialog}>
         <DialogTitle>Kullanıcıyı Sil</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete this user? Bu işlem geri alınamaz.
-          </DialogContentText>
+          <DialogContentText>Bu kullanıcıyı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeSilDialog} color="primary" disabled={isDeleting}>

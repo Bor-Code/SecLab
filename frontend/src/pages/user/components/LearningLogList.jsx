@@ -6,7 +6,7 @@ import MainCard from 'components/MainCard';
 
 export default function LearningLogList({ learningLogs, isSaving, handleDeleteLearningLog }) {
   return (
-    <MainCard title="Öğrenme Kayıtları">
+    <MainCard title="Öğrenme Kayıt Yönetimiı">
       {learningLogs.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
           Henüz öğrenme kaydı yok. Bir konu seçerek ilk çalışma notunuzu ekleyin.
@@ -32,14 +32,8 @@ export default function LearningLogList({ learningLogs, isSaving, handleDeleteLe
                   </Typography>
                 )}
               </Stack>
-              <Button
-                variant="outlined"
-                color="error"
-                size="small"
-                onClick={() => handleDeleteLearningLog(log.id)}
-                disabled={isSaving}
-              >
-                Delete
+              <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteLearningLog(log.id)} disabled={isSaving}>
+                Sil
               </Button>
             </Stack>
           ))}

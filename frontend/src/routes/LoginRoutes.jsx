@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom';
 import Loadable from 'components/Loadable';
 
 const Login = Loadable(lazy(() => import('../pages/auth/Login')));
-const Register = Loadable(lazy(() => import('../pages/auth/Login')));
+const Register = Loadable(lazy(() => import('../pages/auth/Register')));
 const ForgotPassword = Loadable(lazy(() => import('../pages/authentication/ForgotPassword')));
 
 const LoginRoutes = {

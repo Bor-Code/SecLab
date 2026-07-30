@@ -1,279 +1,150 @@
 import { useEffect, useState } from 'react';
 
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
+import CircularProgress from '@mui/material/CircularProgress';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
+import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import MainCard from 'components/MainCard';
-import AnalyticEcommerce from 'components/cards/statistics/AnalyticEcommerce';
-import { fetchDashboardRecentActivity, fetchDashboardSummary, fetchHealthStatus } from 'api/seclab';
+import { fetchHealthStatus, fetchLearningLogs, fetchResources, fetchTopics, fetchUsers } from 'api/seclab';
+
+const emptySummary = {
+  users: 0,
+  topics: 0,
+  learningLogs: 0,
+  resources: 0
+};
 
 export default function DashboardDefault() {
-  const [dashboardSummary, setDashboardSummary] = useState(null);
-  const [isSummaryLoading, setIsSummaryLoading] = useState(true);
-  const [summaryMessage, setSummaryMessage] = useState(null);
-
-  const [dashboardActivity, setDashboardActivity] = useState([]);
-  const [isActivityLoading, setIsActivityLoading] = useState(true);
-  const [activityMessage, setActivityMessage] = useState(null);
-
-  const [healthStatus, setHealthStatus] = useState(null);
-  const [isHealthLoading, setIsHealthLoading] = useState(true);
-  const [healthMessage, setHealthMessage] = useState(null);
+  const [summary, setSummary] = useState(emptySummary);
+  const [health, setHealth] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    async function loadSummary() {
-      setIsSummaryLoading(true);
-      setSummaryMessage(null);
+    let active = true;
+
+    async function loadDashboard() {
+      setIsLoading(true);
+      setError('');
+
       try {
-        const data = await fetchDashboardSummary();
-        setDashboardSummary(data);
-      } catch (error) {
-        console.error('Summary load error:', error);
-        setSummaryMessage('Backend kullanılamıyor');
+        const [usersResult, topicsResult, logsResult, resourcesResult, healthResult] = await Promise.allSettled([
+          fetchUsers(),
+          fetchTopics(),
+          fetchLearningLogs(),
+          fetchResources(),
+          fetchHealthStatus()
+        ]);
+
+        if (!active) return;
+
+        setSummary({
+          users: usersResult.status === 'fulfilled' && Array.isArray(usersResult.value) ? usersResult.value.length : 0,
+          topics: topicsResult.status === 'fulfilled' && Array.isArray(topicsResult.value) ? topicsResult.value.length : 0,
+          learningLogs: logsResult.status === 'fulfilled' && Array.isArray(logsResult.value) ? logsResult.value.length : 0,
+          resources: resourcesResult.status === 'fulfilled' && Array.isArray(resourcesResult.value) ? resourcesResult.value.length : 0
+        });
+
+        if (healthResult.status === 'fulfilled') {
+          setHealth(healthResult.value);
+        }
+
+        const failed = [usersResult, topicsResult, logsResult, resourcesResult, healthResult].some(
+          (result) => result.status === 'rejected'
+        );
+
+        if (failed) {
+          setError('Bazı yönetim verileri yüklenemedi. Backend bağlantısını kontrol edin.');
+        }
       } finally {
-        setIsSummaryLoading(false);
+        if (active) setIsLoading(false);
       }
     }
 
-    async function loadRecentActivity() {
-      setIsActivityLoading(true);
-      setActivityMessage(null);
-      try {
-        const data = await fetchDashboardRecentActivity();
-        setDashboardActivity(Array.isArray(data) ? data : data?.items || data?.activities || data?.recent_activity || []);
-      } catch (error) {
-        console.error('Activity load error:', error);
-        setActivityMessage('Aktivite verileri kullanılamıyor');
-      } finally {
-        setIsActivityLoading(false);
-      }
-    }
+    loadDashboard();
 
-    async function loadHealthStatus() {
-      setIsHealthLoading(true);
-      setHealthMessage(null);
-      try {
-        const data = await fetchHealthStatus();
-        setHealthStatus(data);
-      } catch (error) {
-        console.error('Health status load error:', error);
-        setHealthMessage('Sistem durumu verileri kullanılamıyor');
-      } finally {
-        setIsHealthLoading(false);
-      }
-    }
-
-    loadSummary();
-    loadRecentActivity();
-    loadHealthStatus();
+    return () => {
+      active = false;
+    };
   }, []);
 
-  function formatActivityDate(value) {
-    if (!value) return '';
-    return new Date(value).toLocaleString('tr-TR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  function formatActivityType(type) {
-    if (!type) return '';
-    return type.replace('_', ' ');
-  }
-
   return (
-    <Grid container rowSpacing={4.5} columnSpacing={2.75}>
-      <Grid sx={{ mb: -2.25 }} size={12}>
-        <Typography variant="h5">Dashboard</Typography>
-        {summaryMessage && (
-          <Typography variant="caption" color="error">
-            {summaryMessage}
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
+      <Stack spacing={3}>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h3">Yönetim Paneli</Typography>
+          <Typography color="text.secondary" sx={{ mt: 0.75 }}>
+            Kullanıcıları, kayıtları ve sistem bağlantısını tek ekrandan takip edin.
           </Typography>
-        )}
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-        <AnalyticEcommerce
-          title="Kullanıcılar"
-          count={isSummaryLoading ? '...' : String(dashboardSummary?.users_count ?? dashboardSummary?.users ?? 0)}
-        />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-        <AnalyticEcommerce
-          title="Konular"
-          count={isSummaryLoading ? '...' : String(dashboardSummary?.topics_count ?? dashboardSummary?.topics ?? 0)}
-        />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-        <AnalyticEcommerce
-          title="Öğrenme Kayıtları"
-          count={isSummaryLoading ? '...' : String(dashboardSummary?.learning_logs_count ?? dashboardSummary?.learning_logs ?? 0)}
-        />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-        <AnalyticEcommerce
-          title="Kaynaklar"
-          count={isSummaryLoading ? '...' : String(dashboardSummary?.resources_count ?? dashboardSummary?.resources ?? 0)}
-        />
-      </Grid>
+        </Paper>
 
-      <Grid sx={{ display: { sm: 'none', md: 'block', lg: 'none' } }} size={{ md: 8 }} />
+        {error && <Alert severity="warning">{error}</Alert>}
 
-      <Grid size={{ xs: 12, md: 7, lg: 8 }}>
-        <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-          <Grid>
-            <Typography variant="h5">Kayıtların Genel Görünümü</Typography>
-          </Grid>
-        </Grid>
-        <MainCard sx={{ mt: 2 }} content={false}>
-          <List sx={{ p: 0, '& .MuiListItem-root': { py: 2, px: 3 } }}>
-            <ListItem divider>
-              <ListItemText
-                primary={<Typography variant="subtitle1">Kullanıcılar</Typography>}
-                secondary="Sistem erişimini yönetin, yeni hesaplar oluşturun ve kullanıcı aktivitelerini inceleyin."
-              />
-            </ListItem>
-            <ListItem divider>
-              <ListItemText
-                primary={<Typography variant="subtitle1">Konular</Typography>}
-                secondary="Organize learning domains and categorize core focus areas."
-              />
-            </ListItem>
-            <ListItem divider>
-              <ListItemText
-                primary={<Typography variant="subtitle1">Öğrenme Kayıtları</Typography>}
-                secondary="Track daily progress and record detailed study notes."
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                primary={<Typography variant="subtitle1">Kaynaklar</Typography>}
-                secondary="Maintain a centralized library of external links, documentation, and tools."
-              />
-            </ListItem>
-          </List>
-        </MainCard>
-      </Grid>
-      <Grid size={{ xs: 12, md: 5, lg: 4 }}>
-        <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-          <Grid>
-            <Typography variant="h5">Sistem Durumu</Typography>
-          </Grid>
-          <Grid />
-        </Grid>
-        <MainCard sx={{ mt: 2 }} content={false}>
-          {isHealthLoading ? (
-            <Box sx={{ p: 3 }}>
-              <Typography variant="body2" color="textSecondary">
-                Loading system status...
-              </Typography>
-            </Box>
-          ) : (
-            <List sx={{ p: 0, '& .MuiListItem-root': { py: 2.5, px: 3 } }}>
-              <ListItem divider>
-                <ListItemText primary="API" />
-                <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
-                  {healthStatus?.status ?? 'unknown'}
-                </Typography>
-              </ListItem>
-              <ListItem divider>
-                <ListItemText primary="Database" />
-                <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
-                  {healthStatus?.database ?? 'unknown'}
-                </Typography>
-              </ListItem>
-              <ListItem>
-                <ListItemText primary="Last checked" />
-                <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
-                  {healthStatus?.checked_at_utc ? formatActivityDate(healthStatus.checked_at_utc) : '-'}
-                </Typography>
-              </ListItem>
-            </List>
-          )}
-          {healthMessage && (
-            <Box sx={{ px: 3, pb: 2 }}>
-              <Typography variant="caption" color="error">
-                {healthMessage}
-              </Typography>
-            </Box>
-          )}
-        </MainCard>
-      </Grid>
-
-      <Grid size={{ xs: 12, md: 7, lg: 8 }}>
-        <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-          <Grid>
-            <Typography variant="h5">Son Aktiviteler</Typography>
-          </Grid>
-        </Grid>
-        <MainCard sx={{ mt: 2 }} content={false}>
-          {isActivityLoading ? (
-            <Box sx={{ p: 3 }}>
-              <Typography variant="body2" color="textSecondary">
-                Loading activity...
-              </Typography>
-            </Box>
-          ) : (!Array.isArray(dashboardActivity) || dashboardActivity.length === 0) ? (
-            <Box sx={{ p: 3 }}>
-              <Typography variant="body2" color="textSecondary">
-                No recent activity found.
-              </Typography>
-            </Box>
-          ) : (
-            <List sx={{ p: 0, '& .MuiListItemButton-root': { py: 2 } }}>
-              {(Array.isArray(dashboardActivity) ? dashboardActivity : []).map((item, index) => (
-                <ListItemButton divider={index !== dashboardActivity.length - 1} key={index}>
-                  <ListItemText
-                    primary={item.title}
-                    secondary={item.description}
-                    primaryTypographyProps={{ variant: 'subtitle1' }}
-                  />
-                  <Stack sx={{ alignItems: 'flex-end' }}>
-                    <Typography variant="subtitle2" sx={{ textTransform: 'capitalize' }}>
-                      {formatActivityType(item.activity_type)}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'secondary.main' }} noWrap>
-                      {formatActivityDate(item.created_at)}
-                    </Typography>
-                  </Stack>
-                </ListItemButton>
+        {isLoading ? (
+          <Paper sx={{ p: 5, textAlign: 'center' }}>
+            <CircularProgress size={34} />
+          </Paper>
+        ) : (
+          <>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+                gap: 2
+              }}
+            >
+              {[
+                ['Kullanıcılar', summary.users],
+                ['Konular', summary.topics],
+                ['Öğrenme Kayıt Yönetimiı', summary.learningLogs],
+                ['Kaynaklar', summary.resources]
+              ].map(([label, value]) => (
+                <Paper key={label} sx={{ p: 2.5 }}>
+                  <Typography color="text.secondary">{label}</Typography>
+                  <Typography variant="h3" sx={{ mt: 1 }}>
+                    {value}
+                  </Typography>
+                </Paper>
               ))}
-            </List>
-          )}
-        </MainCard>
-      </Grid>
+            </Box>
 
-      <Grid size={{ xs: 12, md: 5, lg: 4 }}>
-        <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-          <Grid>
-            <Typography variant="h5">Admin Workflow</Typography>
-          </Grid>
-        </Grid>
-        <MainCard sx={{ mt: 2 }} content={false}>
-          <List sx={{ p: 0, '& .MuiListItem-root': { py: 2, px: 3 } }}>
-            <ListItem divider>
-              <ListItemText primary="Kullanıcıları incele" />
-            </ListItem>
-            <ListItem divider>
-              <ListItemText primary="Konuları düzenle" />
-            </ListItem>
-            <ListItem divider>
-              <ListItemText primary="Öğrenme kayıtlarını takip et" />
-            </ListItem>
-            <ListItem>
-              <ListItemText primary="Kaynakları yönet" />
-            </ListItem>
-          </List>
-        </MainCard>
-      </Grid>
-    </Grid>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h5" sx={{ mb: 1.5 }}>
+                  Sistem Durumu
+                </Typography>
+                <List disablePadding>
+                  <ListItem disableGutters>
+                    <ListItemText primary="API" secondary={health?.status || 'Bilinmiyor'} />
+                  </ListItem>
+                  <ListItem disableGutters>
+                    <ListItemText primary="Veritabanı" secondary={health?.database || 'Bilinmiyor'} />
+                  </ListItem>
+                </List>
+              </Paper>
+
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h5" sx={{ mb: 1.5 }}>
+                  Yönetim Alanları
+                </Typography>
+                <List disablePadding>
+                  <ListItem disableGutters>
+                    <ListItemText primary="Kullanıcı Yönetimi" secondary="Hesapları oluşturun ve yönetin." />
+                  </ListItem>
+                  <ListItem disableGutters>
+                    <ListItemText primary="Kayıt Yönetimi" secondary="Konu, öğrenme kaydı ve kaynakları inceleyin." />
+                  </ListItem>
+                </List>
+              </Paper>
+            </Box>
+          </>
+        )}
+      </Stack>
+    </Box>
   );
 }

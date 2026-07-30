@@ -23,14 +23,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 
 // project imports
 import MainCard from 'components/MainCard';
-import {
-  fetchLearningLogs,
-  createLearningLog,
-  updateLearningLog,
-  deleteLearningLog,
-  fetchUsers,
-  fetchTopics
-} from 'api/seclab';
+import { fetchLearningLogs, createLearningLog, updateLearningLog, deleteLearningLog, fetchUsers, fetchTopics } from 'api/seclab';
 
 // ==============================|| LEARNING LOGS PAGE ||============================== //
 
@@ -66,11 +59,7 @@ export default function LearningLogsPage() {
   async function loadData() {
     setIsLoading(true);
     try {
-      const [fetchedUsers, fetchedKonular, fetchedLogs] = await Promise.all([
-        fetchUsers(),
-        fetchTopics(),
-        fetchLearningLogs()
-      ]);
+      const [fetchedUsers, fetchedKonular, fetchedLogs] = await Promise.all([fetchUsers(), fetchTopics(), fetchLearningLogs()]);
       setUsers(fetchedUsers);
       setKonular(fetchedKonular);
       setLogs(fetchedLogs);
@@ -134,9 +123,7 @@ export default function LearningLogsPage() {
         title: editingTitle,
         notes: editingNotes || null
       });
-      setLogs((prevLogs) =>
-        prevLogs.map((log) => (log.id === updatedLog.id ? updatedLog : log))
-      );
+      setLogs((prevLogs) => prevLogs.map((log) => (log.id === updatedLog.id ? updatedLog : log)));
       cancelEditingLog();
       setMessage('Öğrenme kaydı başarıyla güncellendi.');
     } catch (error) {
@@ -192,7 +179,7 @@ export default function LearningLogsPage() {
   });
 
   return (
-    <MainCard title="Öğrenme Kayıtları">
+    <MainCard title="Öğrenme Kayıt Yönetimiı">
       <Typography variant="body2" sx={{ mb: 3 }}>
         Record and review your study notes. Select a user and topic, then add your log entry.
       </Typography>
@@ -211,15 +198,9 @@ export default function LearningLogsPage() {
 
       {editingLogId !== null ? (
         <form onSubmit={handleUpdateLog}>
-          <Grid container spacing={2} sx={{ mb: 4 }} alignItems="flex-start">
+          <Grid container spacing={2} sx={{ mb: 4, alignItems: 'flex-start' }}>
             <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                label="Başlık"
-                value={editingTitle}
-                onChange={(e) => setEditingTitle(e.target.value)}
-                required
-              />
+              <TextField fullWidth label="Başlık" value={editingTitle} onChange={(e) => setEditingTitle(e.target.value)} required />
             </Grid>
             <Grid item xs={12} sm={5}>
               <TextField
@@ -234,7 +215,7 @@ export default function LearningLogsPage() {
             <Grid item xs={12} sm={3}>
               <Stack direction="row" spacing={1}>
                 <Button type="submit" variant="contained" fullWidth sx={{ height: '41px' }}>
-                  Save
+                  Kaydet
                 </Button>
                 <Button variant="outlined" fullWidth sx={{ height: '41px' }} onClick={cancelEditingLog}>
                   İptal
@@ -245,16 +226,9 @@ export default function LearningLogsPage() {
         </form>
       ) : (
         <form onSubmit={handleCreateLog}>
-          <Grid container spacing={2} sx={{ mb: 4 }} alignItems="flex-start">
+          <Grid container spacing={2} sx={{ mb: 4, alignItems: 'flex-start' }}>
             <Grid item xs={12} sm={2}>
-              <TextField
-                select
-                fullWidth
-                label="Kullanıcı"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                required
-              >
+              <TextField select fullWidth label="Kullanıcı" value={userId} onChange={(e) => setUserId(e.target.value)} required>
                 {users.map((user) => (
                   <MenuItem key={user.id} value={user.id}>
                     {user.username}
@@ -263,14 +237,7 @@ export default function LearningLogsPage() {
               </TextField>
             </Grid>
             <Grid item xs={12} sm={3}>
-              <TextField
-                select
-                fullWidth
-                label="Konu"
-                value={topicId}
-                onChange={(e) => setTopicId(e.target.value)}
-                required
-              >
+              <TextField select fullWidth label="Konu" value={topicId} onChange={(e) => setTopicId(e.target.value)} required>
                 {topics.map((topic) => (
                   <MenuItem key={topic.id} value={topic.id}>
                     {topic.name}
@@ -279,23 +246,10 @@ export default function LearningLogsPage() {
               </TextField>
             </Grid>
             <Grid item xs={12} sm={3}>
-              <TextField
-                fullWidth
-                label="Başlık"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
+              <TextField fullWidth label="Başlık" value={title} onChange={(e) => setTitle(e.target.value)} required />
             </Grid>
             <Grid item xs={12} sm={2}>
-              <TextField
-                fullWidth
-                label="Notlar"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                multiline
-                rows={1}
-              />
+              <TextField fullWidth label="Notlar" value={notes} onChange={(e) => setNotes(e.target.value)} multiline rows={1} />
             </Grid>
             <Grid item xs={12} sm={2}>
               <Button
@@ -357,9 +311,9 @@ export default function LearningLogsPage() {
                   <TableCell>{log.notes || '-'}</TableCell>
                   <TableCell>{new Date(log.created_at).toLocaleString('tr-TR')}</TableCell>
                   <TableCell align="right">
-                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
                       <Button size="small" variant="outlined" onClick={() => startEditingLog(log)}>
-                        Edit
+                        Düzenle
                       </Button>
                       <Button size="small" variant="outlined" color="error" onClick={() => openSilDialog(log)}>
                         Sil
@@ -376,9 +330,7 @@ export default function LearningLogsPage() {
       <Dialog open={deleteTargetLog !== null} onClose={closeSilDialog}>
         <DialogTitle>Öğrenme Kaydını Sil</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Bu öğrenme kaydını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
-          </DialogContentText>
+          <DialogContentText>Bu öğrenme kaydını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeSilDialog} color="primary" disabled={isDeleting}>

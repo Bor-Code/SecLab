@@ -85,7 +85,7 @@ const headCells = [
     align: 'left',
     disablePadding: false,
 
-    label: 'Status'
+    label: 'Durum'
   },
   {
     id: 'protein',

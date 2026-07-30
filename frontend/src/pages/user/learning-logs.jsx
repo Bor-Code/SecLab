@@ -4,8 +4,7 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 
 import LearningLogList from './components/LearningLogList';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+import { fetchLearningLogs, fetchTopics } from 'api/seclab';
 
 export default function UserLearningLogsPage() {
   const [learningLogs, setLearningLogs] = useState([]);
@@ -14,20 +13,7 @@ export default function UserLearningLogsPage() {
 
   async function loadData() {
     try {
-      const token = localStorage.getItem('seclab-access-token');
-      const headers = { Authorization: `Bearer ${token}` };
-
-      const [logsResponse, topicsResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/learning-logs`, { headers }),
-        fetch(`${API_BASE_URL}/topics`, { headers })
-      ]);
-
-      const logsData = await logsResponse.json().catch(() => []);
-      const topicsData = await topicsResponse.json().catch(() => []);
-
-      if (!logsResponse.ok) {
-        throw new Error(logsData?.detail || 'Öğrenme kayıtları yüklenemedi.');
-      }
+      const [logsData, topicsData] = await Promise.all([fetchLearningLogs(), fetchTopics()]);
 
       setLearningLogs(Array.isArray(logsData) ? logsData : []);
       setKonular(Array.isArray(topicsData) ? topicsData : []);
@@ -44,7 +30,11 @@ export default function UserLearningLogsPage() {
 
   return (
     <Box>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
       <LearningLogList
         learningLogs={learningLogs}
         logs={learningLogs}

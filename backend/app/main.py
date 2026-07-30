@@ -1,11 +1,10 @@
 from collections import defaultdict, deque
+import os
 import time
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from app.routers import auth, dashboard, health, learning_logs, resources, topics, users
-from app.activity import ensure_activity_table
 
 app = FastAPI()
 
@@ -18,7 +17,13 @@ _auth_attempts = defaultdict(deque)
 
 @app.middleware("http")
 async def auth_rate_limit_middleware(request: Request, call_next):
-    auth_paths = {"/auth/login", "/auth/register"}
+    auth_paths = {
+        "/auth/login",
+        "/auth/register",
+        "/auth/forgot-password",
+        "/auth/reset-password",
+        "/auth/change-password",
+    }
     path = request.url.path.rstrip("/")
 
     if request.method == "POST" and path in auth_paths:
@@ -33,20 +38,27 @@ async def auth_rate_limit_middleware(request: Request, call_next):
         if len(attempts) >= AUTH_RATE_LIMIT_MAX_REQUESTS:
             return JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                content={"detail": "Too many authentication attempts. Please try again shortly."}
+                content={"detail": "Çok fazla giriş denemesi yapıldı. Lütfen kısa süre sonra tekrar deneyin."}
             )
 
         attempts.append(now)
 
     return await call_next(request)
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "SECLAB_CORS_ORIGINS",
+        (
+            "http://localhost:3000,http://127.0.0.1:3000,"
+            "http://localhost:5173,http://127.0.0.1:5173"
+        ),
+    ).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -62,7 +74,4 @@ app.include_router(resources.router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Hello World"}
-@app.on_event("startup")
-def startup_event():
-    ensure_activity_table()
+    return {"message": "SecLab API çalışıyor"}

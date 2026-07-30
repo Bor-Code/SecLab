@@ -95,28 +95,18 @@ export default function UserDashboardPage() {
       ]);
 
       const [topicsResult, logsResult, resourcesResult] = results;
-      const failedResults = results.filter(
-        (result) => result.status === 'rejected'
-      );
+      const failedResults = results.filter((result) => result.status === 'rejected');
 
       if (failedResults.length === results.length) {
         throw failedResults[0].reason;
       }
 
-      setTopics(
-        topicsResult.status === 'fulfilled' ? topicsResult.value : []
-      );
-      setLearningLogs(
-        logsResult.status === 'fulfilled' ? logsResult.value : []
-      );
-      setResources(
-        resourcesResult.status === 'fulfilled' ? resourcesResult.value : []
-      );
+      setTopics(topicsResult.status === 'fulfilled' ? topicsResult.value : []);
+      setLearningLogs(logsResult.status === 'fulfilled' ? logsResult.value : []);
+      setResources(resourcesResult.status === 'fulfilled' ? resourcesResult.value : []);
 
       if (failedResults.length > 0) {
-        setError(
-          'Bazı çalışma alanı verileri yüklenemedi. Sayfayı yenileyerek tekrar deneyin.'
-        );
+        setError('Bazı çalışma alanı verileri yüklenemedi. Sayfayı yenileyerek tekrar deneyin.');
       }
     } catch (loadError) {
       console.error('Failed to load user dashboard:', loadError);
@@ -341,7 +331,7 @@ export default function UserDashboardPage() {
 
   if (isLoading) {
     return (
-      <MainCard title="Öğrenme Çalışma Alanım">
+      <MainCard title="Öğrenme İlerleme Analizim">
         <CircularProgress size={24} />
       </MainCard>
     );
@@ -351,70 +341,49 @@ export default function UserDashboardPage() {
 
   return (
     <Stack className="seclab-workspace-stack" spacing={3}>
-      <WorkspaceHero
-        displayName={displayName}
-        email={email}
-        role={role}
-      />
+      <WorkspaceHero displayName={displayName} email={email} role={role} />
 
       {error && <Alert severity="error">{error}</Alert>}
 
       <Box className="seclab-dashboard-section seclab-dashboard-section--summary">
-        <SummaryCards
-          topicsCount={topics.length}
-          learningLogsCount={learningLogs.length}
-          resourcesCount={resources.length}
-        />
+        <SummaryCards topicsCount={topics.length} learningLogsCount={learningLogs.length} resourcesCount={resources.length} />
       </Box>
 
-      <Box
-        id="workspace-productivity"
-        className="seclab-dashboard-section"
-      >
+      <Box id="workspace-productivity" className="seclab-dashboard-section">
         <ProductivityPanel />
       </Box>
 
-      <Box
-        id="workspace-insights"
-        className="seclab-dashboard-section"
-      >
-        <InsightsPanel
-          topics={topics}
-          learningLogs={learningLogs}
-          resources={resources}
-        />
+      <Box id="workspace-insights" className="seclab-dashboard-section">
+        <InsightsPanel topics={topics} learningLogs={learningLogs} resources={resources} />
       </Box>
 
-      <Box
-        id="workspace-records"
-        className="seclab-dashboard-section"
-      >
+      <Box id="workspace-records" className="seclab-dashboard-section">
         <CreateRecordsPanel
-        topics={topics}
-        isSaving={isSaving}
-        newTopicName={newTopicName}
-        setNewTopicName={setNewTopicName}
-        newTopicDescription={newTopicDescription}
-        setNewTopicDescription={setNewTopicDescription}
-        logTopicId={logTopicId}
-        setLogTopicId={setLogTopicId}
-        logTitle={logTitle}
-        setLogTitle={setLogTitle}
-        logNotes={logNotes}
-        setLogNotes={setLogNotes}
-        resourceTopicId={resourceTopicId}
-        setResourceTopicId={setResourceTopicId}
-        resourceTitle={resourceTitle}
-        setResourceTitle={setResourceTitle}
-        resourceUrl={resourceUrl}
-        setResourceUrl={setResourceUrl}
-        resourceType={resourceType}
-        setResourceType={setResourceType}
-        resourceNotes={resourceNotes}
-        setResourceNotes={setResourceNotes}
-        handleCreateTopic={handleCreateTopic}
-        handleCreateLearningLog={handleCreateLearningLog}
-        handleCreateResource={handleCreateResource}
+          topics={topics}
+          isSaving={isSaving}
+          newTopicName={newTopicName}
+          setNewTopicName={setNewTopicName}
+          newTopicDescription={newTopicDescription}
+          setNewTopicDescription={setNewTopicDescription}
+          logTopicId={logTopicId}
+          setLogTopicId={setLogTopicId}
+          logTitle={logTitle}
+          setLogTitle={setLogTitle}
+          logNotes={logNotes}
+          setLogNotes={setLogNotes}
+          resourceTopicId={resourceTopicId}
+          setResourceTopicId={setResourceTopicId}
+          resourceTitle={resourceTitle}
+          setResourceTitle={setResourceTitle}
+          resourceUrl={resourceUrl}
+          setResourceUrl={setResourceUrl}
+          resourceType={resourceType}
+          setResourceType={setResourceType}
+          resourceNotes={resourceNotes}
+          setResourceNotes={setResourceNotes}
+          handleCreateTopic={handleCreateTopic}
+          handleCreateLearningLog={handleCreateLearningLog}
+          handleCreateResource={handleCreateResource}
         />
       </Box>
 
@@ -432,17 +401,9 @@ export default function UserDashboardPage() {
         handleDeleteTopic={handleDeleteTopic}
       />
 
-      <LearningLogList
-        learningLogs={learningLogs}
-        isSaving={isSaving}
-        handleDeleteLearningLog={handleDeleteLearningLog}
-      />
+      <LearningLogList learningLogs={learningLogs} isSaving={isSaving} handleDeleteLearningLog={handleDeleteLearningLog} />
 
-      <ResourceList
-        resources={resources}
-        isSaving={isSaving}
-        handleDeleteResource={handleDeleteResource}
-      />
+      <ResourceList resources={resources} isSaving={isSaving} handleDeleteResource={handleDeleteResource} />
     </Stack>
   );
 }

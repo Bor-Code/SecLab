@@ -1,163 +1,64 @@
---
--- PostgreSQL database dump
---
+BEGIN;
 
-\restrict pXH5y5Yc1X6o4MQ3OfTzcYcVlidzTOrCyVMwlVSKW0NfkgrdasiJmiU9rKY6tiy
-
--- Dumped from database version 18.4
--- Dumped by pg_dump version 18.4
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
---
--- Name: topics; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.topics (
-    id integer NOT NULL,
-    user_id integer NOT NULL,
-    name character varying(100) NOT NULL,
-    description text,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    role VARCHAR(20) NOT NULL DEFAULT 'user',
+    password_hash VARCHAR(255),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT users_role_check CHECK (role IN ('user', 'admin'))
 );
 
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'user',
+    ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);
 
---
--- Name: topics_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.topics_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: topics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.topics_id_seq OWNED BY public.topics.id;
-
-
---
--- Name: users; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.users (
-    id integer NOT NULL,
-    username character varying(50) NOT NULL,
-    email character varying(255) NOT NULL,
-    role character varying(20) NOT NULL DEFAULT 'user',
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS topics (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-
---
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.users_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
-
-
---
--- Name: topics id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.topics ALTER COLUMN id SET DEFAULT nextval('public.topics_id_seq'::regclass);
-
-
---
--- Name: users id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
-
-
---
--- Name: topics topics_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.topics
-    ADD CONSTRAINT topics_pkey PRIMARY KEY (id);
-
-
---
--- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_email_key UNIQUE (email);
-
-
---
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
-
-
---
--- Name: topics topics_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.topics
-    ADD CONSTRAINT topics_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- PostgreSQL database dump complete
---
-
-\unrestrict pXH5y5Yc1X6o4MQ3OfTzcYcVlidzTOrCyVMwlVSKW0NfkgrdasiJmiU9rKY6tiy
-
-CREATE TABLE learning_logs (
+CREATE TABLE IF NOT EXISTS learning_logs (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     topic_id INTEGER NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
     title VARCHAR(150) NOT NULL,
     notes TEXT,
     study_date DATE DEFAULT CURRENT_DATE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE resources (
+CREATE TABLE IF NOT EXISTS resources (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     topic_id INTEGER NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
     title VARCHAR(150) NOT NULL,
     url TEXT NOT NULL,
-    resource_type VARCHAR(50) NOT NULL,
+    resource_type VARCHAR(50) NOT NULL DEFAULT 'documentation',
     notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT resources_type_check CHECK (
+        resource_type IN ('documentation', 'tool', 'article', 'video', 'other')
+    )
 );
+
+CREATE INDEX IF NOT EXISTS topics_user_id_idx
+    ON topics(user_id);
+
+CREATE INDEX IF NOT EXISTS learning_logs_user_id_idx
+    ON learning_logs(user_id);
+
+CREATE INDEX IF NOT EXISTS learning_logs_topic_id_idx
+    ON learning_logs(topic_id);
+
+CREATE INDEX IF NOT EXISTS resources_user_id_idx
+    ON resources(user_id);
+
+CREATE INDEX IF NOT EXISTS resources_topic_id_idx
+    ON resources(topic_id);
+
+COMMIT;

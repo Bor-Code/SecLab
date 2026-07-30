@@ -16,39 +16,22 @@ export default function WorkspaceHero({ displayName, email, role }) {
     <MainCard className="seclab-workspace-hero" contentSX={{ p: '0 !important' }}>
       <Box className="seclab-workspace-hero__layout">
         <Stack className="seclab-workspace-hero__intro" spacing={2}>
-          <Typography className="seclab-workspace-hero__eyebrow">
-            SECLAB ÇALIŞMA MERKEZİ
-          </Typography>
+          <Typography className="seclab-workspace-hero__eyebrow">SECLAB ÇALIŞMA MERKEZİ</Typography>
 
           <Box>
             <Typography component="h1" className="seclab-workspace-hero__title">
               Çalışma alanına hoş geldin, {displayName}
             </Typography>
             <Typography className="seclab-workspace-hero__description">
-              Konularını, öğrenme kayıtlarını, kaynaklarını ve haftalık hedeflerini
-              tek merkezden yönet.
+              Konularını, öğrenme kayıtlarını, kaynaklarını ve haftalık hedeflerini tek merkezden yönet.
             </Typography>
           </Box>
 
-          <Stack
-            className="seclab-workspace-hero__actions"
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={1.25}
-          >
-            <Button
-              component="a"
-              href="#workspace-records"
-              variant="contained"
-              className="seclab-workspace-hero__primary-action"
-            >
+          <Stack className="seclab-workspace-hero__actions" direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
+            <Button component="a" href="#workspace-records" variant="contained" className="seclab-workspace-hero__primary-action">
               Yeni kayıt oluştur
             </Button>
-            <Button
-              component="a"
-              href="#workspace-insights"
-              variant="outlined"
-              className="seclab-workspace-hero__secondary-action"
-            >
+            <Button component="a" href="#workspace-insights" variant="outlined" className="seclab-workspace-hero__secondary-action">
               Analizleri incele
             </Button>
           </Stack>

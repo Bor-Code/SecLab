@@ -18,13 +18,7 @@ export default function HeaderContent() {
       {!downLG && <Search />}
       {downLG && <Box sx={{ width: '100%', ml: 1 }} />}
 
-      <Stack
-        className="seclab-header-actions"
-        direction="row"
-        spacing={1}
-        alignItems="center"
-        sx={{ ml: 'auto', flexShrink: 0 }}
-      >
+      <Stack className="seclab-header-actions" direction="row" spacing={1} sx={{ ml: 'auto', flexShrink: 0, alignItems: 'center' }}>
         <IconButton
           component={Link}
           href="https://github.com/Bor-Code"

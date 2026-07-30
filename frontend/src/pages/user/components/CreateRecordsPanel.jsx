@@ -100,7 +100,7 @@ export default function CreateRecordsPanel({
               disabled={isSaving}
             />
             <Button type="submit" variant="contained" disabled={isSaving || topics.length === 0}>
-              {isSaving ? 'Kaydediliyor...' : 'Create Log'}
+              {isSaving ? 'Kaydediliyor...' : 'Kayıt Oluştur'}
             </Button>
           </Stack>
         </MainCard>

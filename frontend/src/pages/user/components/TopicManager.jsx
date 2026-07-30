@@ -49,10 +49,10 @@ export default function TopicManager({
                   />
                   <Stack className="seclab-record-actions" direction="row" spacing={1}>
                     <Button type="submit" variant="contained" size="small" disabled={isSaving}>
-                      Save
+                      Kaydet
                     </Button>
                     <Button variant="outlined" size="small" onClick={handleCancelEditTopic} disabled={isSaving}>
-                      Cancel
+                      İptal
                     </Button>
                   </Stack>
                 </Stack>
@@ -74,10 +74,10 @@ export default function TopicManager({
                   </Stack>
                   <Stack className="seclab-record-actions" direction="row" spacing={1}>
                     <Button variant="outlined" size="small" onClick={() => handleStartEditTopic(topic)} disabled={isSaving}>
-                      Edit
+                      Düzenle
                     </Button>
                     <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteTopic(topic.id)} disabled={isSaving}>
-                      Delete
+                      Sil
                     </Button>
                   </Stack>
                 </Stack>

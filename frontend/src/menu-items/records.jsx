@@ -1,10 +1,5 @@
 // assets
-import {
-  UserOutlined,
-  BookOutlined,
-  ReadOutlined,
-  LinkOutlined
-} from '@ant-design/icons';
+import { UserOutlined, BookOutlined, ReadOutlined, LinkOutlined } from '@ant-design/icons';
 
 // icons
 const icons = {
@@ -18,7 +13,7 @@ const icons = {
 
 const records = {
   id: 'group-records',
-  title: 'Kayıtlar',
+  title: 'Kayıt Yönetimi',
   type: 'group',
   children: [
     {
@@ -39,7 +34,7 @@ const records = {
     },
     {
       id: 'learning-logs',
-      title: 'Öğrenme Kayıtları',
+      title: 'Öğrenme Kayıt Yönetimiı',
       type: 'item',
       url: '/admin/learning-logs',
       icon: icons.ReadOutlined,

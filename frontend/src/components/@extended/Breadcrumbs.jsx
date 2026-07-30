@@ -11,7 +11,7 @@ import MuiBreadcrumbs from '@mui/material/Breadcrumbs';
 
 // project imports
 import MainCard from 'components/MainCard';
-import navigation from 'menu-items';
+import { getMenuItems } from 'menu-items';
 
 // assets
 import ApartmentOutlined from '@ant-design/icons/ApartmentOutlined';
@@ -36,6 +36,7 @@ export default function Breadcrumbs({
 }) {
   const theme = useTheme();
   const location = useLocation();
+  const navigation = getMenuItems(location.pathname);
 
   const [main, setMain] = useState();
   const [item, setItem] = useState();

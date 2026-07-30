@@ -9,9 +9,11 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-const TIMER_KEY = 'seclab-study-timer';
-const SESSIONS_KEY = 'seclab-study-sessions';
-const GOALS_KEY = 'seclab-weekly-goals';
+import { getUserStorageKey } from 'utils/authStorage';
+
+const TIMER_KEY = getUserStorageKey('seclab-study-timer');
+const SESSIONS_KEY = getUserStorageKey('seclab-study-sessions');
+const GOALS_KEY = getUserStorageKey('seclab-weekly-goals');
 
 const defaultTimer = {
   elapsedSeconds: 0,
@@ -42,9 +44,7 @@ function formatDuration(totalSeconds) {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  return [hours, minutes, seconds]
-    .map((value) => String(value).padStart(2, '0'))
-    .join(':');
+  return [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':');
 }
 
 function getWeekStart() {
@@ -94,10 +94,7 @@ export default function ProductivityPanel() {
       return new Date(session.completedAt) >= weekStart;
     });
 
-    const totalSeconds = weeklySessions.reduce(
-      (sum, session) => sum + Number(session.durationSeconds || 0),
-      0
-    );
+    const totalSeconds = weeklySessions.reduce((sum, session) => sum + Number(session.durationSeconds || 0), 0);
 
     return {
       sessionCount: weeklySessions.length,
@@ -105,15 +102,9 @@ export default function ProductivityPanel() {
     };
   }, [sessions]);
 
-  const sessionProgress = Math.min(
-    (weeklyStats.sessionCount / Math.max(goals.sessions, 1)) * 100,
-    100
-  );
+  const sessionProgress = Math.min((weeklyStats.sessionCount / Math.max(goals.sessions, 1)) * 100, 100);
 
-  const minuteProgress = Math.min(
-    (weeklyStats.minutes / Math.max(goals.minutes, 1)) * 100,
-    100
-  );
+  const minuteProgress = Math.min((weeklyStats.minutes / Math.max(goals.minutes, 1)) * 100, 100);
 
   function saveTimer(nextTimer) {
     setTimer(nextTimer);
@@ -236,12 +227,7 @@ export default function ProductivityPanel() {
             </Button>
           </Stack>
 
-          <Button
-            variant="contained"
-            color="success"
-            onClick={handleSaveSession}
-            disabled={elapsedSeconds === 0}
-          >
+          <Button variant="contained" color="success" onClick={handleSaveSession} disabled={elapsedSeconds === 0}>
             Oturumu Kaydet
           </Button>
         </Stack>
@@ -273,36 +259,27 @@ export default function ProductivityPanel() {
           </Stack>
 
           <Box>
-            <Stack direction="row" justifyContent="space-between">
+            <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
               <Typography fontWeight={700}>Çalışma oturumları</Typography>
               <Typography>
                 {weeklyStats.sessionCount} / {goals.sessions}
               </Typography>
             </Stack>
-            <LinearProgress
-              variant="determinate"
-              value={sessionProgress}
-              sx={{ mt: 1, height: 8, borderRadius: 1 }}
-            />
+            <LinearProgress variant="determinate" value={sessionProgress} sx={{ mt: 1, height: 8, borderRadius: 1 }} />
           </Box>
 
           <Box>
-            <Stack direction="row" justifyContent="space-between">
+            <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
               <Typography fontWeight={700}>Çalışma süresi</Typography>
               <Typography>
                 {weeklyStats.minutes} / {goals.minutes} dakika
               </Typography>
             </Stack>
-            <LinearProgress
-              variant="determinate"
-              value={minuteProgress}
-              sx={{ mt: 1, height: 8, borderRadius: 1 }}
-            />
+            <LinearProgress variant="determinate" value={minuteProgress} sx={{ mt: 1, height: 8, borderRadius: 1 }} />
           </Box>
 
           <Typography variant="body2" color="text.secondary">
-            Kaydedilen oturumlar haftalık analizlere ve aktivite takvimine
-            otomatik olarak aktarılır.
+            Kaydedilen oturumlar haftalık analizlere ve aktivite takvimine otomatik olarak aktarılır.
           </Typography>
         </Stack>
       </Paper>

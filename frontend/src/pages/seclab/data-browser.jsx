@@ -28,12 +28,7 @@ export default function DataBrowserPage() {
   async function loadData() {
     setIsLoading(true);
     try {
-      const [fUsers, fKonular, fLogs, fResources] = await Promise.all([
-        fetchUsers(),
-        fetchTopics(),
-        fetchLearningLogs(),
-        fetchResources()
-      ]);
+      const [fUsers, fKonular, fLogs, fResources] = await Promise.all([fetchUsers(), fetchTopics(), fetchLearningLogs(), fetchResources()]);
       setUsers(fUsers);
       setKonular(fKonular);
       setLogs(fLogs);
@@ -70,7 +65,7 @@ export default function DataBrowserPage() {
         <Tabs value={tabIndex} onChange={handleTabChange} aria-label="data browser tables">
           <Tab label={`Kullanıcılar (${users.length})`} />
           <Tab label={`Konular (${topics.length})`} />
-          <Tab label={`Öğrenme Kayıtları (${logs.length})`} />
+          <Tab label={`Öğrenme Kayıt Yönetimiı (${logs.length})`} />
           <Tab label={`Kaynaklar (${resources.length})`} />
         </Tabs>
       </Box>
@@ -91,11 +86,15 @@ export default function DataBrowserPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">Kullanıcılar yükleniyor...</TableCell>
+                  <TableCell colSpan={5} align="center">
+                    Kullanıcılar yükleniyor...
+                  </TableCell>
                 </TableRow>
               ) : users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">Kullanıcı bulunamadı.</TableCell>
+                  <TableCell colSpan={5} align="center">
+                    Kullanıcı bulunamadı.
+                  </TableCell>
                 </TableRow>
               ) : (
                 users.map((row) => (
@@ -120,7 +119,7 @@ export default function DataBrowserPage() {
             <TableHead>
               <TableRow>
                 <TableCell>ID</TableCell>
-                <TableCell>User ID</TableCell>
+                <TableCell>Kullanıcı ID</TableCell>
                 <TableCell>Ad</TableCell>
                 <TableCell>Açıklama</TableCell>
                 <TableCell>Oluşturulma Tarihi</TableCell>
@@ -129,11 +128,15 @@ export default function DataBrowserPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">Konular yükleniyor...</TableCell>
+                  <TableCell colSpan={5} align="center">
+                    Konular yükleniyor...
+                  </TableCell>
                 </TableRow>
               ) : topics.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">Konu bulunamadı.</TableCell>
+                  <TableCell colSpan={5} align="center">
+                    Konu bulunamadı.
+                  </TableCell>
                 </TableRow>
               ) : (
                 topics.map((row) => (
@@ -158,8 +161,8 @@ export default function DataBrowserPage() {
             <TableHead>
               <TableRow>
                 <TableCell>ID</TableCell>
-                <TableCell>User ID</TableCell>
-                <TableCell>Topic ID</TableCell>
+                <TableCell>Kullanıcı ID</TableCell>
+                <TableCell>Konu ID</TableCell>
                 <TableCell>Başlık</TableCell>
                 <TableCell>Çalışma Tarihi</TableCell>
                 <TableCell>Oluşturulma Tarihi</TableCell>
@@ -168,11 +171,15 @@ export default function DataBrowserPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">Öğrenme kayıtları yükleniyor...</TableCell>
+                  <TableCell colSpan={6} align="center">
+                    Öğrenme kayıtları yükleniyor...
+                  </TableCell>
                 </TableRow>
               ) : logs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">Öğrenme kaydı bulunamadı.</TableCell>
+                  <TableCell colSpan={6} align="center">
+                    Öğrenme kaydı bulunamadı.
+                  </TableCell>
                 </TableRow>
               ) : (
                 logs.map((row) => (
@@ -198,8 +205,8 @@ export default function DataBrowserPage() {
             <TableHead>
               <TableRow>
                 <TableCell>ID</TableCell>
-                <TableCell>User ID</TableCell>
-                <TableCell>Topic ID</TableCell>
+                <TableCell>Kullanıcı ID</TableCell>
+                <TableCell>Konu ID</TableCell>
                 <TableCell>Başlık</TableCell>
                 <TableCell>Tür</TableCell>
                 <TableCell>URL</TableCell>
@@ -209,11 +216,15 @@ export default function DataBrowserPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">Kaynaklar yükleniyor...</TableCell>
+                  <TableCell colSpan={7} align="center">
+                    Kaynaklar yükleniyor...
+                  </TableCell>
                 </TableRow>
               ) : resources.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">Kaynak bulunamadı.</TableCell>
+                  <TableCell colSpan={7} align="center">
+                    Kaynak bulunamadı.
+                  </TableCell>
                 </TableRow>
               ) : (
                 resources.map((row) => (

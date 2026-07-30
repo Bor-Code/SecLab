@@ -10,7 +10,9 @@ import Typography from '@mui/material/Typography';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { PieChart } from '@mui/x-charts/PieChart';
 
-const SESSIONS_KEY = 'seclab-study-sessions';
+import { getUserStorageKey } from 'utils/authStorage';
+
+const SESSIONS_KEY = getUserStorageKey('seclab-study-sessions');
 
 function readSessions() {
   try {
@@ -65,11 +67,7 @@ function getActivityColor(count) {
   return 'grey.100';
 }
 
-export default function InsightsPanel({
-  topics,
-  learningLogs,
-  resources
-}) {
+export default function InsightsPanel({ topics, learningLogs, resources }) {
   const [sessions, setSessions] = useState(readSessions);
 
   useEffect(() => {
@@ -77,16 +75,10 @@ export default function InsightsPanel({
       setSessions(Array.isArray(event.detail) ? event.detail : readSessions());
     }
 
-    window.addEventListener(
-      'seclab-study-sessions-updated',
-      handleSessionsUpdated
-    );
+    window.addEventListener('seclab-study-sessions-updated', handleSessionsUpdated);
 
     return () => {
-      window.removeEventListener(
-        'seclab-study-sessions-updated',
-        handleSessionsUpdated
-      );
+      window.removeEventListener('seclab-study-sessions-updated', handleSessionsUpdated);
     };
   }, []);
 
@@ -125,10 +117,7 @@ export default function InsightsPanel({
     }));
   }, [activityByDate]);
 
-  const totalActivity = Object.values(activityByDate).reduce(
-    (sum, count) => sum + count,
-    0
-  );
+  const totalActivity = Object.values(activityByDate).reduce((sum, count) => sum + count, 0);
 
   const pieData = [
     {
@@ -163,15 +152,9 @@ export default function InsightsPanel({
       }}
     >
       <Paper className="seclab-panel">
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          justifyContent="space-between"
-          spacing={1}
-        >
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ justifyContent: 'space-between' }}>
           <Typography variant="h4">Aktivite Takvimi</Typography>
-          <Typography color="text.secondary">
-            Toplam {totalActivity} aktivite
-          </Typography>
+          <Typography color="text.secondary">Toplam {totalActivity} aktivite</Typography>
         </Stack>
 
         <Divider sx={{ my: 2 }} />
@@ -202,20 +185,12 @@ export default function InsightsPanel({
               <Typography variant="caption" fontWeight={700}>
                 {day.label}
               </Typography>
-              <Typography variant="caption">
-                {day.count}
-              </Typography>
+              <Typography variant="caption">{day.count}</Typography>
             </Box>
           ))}
         </Box>
 
-        <Stack
-          direction="row"
-          spacing={1}
-          alignItems="center"
-          justifyContent="flex-end"
-          sx={{ mt: 2 }}
-        >
+        <Stack direction="row" spacing={1} sx={{ mt: 2, alignItems: 'center', justifyContent: 'flex-end' }}>
           <Typography variant="caption">Az</Typography>
           {[0, 1, 2, 3, 4].map((count) => (
             <Box
@@ -258,7 +233,7 @@ export default function InsightsPanel({
         </Paper>
 
         <Paper className="seclab-panel">
-          <Typography variant="h4">Çalışma Alanı Dağılımı</Typography>
+          <Typography variant="h4">İlerleme Analizi Dağılımı</Typography>
           <Divider sx={{ my: 2 }} />
 
           {pieData.length > 0 ? (
@@ -274,9 +249,7 @@ export default function InsightsPanel({
               height={240}
             />
           ) : (
-            <Typography color="text.secondary">
-              Grafik oluşturmak için henüz yeterli veri yok.
-            </Typography>
+            <Typography color="text.secondary">Grafik oluşturmak için henüz yeterli veri yok.</Typography>
           )}
         </Paper>
       </Stack>

@@ -43,14 +43,14 @@ export default function RecentActivityPage() {
     const typeMatch = (item.activity_type || '').toLowerCase().includes(query);
     const titleMatch = (item.title || '').toLowerCase().includes(query);
     const descMatch = (item.description || '').toLowerCase().includes(query);
-    
+
     return typeMatch || titleMatch || descMatch;
   });
 
   return (
     <MainCard title="Son Aktiviteler">
       <Typography variant="body2" sx={{ mb: 3 }}>
-        Review the latest actions and updates across the platform.
+        Platformdaki son işlemleri ve güncellemeleri inceleyin.
       </Typography>
 
       {errorMessage && (
@@ -82,21 +82,19 @@ export default function RecentActivityPage() {
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={4} align="center">
-                  Loading activity...
+                  Aktiviteler yükleniyor...
                 </TableCell>
               </TableRow>
             ) : filteredActivities.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} align="center">
-                  No recent activity found.
+                  Son aktivite bulunamadı.
                 </TableCell>
               </TableRow>
             ) : (
               filteredActivities.map((item, index) => (
                 <TableRow key={index} hover>
-                  <TableCell sx={{ textTransform: 'capitalize' }}>
-                    {(item.activity_type || '').replace('_', ' ')}
-                  </TableCell>
+                  <TableCell sx={{ textTransform: 'capitalize' }}>{(item.activity_type || '').replace('_', ' ')}</TableCell>
                   <TableCell>{item.title}</TableCell>
                   <TableCell>{item.description || '-'}</TableCell>
                   <TableCell>{new Date(item.created_at).toLocaleString('tr-TR')}</TableCell>
